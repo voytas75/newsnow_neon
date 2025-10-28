@@ -10,9 +10,10 @@ Updates: v0.49.1 - 2025-01-07 - Extracted core model and widget classes.
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict, FrozenSet, List, Literal, Mapping, Optional
+from typing import Any, Callable, Dict, FrozenSet, List, Literal, Mapping, Optional
 
 import tkinter as tk
 
@@ -325,6 +326,7 @@ class KeywordHeatmapData:
 
 
 __all__ = [
+    "TkQueueHandler",
     "AppMetadata",
     "NewsSection",
     "Headline",
@@ -338,3 +340,18 @@ __all__ = [
     "HoverTooltip",
     "KeywordHeatmapData",
 ]
+
+
+class TkQueueHandler(logging.Handler):
+    """Logging handler that forwards formatted records to a Tk callback."""
+
+    def __init__(self, callback: Callable[[int, str], None]) -> None:
+        super().__init__()
+        self._callback = callback
+
+    def emit(self, record: logging.LogRecord) -> None:
+        try:
+            message = self.format(record)
+            self._callback(record.levelno, message)
+        except Exception:  # pragma: no cover - guard against issues
+            self.handleError(record)
