@@ -14,6 +14,7 @@ from collections import deque
 from datetime import datetime, timedelta, timezone, tzinfo
 from tkinter import colorchooser, font, messagebox
 from typing import Any, Callable, Dict, FrozenSet, Iterable, List, Mapping, Optional, Sequence, Set, Tuple
+import threading
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 import webbrowser
 
@@ -25,6 +26,11 @@ from .config import (
     DEFAULT_SETTINGS,
     DEFAULT_TIMEZONE,
     TIMEZONE_CHOICES,
+    SECTIONS,
+    REDIS_URL,
+    BACKGROUND_WATCH_INTERVAL_MS,
+    BACKGROUND_WATCH_INITIAL_DELAY_MS,
+    SETTINGS_PATH,
     set_historical_cache_enabled,
 )
 from .highlight import (
@@ -42,12 +48,16 @@ from .models import (
     HoverTooltip,
     LiveFlowState,
     RedisStatistics,
+    TkQueueHandler,
 )
+from .cache import get_redis_client
 from .settings_store import load_settings, save_settings
 from .summaries import configure_litellm_debug
 from .ui import AppInfoWindow, KeywordHeatmapWindow, NewsTicker, RedisStatsWindow, SummaryWindow
 
 logger = logging.getLogger(__name__)
+
+_SENSITIVE_ENV_PATTERN = re.compile(r"(KEY|TOKEN|SECRET|PASSWORD|API_KEY)$", re.IGNORECASE)
 
 _fetch_headlines_impl: Optional[Callable[..., Tuple[List[Headline], bool, Optional[str]]]] = None
 _build_ticker_text_impl: Optional[Callable[[Sequence[Headline]], str]] = None
