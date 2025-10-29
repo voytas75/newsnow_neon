@@ -57,4 +57,22 @@ def isoformat_epoch(value: str) -> Optional[str]:
     return iso_value[:-6] + "Z" if iso_value.endswith("+00:00") else iso_value
 
 
-__all__ = ["read_optional_env", "compute_deadline_timeout", "isoformat_epoch"]
+def parse_iso8601_utc(value: Optional[str]) -> Optional[datetime]:
+    """Parse ISO-8601 strings into aware UTC datetimes."""
+
+    if not isinstance(value, str):
+        return None
+    text = value.strip()
+    if not text:
+        return None
+    normalized = text[:-1] + "+00:00" if text.endswith("Z") else text
+    try:
+        timestamp = datetime.fromisoformat(normalized)
+    except ValueError:
+        return None
+    if timestamp.tzinfo is None:
+        timestamp = timestamp.replace(tzinfo=timezone.utc)
+    return timestamp.astimezone(timezone.utc)
+
+
+__all__ = ["read_optional_env", "compute_deadline_timeout", "isoformat_epoch", "parse_iso8601_utc"]
