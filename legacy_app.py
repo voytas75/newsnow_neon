@@ -60,6 +60,7 @@ Updates: v0.48 - 2025-10-28 - Keep list selection stable when opening summaries 
 Updates: v0.49 - 2025-10-28 - Tag list rows to make first-headline selections reliable next to group headers.
 Updates: v0.50 - 2025-01-07 - Delegated UI/controller logic to package modules and split settings, HTTP, and summary utilities.
 Updates: v0.51 - 2025-10-29 - Migrated legacy launcher into the package namespace and stabilised sys.path bootstrapping.
+Updates: v0.52 - 2025-10-29 - Passed explicit timeout to summarize_article to match new interface.
 """
 
 from __future__ import annotations
@@ -395,7 +396,7 @@ def resolve_article_summary(headline: Headline) -> SummaryResolution:
             source_url=article.url,
         )
 
-    summary_text = summarize_article(headline.title, article.text)
+    summary_text = summarize_article(headline.title, article.text, timeout=SUMMARY_TIMEOUT)
     if summary_text.strip():
         store_cached_article_summary(headline.url, article.url, headline.title, summary_text)
         return SummaryResolution(
