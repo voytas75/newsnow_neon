@@ -1,6 +1,8 @@
 """LiteLLM orchestration helpers for NewsNow Neon article summaries.
 
 Updates: v0.50 - 2025-01-07 - Moved summarisation adapters and LiteLLM executor management from the legacy script.
+Updates: v0.51 - 2025-10-29 - Honoured provider/API defaults so Azure and other backends configure automatically.
+Updates: v0.51.1 - 2025-10-29 - Removed unsupported LiteLLM kwargs when targeting Azure deployments.
 """
 
 from __future__ import annotations
@@ -114,8 +116,45 @@ def prepare_completion_kwargs(
     if azure_ad_token_override:
         kwargs["azure_ad_token"] = azure_ad_token_override
 
-    final_model = kwargs.get("model") or _configured_model_name()
-    kwargs["model"] = final_model
+    final_model = kwargs.get("model")
+    if not final_model:
+        configured_model = _configured_model_name()
+        if configured_model:
+            final_model = configured_model
+            kwargs["model"] = configured_model
+
+    provider_choice = provider_override or os.getenv("LITELLM_PROVIDER") or os.getenv("NEWS_SUMMARY_PROVIDER")
+    provider_choice = (provider_choice or "").lower()
+    if not provider_choice and isinstance(final_model, str) and final_model.startswith("azure/"):
+        provider_choice = "azure"
+    provider = provider_choice or ""
+
+    api_base = kwargs.get("api_base")
+    api_key = kwargs.get("api_key")
+
+    if provider == "azure":
+        azure_deployment = azure_deployment_override or (
+            final_model.split("/", 1)[1] if isinstance(final_model, str) and final_model.startswith("azure/") else None
+        ) or os.getenv("AZURE_OPENAI_DEPLOYMENT")
+        if azure_deployment:
+            kwargs["model"] = f"azure/{azure_deployment}"
+        api_base = api_base or os.getenv("AZURE_OPENAI_API_BASE") or os.getenv("AZURE_OPENAI_ENDPOINT") or os.getenv("LITELLM_API_BASE")
+        api_key = api_key or os.getenv("AZURE_OPENAI_API_KEY") or os.getenv("LITELLM_API_KEY")
+        api_version = azure_api_version_override or os.getenv("AZURE_OPENAI_API_VERSION") or "2024-10-01-preview"
+        kwargs["api_version"] = api_version
+        azure_ad_token = kwargs.get("azure_ad_token") or azure_ad_token_override or os.getenv("AZURE_OPENAI_AD_TOKEN")
+        if azure_ad_token:
+            kwargs["azure_ad_token"] = azure_ad_token
+    else:
+        api_base = api_base or os.getenv("NEWS_SUMMARY_API_BASE") or os.getenv("LITELLM_API_BASE")
+        api_key = api_key or os.getenv("NEWS_SUMMARY_API_KEY") or os.getenv("LITELLM_API_KEY")
+
+    if api_base:
+        kwargs["api_base"] = api_base.rstrip("/")
+    if api_key:
+        kwargs["api_key"] = api_key
+
+    final_model = kwargs.get("model")
     normalized_model = (final_model or "").lower()
     if normalized_model.startswith(("gpt-5-mini", "gpt5-mini")):
         if "temperature" in kwargs:
