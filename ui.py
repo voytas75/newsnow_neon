@@ -1,10 +1,12 @@
 """Tkinter UI components for the NewsNow Neon application.
 
-These classes were migrated from the legacy ``newsnow_neon.py`` script so the
+These classes were migrated from the legacy ``legacy_app.py`` script (formerly
+``newsnow_neon.py``) so the
 core package owns the ticker widgets, summary window, diagnostics dialogs, and
 other presentation logic.
 
 Updates: v0.50 - 2025-01-07 - Extracted Tk UI classes from the legacy script into the package.
+Updates: v0.51 - 2025-10-29 - Stabilized ticker repositioning to prevent headline overlap.
 """
 
 from __future__ import annotations
@@ -287,20 +289,21 @@ class NewsTicker(tk.Canvas):
             group = self._headline_groups.get(group_tag)
             if not group:
                 continue
-            for item_id in group.get("items", []):
+            items = group.get("items", [])
+            if not items:
+                continue
+            for item_id in items:
                 self.move(item_id, -self.speed, 0)
-            offsets = group.get("offsets", [])
-            for idx, item_id in enumerate(group.get("items", [])):
-                offsets[idx] = offsets[idx] - self.speed
-            coords = [self.coords(item_id) for item_id in group.get("items", [])]
-            if coords and all(coord[0] < -self.item_spacing for coord in coords):
-                group_width = group.get("width", 0.0)
+            coords = [self.coords(item_id) for item_id in items]
+            if coords and all(coord and coord[0] < -self.item_spacing for coord in coords):
                 base_x = float(self.winfo_width()) + self.item_spacing
-                for idx, item_id in enumerate(group.get("items", [])):
-                    offset = offsets[idx] if idx < len(offsets) else 0.0
-                    self.coords(item_id, base_x + offset, coords[idx][1])
-                for idx in range(len(offsets)):
-                    offsets[idx] = base_x + offsets[idx]
+                relative_offsets = group.get("offsets", ())
+                default_y = max(self.winfo_height() // 2, 25)
+                for idx, item_id in enumerate(items):
+                    offset = relative_offsets[idx] if idx < len(relative_offsets) else 0.0
+                    coord = coords[idx] if idx < len(coords) else None
+                    y_pos = coord[1] if coord else default_y
+                    self.coords(item_id, base_x + offset, y_pos)
         self.after(50, self._animate)
 
     def _on_enter(self, _event: tk.Event) -> None:
