@@ -1,9 +1,11 @@
 """Application entrypoint wiring for NewsNow Neon.
 
-The full Tkinter orchestration still lives in the legacy ``newsnow_neon.py``
-script. The goal is to migrate that logic into dedicated layers over time.
+The full Tkinter orchestration still lives in the packaged legacy
+``legacy_app.py`` module. The goal is to migrate that logic into dedicated
+layers over time.
 
 Updates: v0.49.1 - 2025-01-07 - Added metadata factory and stub main routine.
+Updates: v0.49.2 - 2025-10-29 - Switched to packaged legacy module and removed reliance on root-level script.
 """
 
 from __future__ import annotations
@@ -35,7 +37,7 @@ def main(settings_path: Optional[str] = None) -> None:
 
     logger.debug("Bootstrapping NewsNow Neon main loop")
 
-    legacy_app = importlib.import_module("newsnow_neon")
+    legacy_app = importlib.import_module("newsnow_neon_app.legacy_app")
 
     app = legacy_app.AINewsApp()
     if settings_path:

@@ -1,11 +1,12 @@
 """Domain and UI models backing the NewsNow Neon application.
 
 This module collects the primary dataclasses and lightweight Tk widgets that
-were previously embedded in ``newsnow_neon.py``. Moving the definitions here
-allows other layers (networking, orchestration, UI composition) to import them
-without triggering the entire application.
+were previously embedded in the legacy launcher (now ``legacy_app.py``).
+Moving the definitions here allows other layers (networking, orchestration, UI
+composition) to import them without triggering the entire application.
 
 Updates: v0.49.1 - 2025-01-07 - Extracted core model and widget classes.
+Updates: v0.49.2 - 2025-10-29 - Documented packaged launcher rename.
 """
 
 from __future__ import annotations
