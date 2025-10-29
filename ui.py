@@ -8,6 +8,8 @@ other presentation logic.
 Updates: v0.50 - 2025-01-07 - Extracted Tk UI classes from the legacy script into the package.
 Updates: v0.51 - 2025-10-29 - Stabilized ticker repositioning to prevent headline overlap.
 Updates: v0.52 - 2025-10-29 - Rendered Info dialog links with consistent alignment.
+Updates: v0.53 - 2025-10-29 - Improved ticker wrap placement to avoid overlap and reduce redraw work.
+Updates: v0.54 - 2025-10-30 - Added scrollable heatmap viewport for large keyword sets.
 """
 
 from __future__ import annotations
@@ -78,6 +80,7 @@ class NewsTicker(tk.Canvas):
         self.hover_group_tag: Optional[str] = None
         self._headline_groups: Dict[str, Dict[str, Any]] = {}
         self._segment_to_group: Dict[int, str] = {}
+        self._spawn_measure_cache: Dict[str, float] = {}
         self.is_hovered = False
         self.max_title_length = max_title_length
         self.font = font_spec
@@ -188,17 +191,13 @@ class NewsTicker(tk.Canvas):
         """Align headline items horizontally starting at the right edge."""
         if not self.headline_order:
             return
-        y = max(self.winfo_height() // 2, 25)
+        y = float(max(self.winfo_height() // 2, 25))
         x = float(self.winfo_width())
         for group_tag in self.headline_order:
             group = self._headline_groups.get(group_tag)
             if not group:
                 continue
-            offsets = group["offsets"]
-            items = group["items"]
-            for idx, item_id in enumerate(items):
-                offset = offsets[idx] if idx < len(offsets) else 0.0
-                self.coords(item_id, x + offset, y)
+            self._place_group(group_tag, x, default_y=y)
             width = group.get("width", 0.0)
             x += width + self.item_spacing
 
@@ -211,6 +210,7 @@ class NewsTicker(tk.Canvas):
         self.hover_group_tag = None
         self._headline_groups.clear()
         self._segment_to_group.clear()
+        self._spawn_measure_cache.clear()
         self._tooltip.hide()
 
     def _create_headline_group(self, headline: Headline) -> None:
@@ -276,11 +276,58 @@ class NewsTicker(tk.Canvas):
     def _measure_segment_width(self, text: str) -> float:
         if not text:
             return 0.0
+        cached = self._spawn_measure_cache.get(text)
+        if cached is not None:
+            return cached
         try:
-            return float(self._font_metrics.measure(text))
+            width = float(self._font_metrics.measure(text))
         except tk.TclError:
             self._font_metrics = font.Font(self, font=self.font)
-            return float(self._font_metrics.measure(text))
+            width = float(self._font_metrics.measure(text))
+        self._spawn_measure_cache[text] = width
+        return width
+
+    def _place_group(
+        self,
+        group_tag: str,
+        origin_x: float,
+        *,
+        y_values: Optional[Sequence[Optional[float]]] = None,
+        default_y: Optional[float] = None,
+    ) -> None:
+        group = self._headline_groups.get(group_tag)
+        if not group:
+            return
+        items = group.get("items", [])
+        offsets = group.get("offsets", [])
+        if default_y is None:
+            default_y = float(max(self.winfo_height() // 2, 25))
+        for idx, item_id in enumerate(items):
+            offset = offsets[idx] if idx < len(offsets) else 0.0
+            y_coord: float
+            if y_values is not None and idx < len(y_values) and y_values[idx] is not None:
+                y_coord = float(y_values[idx])  # reuse existing vertical alignment
+            else:
+                current_coords = self.coords(item_id)
+                if current_coords:
+                    y_coord = float(current_coords[1])
+                else:
+                    y_coord = default_y
+            self.coords(item_id, origin_x + offset, y_coord)
+
+    def _compute_rightmost_edge(self, *, exclude: Optional[str] = None) -> float:
+        rightmost = float(self.winfo_width())
+        for group_tag in self.headline_order:
+            if group_tag == exclude:
+                continue
+            group = self._headline_groups.get(group_tag)
+            if not group:
+                continue
+            for item_id in group.get("items", []):
+                bbox = self.bbox(item_id)
+                if bbox:
+                    rightmost = max(rightmost, float(bbox[2]))
+        return rightmost
 
     def _animate(self) -> None:
         if self.is_hovered:
@@ -297,14 +344,12 @@ class NewsTicker(tk.Canvas):
                 self.move(item_id, -self.speed, 0)
             coords = [self.coords(item_id) for item_id in items]
             if coords and all(coord and coord[0] < -self.item_spacing for coord in coords):
-                base_x = float(self.winfo_width()) + self.item_spacing
-                relative_offsets = group.get("offsets", ())
-                default_y = max(self.winfo_height() // 2, 25)
-                for idx, item_id in enumerate(items):
-                    offset = relative_offsets[idx] if idx < len(relative_offsets) else 0.0
-                    coord = coords[idx] if idx < len(coords) else None
-                    y_pos = coord[1] if coord else default_y
-                    self.coords(item_id, base_x + offset, y_pos)
+                y_values = [coord[1] if coord else None for coord in coords]
+                spawn_origin = max(
+                    float(self.winfo_width()),
+                    self._compute_rightmost_edge(exclude=group_tag),
+                ) + self.item_spacing
+                self._place_group(group_tag, spawn_origin, y_values=y_values)
         self.after(50, self._animate)
 
     def _on_enter(self, _event: tk.Event) -> None:
@@ -663,12 +708,45 @@ class KeywordHeatmapWindow(tk.Toplevel):
         )
         info_label.pack(fill="x", padx=16, pady=(16, 4))
 
+        canvas_container = tk.Frame(self, bg="black")
+        canvas_container.pack(fill="both", expand=True, padx=16, pady=(0, 8))
+        canvas_container.rowconfigure(0, weight=1)
+        canvas_container.columnconfigure(0, weight=1)
+
         self.canvas = tk.Canvas(
-            self,
+            canvas_container,
             bg="black",
             highlightthickness=0,
+            xscrollincrement=10,
+            yscrollincrement=10,
         )
-        self.canvas.pack(fill="both", expand=True, padx=16, pady=(0, 8))
+        self.canvas.grid(row=0, column=0, sticky="nsew")
+
+        self.v_scrollbar = tk.Scrollbar(
+            canvas_container,
+            orient="vertical",
+            command=self.canvas.yview,
+        )
+        self.v_scrollbar.grid(row=0, column=1, sticky="ns")
+
+        self.h_scrollbar = tk.Scrollbar(
+            canvas_container,
+            orient="horizontal",
+            command=self.canvas.xview,
+        )
+        self.h_scrollbar.grid(row=1, column=0, sticky="ew")
+
+        self.canvas.configure(
+            xscrollcommand=self.h_scrollbar.set,
+            yscrollcommand=self.v_scrollbar.set,
+        )
+
+        self.canvas.bind("<MouseWheel>", self._on_mousewheel)
+        self.canvas.bind("<Shift-MouseWheel>", self._on_shift_mousewheel)
+        self.canvas.bind("<Button-4>", self._on_mousewheel)
+        self.canvas.bind("<Button-5>", self._on_mousewheel)
+        self.canvas.bind("<Shift-Button-4>", self._on_shift_mousewheel)
+        self.canvas.bind("<Shift-Button-5>", self._on_shift_mousewheel)
 
         self.legend_var = tk.StringVar(value="")
         legend_label = tk.Label(
@@ -704,7 +782,7 @@ class KeywordHeatmapWindow(tk.Toplevel):
                 "Tip: adjust highlight keywords in Settings or via NEWS_HIGHLIGHT_KEYWORDS to track additional terms."
             )
             width, height = 480, 220
-            self.canvas.config(width=width, height=height)
+            self._configure_canvas_viewport(width, height)
             self.canvas.create_text(
                 width / 2,
                 height / 2,
@@ -717,14 +795,24 @@ class KeywordHeatmapWindow(tk.Toplevel):
         total_headlines = sum(dataset.totals.values())
         sections_count = len(dataset.sections)
         keywords_count = len(dataset.keywords)
-        self.info_var.set(
-            f"{total_headlines} headlines • {sections_count} sections • {keywords_count} keywords"
-        )
+        summary_bits = [
+            f"{total_headlines} headlines",
+            f"{sections_count} sections",
+            f"{keywords_count} keywords",
+        ]
+        if keywords_count > 8:
+            summary_bits.append("scroll to explore")
+        self.info_var.set(" • ".join(summary_bits))
         max_percent = dataset.max_density * 100.0
-        self.legend_var.set(
-            "Color intensity reflects the share of section headlines containing each keyword "
-            f"(maximum {max_percent:.1f}% in this sample)."
-        )
+        legend_parts = [
+            "Color intensity reflects the share of section headlines containing each keyword",
+            f"(maximum {max_percent:.1f}% in this sample).",
+        ]
+        if keywords_count > 6 or sections_count > 8:
+            legend_parts.append(
+                "Use the scrollbars or Shift+mouse wheel to navigate through the heatmap."
+            )
+        self.legend_var.set(" ".join(legend_parts))
 
         self._render_heatmap(dataset)
 
@@ -746,11 +834,7 @@ class KeywordHeatmapWindow(tk.Toplevel):
         canvas_width = padding_x * 2 + label_col_width + len(keywords) * cell_width
         canvas_height = padding_y * 2 + header_height + len(sections) * cell_height
 
-        self.canvas.config(
-            width=canvas_width,
-            height=canvas_height,
-            scrollregion=(0, 0, canvas_width, canvas_height),
-        )
+        self.canvas.config(scrollregion=(0, 0, canvas_width, canvas_height))
 
         header_center_y = padding_y + header_height / 2
         for column, keyword in enumerate(keywords):
@@ -820,6 +904,43 @@ class KeywordHeatmapWindow(tk.Toplevel):
                     fill=text_color,
                     font=("Segoe UI", 10, "bold"),
                 )
+
+        self._configure_canvas_viewport(canvas_width, canvas_height)
+
+    def _configure_canvas_viewport(self, width: int, height: int) -> None:
+        viewport_width = max(min(width, 960), 360)
+        viewport_height = max(min(height, 640), 320)
+        self.canvas.config(
+            width=viewport_width,
+            height=viewport_height,
+            scrollregion=(0, 0, width, height),
+        )
+        self.canvas.xview_moveto(0.0)
+        self.canvas.yview_moveto(0.0)
+
+    def _on_mousewheel(self, event: tk.Event) -> str:
+        delta = 0
+        if hasattr(event, "delta") and event.delta:
+            delta = int(-event.delta / 120)
+        elif getattr(event, "num", None) == 4:
+            delta = -1
+        elif getattr(event, "num", None) == 5:
+            delta = 1
+        if delta:
+            self.canvas.yview_scroll(delta, "units")
+        return "break"
+
+    def _on_shift_mousewheel(self, event: tk.Event) -> str:
+        delta = 0
+        if hasattr(event, "delta") and event.delta:
+            delta = int(-event.delta / 120)
+        elif getattr(event, "num", None) == 4:
+            delta = -1
+        elif getattr(event, "num", None) == 5:
+            delta = 1
+        if delta:
+            self.canvas.xview_scroll(delta, "units")
+        return "break"
 
     def _handle_close(self) -> None:
         if self._on_close_callback:
