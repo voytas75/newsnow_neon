@@ -155,6 +155,16 @@ class NewsTicker(tk.Canvas):
         self.after_idle(self._ensure_positions)
         self.configure(cursor="arrow")
 
+    def set_speed(self, speed: int) -> None:
+        """Update scroll speed while keeping a sane lower bound."""
+
+        try:
+            value = int(speed)
+        except (TypeError, ValueError):
+            logger.debug("Invalid ticker speed '%s'; keeping previous value %s", speed, self.speed)
+            return
+        self.speed = max(1, value)
+
     def apply_color_profile(self, profile: Mapping[str, str]) -> None:
         background = profile.get("background", "black")
         text = profile.get("text", "white")
