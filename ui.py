@@ -7,6 +7,7 @@ other presentation logic.
 
 Updates: v0.50 - 2025-01-07 - Extracted Tk UI classes from the legacy script into the package.
 Updates: v0.51 - 2025-10-29 - Stabilized ticker repositioning to prevent headline overlap.
+Updates: v0.52 - 2025-10-29 - Rendered Info dialog links with consistent alignment.
 """
 
 from __future__ import annotations
@@ -1136,55 +1137,18 @@ class AppInfoWindow(tk.Toplevel):
         for label_text, value_text in system_rows:
             self._add_kv_row(info_frame, label_text, value_text)
 
-        self._add_kv_row(info_frame, "Author", metadata.author)
-
-        support_row = tk.Frame(info_frame, bg="black")
-        support_row.pack(fill="x", pady=(6, 2))
-        support_label = tk.Label(
-            support_row,
-            text="Support:",
-            bg="black",
-            fg="lightgray",
-            font=("Segoe UI", 10, "bold"),
-        )
-        support_label.pack(side="left")
+        author_value = metadata.author
+        author_link = author_value if isinstance(author_value, str) and author_value.startswith(("http://", "https://")) else None
+        self._add_kv_row(info_frame, "Author", author_value, link_url=author_link)
 
         if metadata.donate_url:
-            link_color = "#4DA6FF"
-            donate_label = tk.Label(
-                support_row,
-                text=metadata.donate_url,
-                bg="black",
-                fg=link_color,
-                cursor="hand2",
-                wraplength=320,
-                justify="left",
-                font=("Segoe UI", 10),
-            )
-            donate_label.pack(side="left", padx=(8, 0))
-            donate_label.bind(
-                "<Button-1>",
-                lambda _event, url=metadata.donate_url: webbrowser.open_new_tab(url),
-            )
-            donate_label.bind(
-                "<Enter>",
-                lambda _event, widget=donate_label: widget.config(fg="#80C4FF"),
-            )
-            donate_label.bind(
-                "<Leave>",
-                lambda _event, widget=donate_label: widget.config(fg=link_color),
-            )
+            self._add_kv_row(info_frame, "Support", metadata.donate_url, link_url=metadata.donate_url)
         else:
-            fallback_label = tk.Label(
-                support_row,
-                text="Set NEWSNOW_DONATE_URL to share a donation link.",
-                bg="black",
-                fg="lightgray",
-                wraplength=320,
-                justify="left",
-                font=("Segoe UI", 10),
+            self._add_kv_row(
+                info_frame,
+                "Support",
+                "Set NEWSNOW_DONATE_URL to share a donation link.",
             )
-            fallback_label.pack(side="left", padx=(8, 0))
 
         button_frame = tk.Frame(self, bg="black")
         button_frame.pack(fill="x", padx=20, pady=(16, 18))
@@ -1192,7 +1156,7 @@ class AppInfoWindow(tk.Toplevel):
         close_button.pack(side="right")
         close_button.focus_set()
 
-    def _add_kv_row(self, container: tk.Misc, key: str, value: str) -> None:
+    def _add_kv_row(self, container: tk.Misc, key: str, value: str, *, link_url: Optional[str] = None) -> None:
         row = tk.Frame(container, bg="black")
         row.pack(fill="x", pady=2)
         key_label = tk.Label(
@@ -1205,16 +1169,33 @@ class AppInfoWindow(tk.Toplevel):
             anchor="w",
         )
         key_label.pack(side="left")
-        value_label = tk.Label(
-            row,
-            text=value,
-            bg="black",
-            fg="white",
-            wraplength=320,
-            justify="left",
-            anchor="w",
-        )
-        value_label.pack(fill="x", padx=(8, 0))
+        if link_url:
+            link_color = "#4DA6FF"
+            value_label = tk.Label(
+                row,
+                text=value,
+                bg="black",
+                fg=link_color,
+                cursor="hand2",
+                wraplength=320,
+                justify="left",
+                anchor="w",
+            )
+            value_label.pack(fill="x", padx=(8, 0))
+            value_label.bind("<Button-1>", lambda _event, url=link_url: webbrowser.open_new_tab(url))
+            value_label.bind("<Enter>", lambda _event, widget=value_label: widget.config(fg="#80C4FF"))
+            value_label.bind("<Leave>", lambda _event, widget=value_label: widget.config(fg=link_color))
+        else:
+            value_label = tk.Label(
+                row,
+                text=value,
+                bg="black",
+                fg="white",
+                wraplength=320,
+                justify="left",
+                anchor="w",
+            )
+            value_label.pack(fill="x", padx=(8, 0))
 
     def _handle_close(self) -> None:
         if self._on_close_invoked:

@@ -6,6 +6,7 @@ layers over time.
 
 Updates: v0.49.1 - 2025-01-07 - Added metadata factory and stub main routine.
 Updates: v0.49.2 - 2025-10-29 - Switched to packaged legacy module and removed reliance on root-level script.
+Updates: v0.49.3 - 2025-10-29 - Updated default author and support links for the Info window.
 """
 
 from __future__ import annotations
@@ -23,8 +24,8 @@ APP_VERSION = "0.49"
 APP_METADATA = AppMetadata(
     name="NewsNow Neon",
     version=f"v{APP_VERSION}",
-    author=read_optional_env("NEWSNOW_APP_AUTHOR") or "NewsNow Neon maintainers",
-    donate_url=read_optional_env("NEWSNOW_DONATE_URL"),
+    author=read_optional_env("NEWSNOW_APP_AUTHOR") or "https://github.com/voytas75",
+    donate_url=read_optional_env("NEWSNOW_DONATE_URL") or "https://ko-fi.com/voytas",
     description=(
         "Tkinter desktop dashboard for curated NewsNow headlines with cached summaries "
         "and live configuration controls."
