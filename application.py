@@ -1,6 +1,7 @@
 """Tkinter application controller for NewsNow Neon.
 
 Updates: v0.50 - 2025-01-07 - Moved AINewsApp controller and helpers from the legacy script and introduced service injection.
+Updates: v0.51 - 2025-10-29 - Wired application metadata import after relocating legacy launcher.
 """
 
 from __future__ import annotations
@@ -56,6 +57,7 @@ from .settings_store import load_settings, save_settings
 from .summaries import configure_litellm_debug
 from .ui import AppInfoWindow, KeywordHeatmapWindow, NewsTicker, RedisStatsWindow, SummaryWindow
 from .utils import parse_iso8601_utc as _parse_iso8601_utc
+from .main import APP_METADATA
 
 logger = logging.getLogger(__name__)
 
