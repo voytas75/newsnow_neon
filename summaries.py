@@ -2,6 +2,7 @@
 
 Updates: v0.50 - 2025-01-07 - Moved summarisation adapters and LiteLLM executor management from the legacy script.
 Updates: v0.51 - 2025-10-29 - Honoured provider/API defaults so Azure and other backends configure automatically.
+Updates: v0.51.2 - 2025-10-29 - Forced LiteLLM logger levels to track the UI debug toggle so DEBUG noise stops leaking.
 Updates: v0.51.1 - 2025-10-29 - Removed unsupported LiteLLM kwargs when targeting Azure deployments.
 """
 
@@ -38,6 +39,14 @@ def shutdown_executor() -> None:
 
 
 def configure_litellm_debug(enabled: bool) -> None:
+    logger_level = logging.DEBUG if enabled else logging.INFO
+    for logger_name in ("LiteLLM", "litellm"):
+        llm_logger = logging.getLogger(logger_name)
+        # Ensure LiteLLM honours the requested verbosity regardless of its internals.
+        llm_logger.setLevel(logger_level)
+        for handler in llm_logger.handlers:
+            handler.setLevel(logger_level)
+
     if litellm is None:
         return
     try:
