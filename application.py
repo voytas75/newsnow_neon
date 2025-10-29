@@ -12,6 +12,7 @@ import re
 import tkinter as tk
 from collections import deque
 from datetime import datetime, timedelta, timezone, tzinfo
+from dataclasses import replace
 from tkinter import colorchooser, font, messagebox
 from typing import Any, Callable, Dict, FrozenSet, Iterable, List, Mapping, Optional, Sequence, Set, Tuple
 import threading
@@ -54,6 +55,7 @@ from .cache import get_redis_client
 from .settings_store import load_settings, save_settings
 from .summaries import configure_litellm_debug
 from .ui import AppInfoWindow, KeywordHeatmapWindow, NewsTicker, RedisStatsWindow, SummaryWindow
+from .utils import parse_iso8601_utc as _parse_iso8601_utc
 
 logger = logging.getLogger(__name__)
 
