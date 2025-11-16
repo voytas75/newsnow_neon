@@ -88,8 +88,8 @@ if __package__ in {None, ""}:
     if str(_PARENT) not in sys.path:
         sys.path.insert(0, str(_PARENT))
 
-from newsnow_neon_app.application import AINewsApp, configure_app_services
-from newsnow_neon_app.cache import (
+from newsnow_neon.application import AINewsApp, configure_app_services
+from newsnow_neon.cache import (
     clear_cached_headlines,
     collect_redis_statistics,
     get_cached_article_summary,
@@ -99,16 +99,16 @@ from newsnow_neon_app.cache import (
     persist_headlines_with_ticker,
     store_cached_article_summary,
 )
-from newsnow_neon_app.config import (
+from newsnow_neon.config import (
     REQUEST_SELECTORS,
     SECTION_CUTOFF_TAGS,
     SECTION_CUTOFF_TOKENS,
     SECTIONS,
     USER_AGENT,
 )
-from newsnow_neon_app.http_client import get_http_session, set_retry_statuses
-from newsnow_neon_app.main import APP_METADATA, APP_VERSION
-from newsnow_neon_app.models import (
+from newsnow_neon.http_client import get_http_session, set_retry_statuses
+from newsnow_neon.main import APP_METADATA, APP_VERSION
+from newsnow_neon.models import (
     ArticleContent,
     Headline,
     HistoricalSnapshot,
@@ -116,12 +116,12 @@ from newsnow_neon_app.models import (
     RedisStatistics,
     SummaryResolution,
 )
-from newsnow_neon_app.utils import (
+from newsnow_neon.utils import (
     compute_deadline_timeout as _compute_deadline_timeout,
     isoformat_epoch as _isoformat_epoch,
     parse_iso8601_utc as _parse_iso8601_utc,
 )
-from newsnow_neon_app.summaries import summarize_article
+from newsnow_neon.summaries import summarize_article
 
 try:
     from dotenv import load_dotenv as _load_dotenv  # type: ignore
@@ -3221,6 +3221,6 @@ configure_app_services(
 
 
 if __name__ == "__main__":
-    from newsnow_neon_app.main import main as _run_app_main
+    from newsnow_neon.main import main as _run_app_main
 
     _run_app_main()

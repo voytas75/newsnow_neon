@@ -3,7 +3,7 @@
 NewsNow Neon is a Tkinter desktop dashboard that surfaces curated NewsNow
 headlines, enriched with cached summaries and live configuration controls. It is
 part of a wider experiments workspace but can be run on its own via
-`scripts/newsnow_neon_app/legacy_app.py`.
+`scripts/newsnow_neon/legacy_app.py`.
 
 ## Feature Highlights
 
@@ -43,7 +43,7 @@ part of a wider experiments workspace but can be run on its own via
 ## Running the App
 
 ```bash
-python scripts/newsnow_neon_app/legacy_app.py
+python scripts/newsnow_neon/legacy_app.py
 ```
 
 Ensure dependencies from `pyproject.toml`/`requirements.txt` are installed. The
@@ -78,7 +78,7 @@ environment variables there.
 - Tests are organised under `tests/` (none exist for the Tk app yet – consider
   adding integration tests with `pytest` + `pytest-tkinter`).
 - Whenever you change user-visible behaviour, update both this README and the
-  change log in `scripts/newsnow_neon_app/legacy_app.py` (see the `Updates:`
+  change log in `scripts/newsnow_neon/legacy_app.py` (see the `Updates:`
   section at the top of the module).
 
 ## Troubleshooting

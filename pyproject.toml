@@ -5,12 +5,12 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "newsnow-neon"
 version = "0.1.0"
-description = "A desktop news‑ticker and summarization app (Neon edition)."
+description = "A desktop news-ticker and summarization app (Neon edition)."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE" }
 authors = [
-  { name = "Your Name", email = "you@example.com" }
+  { name = "voytas75", email = "you@example.com" }
 ]
 keywords = ["news", "desktop", "ticker", "summaries"]
 
@@ -28,8 +28,8 @@ dev = [
   "pytest>=8.0",
 ]
 
-[project.scripts]
-newsnow-neon = "newsnow_neon.__main__:_run"
+#[project.scripts]
+#newsnow-neon = "__main__:_run"
 
 [tool.black]
 line-length = 88
@@ -46,4 +46,4 @@ strict = true
 
 [tool.setuptools.packages.find]
 where = ["."]
-exclude = ["tests*", "previous_versions*"]
+
