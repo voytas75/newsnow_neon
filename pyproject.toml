@@ -28,6 +28,9 @@ dev = [
   "pytest>=8.0",
 ]
 
+[project.scripts]
+newsnow-neon = "newsnow_neon.__main__:_run"
+
 [tool.black]
 line-length = 88
 target-version = ["py310"]
@@ -44,4 +47,3 @@ strict = true
 [tool.setuptools.packages.find]
 where = ["."]
 exclude = ["tests*", "previous_versions*"]
-
