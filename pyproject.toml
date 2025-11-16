@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=67", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "newsnow-neon"
+version = "0.1.0"
+description = "A desktop news‑ticker and summarization app (Neon edition)."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [
+  { name = "Your Name", email = "you@example.com" }
+]
+keywords = ["news", "desktop", "ticker", "summaries"]
+
+# Runtime dependencies discovered from import analysis
+dependencies = [
+  "requests>=2.31",
+  "beautifulsoup4>=4.12",
+]
+
+[project.optional-dependencies]
+dev = [
+  "black>=24.0.0",
+  "ruff>=0.4.0",
+  "mypy>=1.8",
+  "pytest>=8.0",
+]
+
+[tool.black]
+line-length = 88
+target-version = ["py310"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+lint.select = ["E", "F", "I", "B", "UP", "D", "N", "C90"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+exclude = ["tests*", "previous_versions*"]
+
