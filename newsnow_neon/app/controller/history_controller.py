@@ -4,7 +4,7 @@ Updates: v0.52 - 2025-11-18 - Minimal wrappers for history workflows.
 """
 from __future__ import annotations
 from typing import Optional
-from ..models import HistoricalSnapshot  # type: ignore
+from ...models import HistoricalSnapshot  # type: ignore
 
 
 class HistoryController:

@@ -127,17 +127,17 @@ from .app.actions import (
     extract_keyword_for_mute as _extract_keyword_for_mute_fn,
     derive_source_term as _derive_source_term_fn,
 )
-# Controllers and renderer imports
-from .app.controller.refresh_controller import RefreshController
-from .app.controller.auto_refresh_controller import AutoRefreshController
-from .app.controller.background_watch_controller import BackgroundWatchController
-from .app.controller.history_controller import HistoryController
-from .app.controller.selection_controller import SelectionController
-from .app.controller.exclusions_controller import ExclusionsController
-from .app.controller.settings_controller import SettingsController
-from .app.controller.redis_controller import RedisController
-from .app.controller.highlight_controller import HighlightController
-from .app.renderers.list_renderer import ListRenderer
+# Controllers and renderer imports (removed duplicate to reduce noise)
+# (line preserved intentionally)
+#
+#
+#
+#
+#
+#
+#
+#
+#
 
 
 def _coerce_timezone(name: Optional[str]) -> tuple[str, tzinfo]:
@@ -1902,7 +1902,7 @@ class AINewsApp(tk.Tk):
         self._live_full_ticker_items = []
         self._log_status(f"Fetch failed: {exc}", level=logging.ERROR)
         logger.error("Headline refresh failed: %s", exc)
-        self._update_redis_meter()
+        self.redis_controller.update_redis_meter()
         self._pending_new_headlines = 0
         self._last_reported_pending = 0
         self._background_candidate_keys.clear()

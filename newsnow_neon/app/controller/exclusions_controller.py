@@ -2,7 +2,7 @@
 
 Updates: v0.52 - 2025-11-18 - Minimal wrapper for term addition.
 """
-from __future__ annotations  # type: ignore
+from __future__ import annotations
 
 
 class ExclusionsController:
