@@ -1257,57 +1257,12 @@ class AINewsApp(tk.Tk):
 
 
     def _on_listbox_click(self, event: tk.Event) -> str:
-        try:
-            index = self.listbox.index(f"@{event.x},{event.y}")
-        except tk.TclError:
-            self._clear_listbox_selection()
-            return "break"
-        line: Optional[int] = None
-        for tag in self.listbox.tag_names(index):
-            if tag.startswith("row_"):
-                candidate = self._row_tag_to_line.get(tag)
-                if candidate is not None:
-                    line = candidate
-                    break
-        if line is None:
-            try:
-                line = int(float(index.split(".")[0]))
-            except (ValueError, IndexError):
-                line = None
-        if line is None:
-            self._clear_listbox_selection()
-            return "break"
-        if line not in self._listbox_line_to_headline:
-            for offset in (1, -1, 2, -2, 3, -3):
-                probe = line + offset
-                if probe in self._listbox_line_to_headline:
-                    line = probe
-                    break
-            else:
-                self._clear_listbox_selection()
-                return "break"
-        self._select_listbox_line(line)
-        self.listbox.see(f"{line}.0")
-        self._refresh_mute_button_state()
-        return "break"
+        """Delegated to SelectionController to handle listbox click."""
+        return self.selection_controller.on_click(event)
 
     def _on_listbox_nav(self, delta: int) -> str:
-        if not self._listbox_line_to_headline:
-            return "break"
-        sorted_lines = sorted(self._listbox_line_to_headline.keys())
-        if not sorted_lines:
-            return "break"
-        if self._selected_line is None or self._selected_line not in self._listbox_line_to_headline:
-            line = sorted_lines[0] if delta > 0 else sorted_lines[-1]
-        else:
-            current_index = sorted_lines.index(self._selected_line)
-            new_index = current_index + delta
-            new_index = max(0, min(len(sorted_lines) - 1, new_index))
-            line = sorted_lines[new_index]
-        self._select_listbox_line(line)
-        self.listbox.see(f"{line}.0")
-        self._refresh_mute_button_state()
-        return "break"
+        """Delegated to SelectionController for keyboard navigation."""
+        return self.selection_controller.on_nav(delta)
 
     def _on_listbox_motion(self, event: tk.Event) -> None:
         if not self._listbox_line_to_headline:
