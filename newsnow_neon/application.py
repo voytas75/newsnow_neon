@@ -424,6 +424,8 @@ class AINewsApp(tk.Tk):
         build_options_panel(self)
 
         self.log_frame, self.log_text = build_logs_panel(self)
+        # Initialize logs visibility attribute before applying settings so UI helpers can read it
+        self.log_visible = bool(self.settings.get("log_visible", False))
         ui_append_log_line(self, "Logs:")
 
         self._apply_settings_from_store()
