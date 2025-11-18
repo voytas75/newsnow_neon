@@ -43,7 +43,7 @@ part of a wider experiments workspace but can be run on its own via
 ## Running the App
 
 ```bash
-python scripts/newsnow_neon/legacy_app.py
+python -m newsnow_neon
 ```
 
 Ensure dependencies from `pyproject.toml`/`requirements.txt` are installed. The
