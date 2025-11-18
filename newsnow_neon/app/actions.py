@@ -9,7 +9,7 @@ import re
 from typing import Optional
 from urllib.parse import urlparse
 
-from ...models import Headline
+from ..models import Headline
 
 _MUTE_STOPWORDS: set[str] = {
     "the",

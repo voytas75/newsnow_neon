@@ -8,8 +8,8 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import List, Optional, Sequence, Tuple
 
-from ...models import Headline
-from ...utils import parse_iso8601_utc
+from ..models import Headline
+from ..utils import parse_iso8601_utc
 
 
 def group_headlines_by_age(

@@ -8,7 +8,7 @@ from __future__ import annotations
 import re
 from typing import Any, List, Sequence, Set
 
-from ...models import Headline
+from ..models import Headline
 
 
 def filter_headlines(
