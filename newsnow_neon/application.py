@@ -59,7 +59,11 @@ from .models import (
 from .cache import get_redis_client
 from .settings_store import load_settings, save_settings
 from .summaries import configure_litellm_debug
-from .ui import AppInfoWindow, KeywordHeatmapWindow, NewsTicker, RedisStatsWindow, SummaryWindow
+from .ui.widgets.news_ticker import NewsTicker
+from .ui.windows.summary_window import SummaryWindow
+from .ui.windows.keyword_heatmap_window import KeywordHeatmapWindow
+from .ui.windows.redis_stats_window import RedisStatsWindow
+from .ui.windows.app_info_window import AppInfoWindow
 from .utils import parse_iso8601_utc as _parse_iso8601_utc
 from .main import APP_METADATA
 
