@@ -1,9 +1,15 @@
 # NewsNow Neon Desktop
 
 NewsNow Neon is a Tkinter desktop dashboard that surfaces curated NewsNow
-headlines, enriched with cached summaries and live configuration controls. It is
-part of a wider experiments workspace but can be run on its own via
-`scripts/newsnow_neon/legacy_app.py`.
+headlines, enriched with cached summaries and live configuration controls.
+It is packaged as a Python module and can be launched via:
+
+```bash
+python -m newsnow_neon
+```
+
+This aligns with [__main__._run()](newsnow_neon/__main__.py:17) and the entry
+wiring in [main.main()](newsnow_neon/main.py:35).
 
 ## Feature Highlights
 
@@ -46,9 +52,34 @@ part of a wider experiments workspace but can be run on its own via
 python -m newsnow_neon
 ```
 
-Ensure dependencies from `pyproject.toml`/`requirements.txt` are installed. The
-module auto-loads a `.env` file (if `python-dotenv` is available) so you can set
-environment variables there.
+## Installation
+
+- Requires Python 3.10+.
+
+- Editable dev install (linters, mypy, pytest included):
+```bash
+pip install -e .[dev]
+```
+
+- Minimal runtime install:
+```bash
+pip install .
+```
+
+- Optional extras:
+```bash
+# Redis cache via [REDIS_URL](newsnow_neon/config.py:86)
+pip install .[redis]
+
+# LiteLLM-based summaries
+pip install .[llm]
+
+# Auto-load .env (see [dotenv load](newsnow_neon/config.py:19))
+pip install .[dotenv]
+```
+
+The module auto-loads a `.env` file when `python-dotenv` is installed; see
+[config.py](newsnow_neon/config.py:19).
 
 ## Optional Environment Variables
 
@@ -58,13 +89,15 @@ environment variables there.
 | `NEWS_TICKER_TIMEOUT` | Legacy ticker LLM timeout; kept for backwards compatibility (min 3, default 8). |
 | `NEWS_CACHE_KEY` / `NEWS_CACHE_TTL` | Redis key name and TTL (defaults: `ainews:headlines:v1`, 900s). |
 | `NEWS_HISTORY_PREFIX` / `NEWS_HISTORY_TTL` | Redis prefix and TTL for historical snapshots (defaults: `news`, 86400s). |
-| `REDIS_URL` | Enables Redis caching when set (e.g. `redis://localhost:6379/0`). |
-| `NEWS_APP_SETTINGS` | Custom path for the persisted settings JSON. |
-| `NEWS_SUMMARY_MODEL` / `NEWS_SUMMARY_PROVIDER` / `NEWS_SUMMARY_API_*` | Override the LiteLLM model/provider/base/key used exclusively for article summaries. Secrets are masked in startup logs. |
+| `REDIS_URL` | Enables Redis caching when set (e.g. `redis://localhost:6379/0`). See [REDIS_URL](newsnow_neon/config.py:86). |
+| `NEWS_APP_SETTINGS` | Custom path for the persisted settings JSON; overrides [SETTINGS_PATH](newsnow_neon/config.py:200). |
+| `NEWS_HIGHLIGHT_KEYWORDS` | Custom highlight rules in the format `keyword:#HEX; term2:#HEX`. Parsed by [parse_highlight_keywords()](newsnow_neon/highlight.py:75). |
+| `NEWS_SUMMARY_MODEL` / `NEWS_SUMMARY_PROVIDER` / `NEWS_SUMMARY_API_*` | Override the LiteLLM model/provider/base/key used exclusively for article summaries. |
 | `NEWS_SUMMARY_AZURE_*` | Azure-specific overrides for summaries (deployment, API version, AD token). |
-| `LITELLM_MODEL` / `LITELLM_PROVIDER` / `LITELLM_API_BASE` / `LITELLM_API_KEY` | Default LiteLLM configuration when summary-specific overrides are absent (e.g. set `LITELLM_PROVIDER=azure` with related Azure credentials). |
-| `AZURE_OPENAI_*` | Generic Azure OpenAI deployment/API/key overrides shared across LiteLLM calls. |
-| `LOCALAPPDATA` | Must be set on non-Windows systems so the app can locate its settings directory. |
+| `LITELLM_MODEL` / `LITELLM_PROVIDER` / `LITELLM_API_BASE` / `LITELLM_API_KEY` | Default LiteLLM configuration when summary-specific overrides are absent. |
+| `AZURE_OPENAI_*` | Generic Azure OpenAI deployment/API/key overrides shared across LiteLLM calls (API base may be `AZURE_OPENAI_API_BASE` or `AZURE_OPENAI_ENDPOINT`). |
+| `XDG_CONFIG_HOME` | Linux/macOS: overrides the base config directory (defaults to `~/.config` on Linux, `~/Library/Application Support` on macOS). |
+| `LOCALAPPDATA` | Windows-only: used to locate the settings directory. Ignored on Linux/macOS. |
 | `NEWSNOW_APP_AUTHOR` | Overrides the author string surfaced by the Info dialog (defaults to `https://github.com/voytas75`). |
 | `NEWSNOW_DONATE_URL` | URL opened from the Info dialog “Support” link (defaults to `https://ko-fi.com/voytas`). |
 
@@ -72,14 +105,42 @@ environment variables there.
 > name ends in `KEY`, `TOKEN`, `SECRET`, or `PASSWORD` (as well as known Azure
 > variants) when printing the startup configuration report.
 
-## Development Notes
+## Settings storage
 
-- Code style follows `black` and `ruff`; type hints target `mypy --strict`.
-- Tests are organised under `tests/` (none exist for the Tk app yet – consider
-  adding integration tests with `pytest` + `pytest-tkinter`).
+- Default settings file location depends on OS (resolved by
+  [SETTINGS_PATH](newsnow_neon/config.py:200)):
+  - Windows: `%LOCALAPPDATA%/NewsNowNeon/ainews_settings.json`
+  - macOS: `~/Library/Application Support/NewsNowNeon/ainews_settings.json`
+  - Linux: `~/.config/NewsNowNeon/ainews_settings.json`
+- Override the location with `NEWS_APP_SETTINGS`.
+- Resolution logic uses `LOCALAPPDATA`/`XDG_CONFIG_HOME` as shown in
+  [config.py](newsnow_neon/config.py:176).
+
+## Development
+
+```bash
+# one‑liner dev setup (formatters, linters, tests)
+pip install -e .[dev]
+
+# formatting & static analysis
+black .
+ruff check .
+mypy newsnow_neon
+
+# run the desktop app
+python -m newsnow_neon
+
+# execute test suite
+pytest -q          # add -vv for verbose output
+```
+
+Entrypoint wiring is defined in [__main__._run()](newsnow_neon/__main__.py:17)
+which calls [main.main()](newsnow_neon/main.py:35). The presence of this wrapper
+is validated in [tests/test_main_metadata.py](tests/test_main_metadata.py:49).
+
 - Whenever you change user-visible behaviour, update both this README and the
-  change log in `scripts/newsnow_neon/legacy_app.py` (see the `Updates:`
-  section at the top of the module).
+  change log in [newsnow_neon/legacy_app.py](newsnow_neon/legacy_app.py)
+  (see the `Updates:` section near the top of that module).
 
 ## Troubleshooting
 
@@ -93,3 +154,29 @@ environment variables there.
 - **Auto refresh timing** – Use the “Auto Refresh” checkbox and interval spinbox
   to tweak how often headlines update (minimum 1 minute) and watch the
   countdown for the next update.
+
+## Quick Start
+
+```bash
+# Install with developer tooling
+pip install -e .[dev]
+
+# Example environment variables
+export NEWS_SUMMARY_MODEL=gpt-4.1
+export NEWS_TICKER_TIMEOUT=15
+# Optional Redis cache
+# export REDIS_URL=redis://localhost:6379/0
+
+# Run the desktop app
+python -m newsnow_neon
+```
+
+Notes:
+- If [python-dotenv](pyproject.toml) is installed, a `.env` file will be
+  auto-loaded during startup (see [newsnow_neon/config.py](newsnow_neon/config.py:19)).
+- Settings are persisted at
+  [SETTINGS_PATH](newsnow_neon/config.py:200). Override with `NEWS_APP_SETTINGS`.
+
+## License
+
+See [LICENSE](LICENSE).
