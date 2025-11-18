@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "newsnow-neon"
-version = "0.1.1"
+version = "0.1.2"
 description = "A desktop news-ticker and summarization app (Neon edition)."
 readme = "README.md"
 requires-python = ">=3.10"
