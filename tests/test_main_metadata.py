@@ -38,7 +38,7 @@ def test_app_metadata_basic_fields() -> None:
 
 def test_app_version_constant() -> None:
     """APP_VERSION should be a simple semantic string without the 'v' prefix."""
-    assert APP_VERSION == "0.49"
+    assert APP_VERSION == "0.52"
 
 
 def test_main_callable_without_invocation() -> None:

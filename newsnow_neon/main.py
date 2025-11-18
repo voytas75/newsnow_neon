@@ -19,7 +19,7 @@ from .models import AppMetadata
 
 logger = logging.getLogger(__name__)
 
-APP_VERSION = "0.49"
+APP_VERSION = "0.52"
 APP_METADATA = AppMetadata(
     name="NewsNow Neon",
     version=f"v{APP_VERSION}",
