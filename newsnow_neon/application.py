@@ -85,6 +85,13 @@ from .app.controller.auto_refresh_controller import AutoRefreshController
 from .app.controller.background_watch_controller import (
     BackgroundWatchController,
 )
+from .app.controller.history_controller import HistoryController
+from .app.controller.selection_controller import SelectionController
+from .app.controller.exclusions_controller import ExclusionsController
+from .app.controller.settings_controller import SettingsController
+from .app.controller.redis_controller import RedisController
+from .app.controller.highlight_controller import HighlightController
+from .app.views.action_bar import build_action_bar
 
 # Modularized helpers
 from .app.filtering import (
@@ -217,6 +224,12 @@ class AINewsApp(tk.Tk):
         self.refresh_controller = RefreshController(self)
         self.auto_refresh_controller = AutoRefreshController(self)
         self.background_watch_controller = BackgroundWatchController(self)
+        self.history_controller = HistoryController(self)
+        self.selection_controller = SelectionController(self)
+        self.exclusions_controller = ExclusionsController(self)
+        self.settings_controller = SettingsController(self)
+        self.redis_controller = RedisController(self)
+        self.highlight_controller = HighlightController(self)
 
         self.log_handler = TkQueueHandler(self._handle_log_record)
         self.log_handler.setFormatter(
@@ -402,20 +415,20 @@ class AINewsApp(tk.Tk):
             highlightthickness=0,
         )
         self.exclude_entry.pack(side="left", padx=(6, 6))
-        self.exclude_entry.bind("<Return>", self._apply_exclusion_terms)
-        self.exclude_entry.bind("<FocusOut>", self._apply_exclusion_terms)
+        self.exclude_entry.bind("<Return>", self.exclusions_controller.apply_exclusion_terms)
+        self.exclude_entry.bind("<FocusOut>", self.exclusions_controller.apply_exclusion_terms)
 
         apply_exclude_btn = tk.Button(
             search_frame,
             text="Apply",
-            command=self._apply_exclusion_terms,
+            command=self.exclusions_controller.apply_exclusion_terms,
         )
         apply_exclude_btn.pack(side="left")
 
         clear_exclude_btn = tk.Button(
             search_frame,
             text="Clear",
-            command=self._clear_exclusion_terms,
+            command=self.exclusions_controller.clear_exclusion_terms,
         )
         clear_exclude_btn.pack(side="left", padx=(6, 0))
 
@@ -470,73 +483,16 @@ class AINewsApp(tk.Tk):
 
         self._listbox_color_tags: Dict[str, str] = {}
         self._listbox_tooltip = HoverTooltip(self.listbox, wraplength=520)
-        self.listbox.bind("<Button-1>", self._on_listbox_click)
-        self.listbox.bind("<Double-Button-1>", self.open_selected_headline)
-        self.listbox.bind("<Return>", self.open_selected_headline)
-        self.listbox.bind("<Up>", lambda event: self._on_listbox_nav(-1))
-        self.listbox.bind("<Down>", lambda event: self._on_listbox_nav(1))
-        self.listbox.bind("<Motion>", self._on_listbox_motion)
-        self.listbox.bind("<Leave>", self._on_listbox_leave)
+        self.listbox.bind("<Button-1>", self.selection_controller.on_click)
+        self.listbox.bind("<Double-Button-1>", self.selection_controller.open_selected)
+        self.listbox.bind("<Return>", self.selection_controller.open_selected)
+        self.listbox.bind("<Up>", lambda event: self.selection_controller.on_nav(-1))
+        self.listbox.bind("<Down>", lambda event: self.selection_controller.on_nav(1))
+        self.listbox.bind("<Motion>", self.selection_controller.on_motion)
+        self.listbox.bind("<Leave>", self.selection_controller.on_leave)
         self.listbox.bind("<Key>", lambda _event: "break")
 
-        action_bar = tk.Frame(self, bg="black")
-        action_bar.pack(fill="x", padx=10, pady=(0, 10))
-        self.action_bar = action_bar
-
-        self.options_toggle_btn = tk.Button(
-            action_bar,
-            text="Show Options",
-            command=self._toggle_options_panel,
-        )
-        self.options_toggle_btn.pack(side="left")
-
-        self.action_refresh_btn = tk.Button(
-            action_bar,
-            text="Refresh",
-            command=lambda: self.refresh_headlines(force_refresh=True),
-        )
-        self.action_refresh_btn.pack(side="left", padx=(10, 0))
-
-        right_action_cluster = tk.Frame(action_bar, bg="black")
-        right_action_cluster.pack(side="right")
-
-        self.status_summary_var = tk.StringVar(value="")
-        self.status_summary_label = tk.Label(
-            right_action_cluster,
-            textvariable=self.status_summary_var,
-            bg="black",
-            fg="#89CFF0",
-            font=("Segoe UI", 10, "italic"),
-        )
-        self.status_summary_label.pack(side="right", padx=(10, 0))
-        self.status_summary_label.pack_forget()
-
-        self.exit_btn = tk.Button(
-            right_action_cluster, text="Exit", command=self._on_close
-        )
-        self.exit_btn.pack(side="right", padx=(10, 0))
-
-        self.info_btn = tk.Button(
-            right_action_cluster, text="Info", command=self._show_info_window
-        )
-        self.info_btn.pack(side="right", padx=(10, 0))
-
-        # One-click mute actions for selected headline.
-        self.mute_keyword_btn = tk.Button(
-            right_action_cluster,
-            text="Mute Keyword",
-            command=self._mute_selected_keyword,
-            state=tk.DISABLED,
-        )
-        self.mute_keyword_btn.pack(side="right", padx=(10, 0))
-
-        self.mute_source_btn = tk.Button(
-            right_action_cluster,
-            text="Mute Source",
-            command=self._mute_selected_source,
-            state=tk.DISABLED,
-        )
-        self.mute_source_btn.pack(side="right", padx=(10, 0))
+        build_action_bar(self)
 
         self.options_container = tk.Frame(self, bg="black")
         self.options_container.pack(fill="x", padx=10, pady=(0, 10))
@@ -552,14 +508,14 @@ class AINewsApp(tk.Tk):
         refresh_btn.pack(side="left")
 
         self.clear_cache_btn = tk.Button(
-            controls, text="Clear Cache", command=self.clear_cache
+            controls, text="Clear Cache", command=self.redis_controller.clear_cache
         )
         self.clear_cache_btn.pack(side="left", padx=10)
 
         self.redis_stats_btn = tk.Button(
             controls,
             text="Redis Stats",
-            command=self._open_redis_stats,
+            command=self.redis_controller.open_redis_stats,
             state=tk.NORMAL if REDIS_URL else tk.DISABLED,
         )
         self.redis_stats_btn.pack(side="left", padx=10)
@@ -568,11 +524,11 @@ class AINewsApp(tk.Tk):
         self.heatmap_btn = tk.Button(
             controls,
             text="Keyword Heatmap",
-            command=self.open_heatmap,
+            command=self.highlight_controller.open_heatmap,
             state=heatmap_state,
         )
         self.heatmap_btn.pack(side="left", padx=10)
-        self._update_heatmap_button_state()
+        self.highlight_controller.update_heatmap_button_state()
 
         self.toggle_logs_btn = tk.Button(
             controls, text="Show Logs", command=self._toggle_logs
@@ -607,12 +563,12 @@ class AINewsApp(tk.Tk):
             highlightthickness=0,
         )
         self.highlight_entry.pack(side="left", padx=(10, 6), fill="x", expand=True)
-        self.highlight_entry.bind("<Return>", self._on_highlight_keywords_return)
+        self.highlight_entry.bind("<Return>", self.highlight_controller.on_highlight_keywords_return)
 
         highlight_apply_btn = tk.Button(
             highlight_frame,
             text="Apply",
-            command=self._on_highlight_keywords_button,
+            command=self.highlight_controller.on_highlight_keywords_button,
         )
         highlight_apply_btn.pack(side="left")
 
@@ -654,7 +610,7 @@ class AINewsApp(tk.Tk):
         self.exit_history_btn = tk.Button(
             history_controls,
             text="Return to Live",
-            command=self._exit_history_mode,
+            command=self.history_controller.exit_history_mode,
             state=tk.DISABLED,
         )
         self.exit_history_btn.pack(side="right")
@@ -662,7 +618,7 @@ class AINewsApp(tk.Tk):
         self.history_reload_btn = tk.Button(
             history_controls,
             text="Refresh History",
-            command=self._request_history_refresh,
+            command=self.history_controller.request_history_refresh,
             state=tk.NORMAL if REDIS_URL else tk.DISABLED,
         )
         self.history_reload_btn.pack(side="right", padx=(0, 10))
@@ -691,11 +647,11 @@ class AINewsApp(tk.Tk):
             "History snapshots appear here when Redis history caching is enabled.",
         )
         self.history_listbox.configure(state=tk.DISABLED)
-        self.history_listbox.bind("<<ListboxSelect>>", self._on_history_select)
-        self.history_listbox.bind("<Double-Button-1>", self._activate_history_selection)
-        self.history_listbox.bind("<Return>", self._activate_history_selection)
+        self.history_listbox.bind("<<ListboxSelect>>", self.history_controller.on_history_select)
+        self.history_listbox.bind("<Double-Button-1>", self.history_controller.activate_history_selection)
+        self.history_listbox.bind("<Return>", self.history_controller.activate_history_selection)
         self.history_listbox_hover = HoverTooltip(self.history_listbox, wraplength=360)
-        self.history_listbox.bind("<Motion>", self._on_history_motion)
+        self.history_listbox.bind("<Motion>", self.history_controller.on_history_motion)
         self.history_listbox.bind("<Leave>", lambda _event: self.history_listbox_hover.hide())
 
         settings_frame = tk.Frame(self.options_container, name="options", bg="black")
@@ -764,13 +720,13 @@ class AINewsApp(tk.Tk):
         bg_button = tk.Button(
             color_row,
             text="Background Color…",
-            command=lambda: self._choose_color("background"),
+            command=lambda: self.settings_controller.choose_color("background"),
         )
         bg_button.pack(side="left")
         fg_button = tk.Button(
             color_row,
             text="Text Color…",
-            command=lambda: self._choose_color("text"),
+            command=lambda: self.settings_controller.choose_color("text"),
         )
         fg_button.pack(side="left", padx=6)
 
@@ -796,7 +752,7 @@ class AINewsApp(tk.Tk):
             debug_row,
             text="Debug Logs",
             variable=self.debug_var,
-            command=self._toggle_debug_mode,
+            command=self.settings_controller.toggle_debug_mode,
             bg="black",
             fg="lightgray",
             selectcolor="#202020",
@@ -809,7 +765,7 @@ class AINewsApp(tk.Tk):
             debug_row,
             text="LiteLLM Debug",
             variable=self.litellm_debug_var,
-            command=self._toggle_litellm_debug,
+            command=self.settings_controller.toggle_litellm_debug,
             bg="black",
             fg="lightgray",
             selectcolor="#202020",
@@ -825,7 +781,7 @@ class AINewsApp(tk.Tk):
             history_row,
             text="Keep 24h History",
             variable=self.historical_cache_var,
-            command=self._toggle_historical_cache,
+            command=self.settings_controller.toggle_historical_cache,
             bg="black",
             fg="lightgray",
             selectcolor="#202020",
@@ -841,7 +797,7 @@ class AINewsApp(tk.Tk):
             auto_row,
             text="Auto Refresh",
             variable=self.auto_refresh_var,
-            command=self._toggle_auto_refresh,
+            command=self.settings_controller.toggle_auto_refresh,
             bg="black",
             fg="lightgray",
             selectcolor="#202020",
@@ -860,7 +816,7 @@ class AINewsApp(tk.Tk):
             to=180,
             width=4,
             textvariable=self.auto_refresh_minutes_var,
-            command=self._update_auto_refresh_minutes,
+            command=self.settings_controller.update_auto_refresh_minutes,
         )
         self.auto_refresh_spin.pack(side="left")
         self.auto_refresh_spin.bind("<FocusOut>", self._update_auto_refresh_minutes)
@@ -897,7 +853,7 @@ class AINewsApp(tk.Tk):
             watch_row,
             text="Background Watch",
             variable=self.background_watch_var,
-            command=self._toggle_background_watch,
+            command=self.settings_controller.toggle_background_watch,
             bg="black",
             fg="lightgray",
             selectcolor="#202020",
@@ -960,7 +916,7 @@ class AINewsApp(tk.Tk):
         self.timezone_menu["menu"].configure(bg="#2f2f2f", fg="white")
         self.timezone_menu.pack(side="left", padx=(6, 0))
         self._refresh_timezone_menu()
-        self.timezone_var.trace_add("write", self._on_timezone_change)
+        self.timezone_var.trace_add("write", self.settings_controller.on_timezone_change)
 
         self.log_visible = False
         self.log_frame = tk.Frame(self, bg="black")
@@ -986,7 +942,7 @@ class AINewsApp(tk.Tk):
         self._log_startup_report()
         self.after(0, self.refresh_headlines)
         self.after(0, self._flush_log_buffer)
-        self.after(0, self._update_redis_meter)
+        self.after(0, self.redis_controller.update_redis_meter)
         current_geometry = self.geometry()
         if current_geometry:
             self._last_geometry = current_geometry
