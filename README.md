@@ -181,7 +181,7 @@ Notes:
 
 See [LICENSE](LICENSE).
 
-## Modularization Update (v0.52 — 2025-11-18)
+## Modularization Update (v0.53 — 2025-11-18)
 
 This release introduces a modular application layer under `newsnow_neon/app/` to improve separation of concerns, testability, and readability while preserving backward compatibility.
 
