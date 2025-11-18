@@ -1853,32 +1853,21 @@ class AINewsApp(tk.Tk):
         headline = self._resolve_selected_headline()
         if headline is None:
             return
-        term: Optional[str] = None
-        url_val = headline.url if isinstance(headline.url, str) else ""
-        if url_val.strip():
-            try:
-                parsed = urlparse(url_val)
-                netloc = parsed.netloc or ""
-                netloc = netloc.split("@")[-1]
-                netloc = netloc.split(":")[0]
-                netloc = netloc.lower()
-                if netloc.startswith("www."):
-                    netloc = netloc[4:]
-                if netloc:
-                    term = netloc
-            except Exception:
-                term = None
-        if term is None:
-            src_val = headline.source if isinstance(headline.source, str) else ""
-            label = src_val.strip()
-            if label:
-                term = label
+
+        # Use modular helper to derive source term (domain first, then label).
+        try:
+            term = _derive_source_term_fn(headline)
+        except Exception:
+            term = None
+
         if not term:
             messagebox.showinfo(
                 "Mute Source", "Unable to derive a source to mute for this item."
             )
             return
-        self._add_exclusion_term(term, show_feedback=True)
+
+        # Defer the exclusion update to idle to avoid blocking the UI callback.
+        self.after_idle(lambda: self._add_exclusion_term(term, show_feedback=True))
 
     def _mute_selected_keyword(self) -> None:
         """Mute a heuristic keyword derived from the selected headline's title."""
