@@ -1,9 +1,3 @@
-"""Service injection and proxy layer for NewsNow Neon app.
-
-Updates: v0.52 - 2025-11-18 - Extracted service bindings from application
-controller.
-"""
-
 from __future__ import annotations
 
 from typing import Any, Callable, List, Optional, Sequence, Tuple
@@ -11,6 +5,7 @@ from typing import Any, Callable, List, Optional, Sequence, Tuple
 from ..models import Headline, HistoricalSnapshot, RedisStatistics
 
 
+# Module-level service implementations injected at app startup.
 _fetch_headlines_impl: Optional[
     Callable[..., Tuple[List[Headline], bool, Optional[str]]]
 ] = None
@@ -34,14 +29,17 @@ def configure_app_services(
     clear_cached_headlines: Callable[[], Tuple[bool, str]],
     load_historical_snapshots: Callable[..., List[HistoricalSnapshot]],
 ) -> None:
-    """Bind concrete service implementations for the application controller.
+    """Configure NewsNow Neon application service implementations.
 
-    This keeps behavior identical to the previous globals while providing a
-    single import location for the controller to call through.
+    This enables late binding for I/O bound services so the UI layer stays
+    decoupled from concrete implementations (useful for testing and swaps).
     """
-    global _fetch_headlines_impl, _build_ticker_text_impl
-    global _resolve_article_summary_impl, _persist_headlines_with_ticker_impl
-    global _collect_redis_statistics_impl, _clear_cached_headlines_impl
+    global _fetch_headlines_impl
+    global _build_ticker_text_impl
+    global _resolve_article_summary_impl
+    global _persist_headlines_with_ticker_impl
+    global _collect_redis_statistics_impl
+    global _clear_cached_headlines_impl
     global _load_historical_snapshots_impl
 
     _fetch_headlines_impl = fetch_headlines
@@ -54,49 +52,49 @@ def configure_app_services(
 
 
 def fetch_headlines(*args: Any, **kwargs: Any) -> Tuple[List[Headline], bool, Optional[str]]:
-    """Proxy to the configured 'fetch_headlines' implementation."""
+    """Fetch headlines tuple (headlines, from_cache, cached_ticker)."""
     if _fetch_headlines_impl is None:
         raise RuntimeError("fetch_headlines service not configured")
     return _fetch_headlines_impl(*args, **kwargs)
 
 
 def build_ticker_text(headlines: Sequence[Headline]) -> str:
-    """Proxy to the configured 'build_ticker_text' implementation."""
+    """Build scroller text for given headlines."""
     if _build_ticker_text_impl is None:
         raise RuntimeError("build_ticker_text service not configured")
     return _build_ticker_text_impl(headlines)
 
 
 def resolve_article_summary(headline: Headline) -> Any:
-    """Proxy to the configured 'resolve_article_summary' implementation."""
+    """Resolve or generate a summary payload for a headline."""
     if _resolve_article_summary_impl is None:
         raise RuntimeError("resolve_article_summary service not configured")
     return _resolve_article_summary_impl(headline)
 
 
 def persist_headlines_with_ticker(*args: Any, **kwargs: Any) -> None:
-    """Proxy to the configured 'persist_headlines_with_ticker' implementation."""
+    """Persist fetched headlines alongside the prepared ticker text."""
     if _persist_headlines_with_ticker_impl is None:
         raise RuntimeError("persist_headlines_with_ticker service not configured")
     _persist_headlines_with_ticker_impl(*args, **kwargs)
 
 
 def collect_redis_statistics() -> RedisStatistics:
-    """Proxy to the configured 'collect_redis_statistics' implementation."""
+    """Collect Redis cache availability and key diagnostics."""
     if _collect_redis_statistics_impl is None:
         raise RuntimeError("collect_redis_statistics service not configured")
     return _collect_redis_statistics_impl()
 
 
 def clear_cached_headlines() -> Tuple[bool, str]:
-    """Proxy to the configured 'clear_cached_headlines' implementation."""
+    """Clear cached headlines; returns (success, message)."""
     if _clear_cached_headlines_impl is None:
         raise RuntimeError("clear_cached_headlines service not configured")
     return _clear_cached_headlines_impl()
 
 
 def load_historical_snapshots(*args: Any, **kwargs: Any) -> List[HistoricalSnapshot]:
-    """Proxy to the configured 'load_historical_snapshots' implementation."""
+    """Load last 24h historical snapshots from the cache backend."""
     if _load_historical_snapshots_impl is None:
         raise RuntimeError("load_historical_snapshots service not configured")
     return _load_historical_snapshots_impl(*args, **kwargs)
