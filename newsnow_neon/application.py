@@ -130,11 +130,11 @@ from .app.actions import (
 from .app.helpers.app_helpers import (
     derive_hover_color,
     profile_name_options,
-    sanitize_env_value,
     build_system_rows,
     format_history_entry,
     format_history_tooltip,
 )
+from .app.helpers.env_helpers import sanitize_env_value
 from .app.ui.ui_helpers import (
     toggle_logs as ui_toggle_logs,
     append_log_line as ui_append_log_line,
@@ -163,6 +163,8 @@ from .app.ui.ui_helpers import (
     clear_headline_list as ui_clear_headline_list,
     clear_listbox_selection as ui_clear_listbox_selection,
     select_listbox_line as ui_select_listbox_line,
+    apply_settings_from_store as ui_apply_settings_from_store,
+    update_handler_level as ui_update_handler_level,
 )
 from .app.ui.history_ui import (
     handle_history_loaded as history_handle_history_loaded,
@@ -1628,16 +1630,7 @@ class AINewsApp(tk.Tk):
 
 
     def _update_handler_level(self) -> None:
-        if bool(self.debug_var.get()):
-            self.log_handler.setLevel(logging.DEBUG)
-            if hasattr(self, "console_handler"):
-                self.console_handler.setLevel(logging.DEBUG)
-            logger.info("Debug logging enabled.")
-        else:
-            self.log_handler.setLevel(logging.INFO)
-            if hasattr(self, "console_handler"):
-                self.console_handler.setLevel(logging.INFO)
-            logger.info("Debug logging disabled; showing INFO and above.")
+        ui_update_handler_level(self)
 
     def _handle_log_record(self, level: int, message: str) -> None:
         ui_handle_log_record(self, level, message)
@@ -1649,137 +1642,7 @@ class AINewsApp(tk.Tk):
         ui_append_log_line(self, message)
 
     def _apply_settings_from_store(self) -> None:
-        highlight_value = self.settings.get("highlight_keywords", "")
-        if not isinstance(highlight_value, str):
-            highlight_value = ""
-        self._update_highlight_keywords_setting(
-            highlight_value,
-            refresh_views=True,
-            persist=False,
-            show_feedback=False,
-        )
-
-        speed = int(self.settings.get("ticker_speed", DEFAULT_SETTINGS["ticker_speed"]))
-        self.ticker_speed_var.set(speed)
-        self.ticker.set_speed(speed)
-        self.settings["ticker_speed"] = speed
-
-        timezone_value = str(self.settings.get("timezone", DEFAULT_TIMEZONE))
-        self._apply_timezone_selection(timezone_value, persist=False)
-
-        profile = self.settings.get(
-            "color_profile", DEFAULT_SETTINGS["color_profile"]
-        )
-        if profile == CUSTOM_PROFILE_NAME:
-            background = self.settings.get(
-                "custom_background", DEFAULT_SETTINGS["custom_background"]
-            )
-            text_color = self.settings.get(
-                "custom_text", DEFAULT_SETTINGS["custom_text"]
-            )
-            COLOR_PROFILES[CUSTOM_PROFILE_NAME] = {
-                "background": background,
-                "text": text_color,
-                "hover": derive_hover_color(text_color),
-            }
-            self.color_profile_var.set(CUSTOM_PROFILE_NAME)
-            self.ticker_bg_var.set(background)
-            self.ticker_fg_var.set(text_color)
-            self.ticker.set_colors(background=background, text=text_color)
-        elif profile in COLOR_PROFILES:
-            self.color_profile_var.set(profile)
-            self._apply_color_profile(profile)
-            profile_colors = COLOR_PROFILES[profile]
-            self.ticker_bg_var.set(profile_colors["background"])
-            self.ticker_fg_var.set(profile_colors["text"])
-        else:
-            self.color_profile_var.set(DEFAULT_COLOR_PROFILE_NAME)
-            self._apply_color_profile(DEFAULT_COLOR_PROFILE_NAME)
-            profile_colors = COLOR_PROFILES[DEFAULT_COLOR_PROFILE_NAME]
-            self.ticker_bg_var.set(profile_colors["background"])
-            self.ticker_fg_var.set(profile_colors["text"])
-
-        desired_log = bool(
-            self.settings.get("log_visible", DEFAULT_SETTINGS["log_visible"])
-        )
-        if desired_log and not self.log_visible:
-            self.log_frame.pack(fill="both", expand=True, padx=10, pady=(0, 10))
-            self.log_visible = True
-            self.toggle_logs_btn.config(text="Hide Logs")
-            self._flush_log_buffer()
-        elif not desired_log and self.log_visible:
-            self.log_frame.pack_forget()
-            self.log_visible = False
-            self.toggle_logs_btn.config(text="Show Logs")
-        debug_enabled = bool(
-            self.settings.get("debug_mode", DEFAULT_SETTINGS["debug_mode"])
-        )
-        self.debug_var.set(debug_enabled)
-        self._update_handler_level()
-        litellm_debug_enabled = bool(
-            self.settings.get("litellm_debug", DEFAULT_SETTINGS["litellm_debug"])
-        )
-        self.litellm_debug_var.set(litellm_debug_enabled)
-        configure_litellm_debug(litellm_debug_enabled)
-        self.settings["litellm_debug"] = litellm_debug_enabled
-        historical_enabled = bool(
-            self.settings.get(
-                "historical_cache_enabled",
-                DEFAULT_SETTINGS["historical_cache_enabled"],
-            )
-        )
-        self.historical_cache_var.set(historical_enabled)
-        self.settings["historical_cache_enabled"] = historical_enabled
-        set_historical_cache_enabled(historical_enabled)
-        auto_enabled = bool(
-            self.settings.get(
-                "auto_refresh_enabled", DEFAULT_SETTINGS["auto_refresh_enabled"]
-            )
-        )
-        minutes = max(
-            1,
-            int(
-                self.settings.get(
-                    "auto_refresh_minutes",
-                    DEFAULT_SETTINGS["auto_refresh_minutes"],
-                )
-            ),
-        )
-        self.auto_refresh_var.set(auto_enabled)
-        self.auto_refresh_minutes_var.set(minutes)
-        self.settings["auto_refresh_enabled"] = auto_enabled
-        self.settings["auto_refresh_minutes"] = minutes
-        background_watch_enabled = bool(
-            self.settings.get(
-                "background_watch_enabled",
-                DEFAULT_SETTINGS["background_watch_enabled"],
-            )
-        )
-        self.background_watch_var.set(background_watch_enabled)
-        self.settings["background_watch_enabled"] = background_watch_enabled
-        threshold = self.background_watch_controller.coerce_threshold(
-            self.settings.get(
-                "background_watch_refresh_threshold",
-                DEFAULT_SETTINGS["background_watch_refresh_threshold"],
-            )
-        )
-        self._background_refresh_threshold = threshold
-        self.background_watch_threshold_var.set(threshold)
-        self.settings["background_watch_refresh_threshold"] = threshold
-        if not background_watch_enabled:
-            self._pending_new_headlines = 0
-            self._last_reported_pending = 0
-        self.background_watch_controller.update_label()
-        self._schedule_background_watch(immediate=background_watch_enabled)
-        self.settings["color_profile"] = self.color_profile_var.get()
-        self.settings["log_visible"] = self.log_visible
-        self._refresh_profile_menu()
-        self._set_options_visibility(
-            bool(self.settings.get("options_visible", self._options_visible)),
-            persist=False,
-        )
-        self._refresh_history_controls_state()
-        self._update_status_summary()
+        ui_apply_settings_from_store(self)
 
     def _save_settings(self) -> None:
         if getattr(self, "_loading_settings", False):

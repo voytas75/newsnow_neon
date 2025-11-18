@@ -6,13 +6,22 @@ from __future__ import annotations
 
 import tkinter as tk
 from tkinter import colorchooser
+import logging
 from typing import Optional, Sequence, List
 from datetime import datetime, timezone
 
 from ..timeutils import coerce_timezone as _coerce_timezone_fn
 from ..services import build_ticker_text
+from ...summaries import configure_litellm_debug
 from ..helpers.app_helpers import profile_name_options, derive_hover_color
-from ...config import COLOR_PROFILES, CUSTOM_PROFILE_NAME
+from ...config import (
+    COLOR_PROFILES,
+    CUSTOM_PROFILE_NAME,
+    DEFAULT_SETTINGS,
+    DEFAULT_TIMEZONE,
+    DEFAULT_COLOR_PROFILE_NAME,
+    set_historical_cache_enabled,
+)
 from ...models import Headline, HeadlineTooltipData
 from ...highlight import headline_highlight_color
 
@@ -449,6 +458,168 @@ def select_listbox_line(app: tk.Tk, line: int) -> None:
     app._selected_line = line
 
 
+def update_handler_level(app: tk.Tk) -> None:
+    """Update log handler levels based on debug toggle."""
+    if bool(app.debug_var.get()):
+        app.log_handler.setLevel(logging.DEBUG)
+        if hasattr(app, "console_handler"):
+            app.console_handler.setLevel(logging.DEBUG)
+        logging.getLogger(__name__).info("Debug logging enabled.")
+    else:
+        app.log_handler.setLevel(logging.INFO)
+        if hasattr(app, "console_handler"):
+            app.console_handler.setLevel(logging.INFO)
+        logging.getLogger(__name__).info(
+            "Debug logging disabled; showing INFO and above."
+        )
+
+
+def apply_settings_from_store(app: tk.Tk) -> None:
+    """Apply persisted settings to the UI and controllers."""
+    # Highlight keywords
+    highlight_value = app.settings.get("highlight_keywords", "")
+    if not isinstance(highlight_value, str):
+        highlight_value = ""
+    app._update_highlight_keywords_setting(
+        highlight_value,
+        refresh_views=True,
+        persist=False,
+        show_feedback=False,
+    )
+
+    # Ticker speed
+    speed = int(app.settings.get("ticker_speed", DEFAULT_SETTINGS["ticker_speed"]))
+    app.ticker_speed_var.set(speed)
+    app.ticker.set_speed(speed)
+    app.settings["ticker_speed"] = speed
+
+    # Timezone selection
+    timezone_value = str(app.settings.get("timezone", DEFAULT_TIMEZONE))
+    apply_timezone_selection(app, timezone_value, persist=False)
+
+    # Color profile
+    profile = app.settings.get("color_profile", DEFAULT_SETTINGS["color_profile"])
+    if profile == CUSTOM_PROFILE_NAME:
+        background = app.settings.get(
+            "custom_background", DEFAULT_SETTINGS["custom_background"]
+        )
+        text_color = app.settings.get("custom_text", DEFAULT_SETTINGS["custom_text"])
+        COLOR_PROFILES[CUSTOM_PROFILE_NAME] = {
+            "background": background,
+            "text": text_color,
+            "hover": derive_hover_color(text_color),
+        }
+        app.color_profile_var.set(CUSTOM_PROFILE_NAME)
+        app.ticker_bg_var.set(background)
+        app.ticker_fg_var.set(text_color)
+        app.ticker.set_colors(background=background, text=text_color)
+    elif profile in COLOR_PROFILES:
+        app.color_profile_var.set(profile)
+        apply_color_profile(app, profile)
+        profile_colors = COLOR_PROFILES[profile]
+        app.ticker_bg_var.set(profile_colors["background"])
+        app.ticker_fg_var.set(profile_colors["text"])
+    else:
+        app.color_profile_var.set(DEFAULT_COLOR_PROFILE_NAME)
+        apply_color_profile(app, DEFAULT_COLOR_PROFILE_NAME)
+        profile_colors = COLOR_PROFILES[DEFAULT_COLOR_PROFILE_NAME]
+        app.ticker_bg_var.set(profile_colors["background"])
+        app.ticker_fg_var.set(profile_colors["text"])
+
+    # Logs visibility
+    desired_log = bool(app.settings.get("log_visible", DEFAULT_SETTINGS["log_visible"]))
+    if desired_log and not app.log_visible:
+        app.log_frame.pack(fill="both", expand=True, padx=10, pady=(0, 10))
+        app.log_visible = True
+        app.toggle_logs_btn.config(text="Hide Logs")
+        flush_log_buffer(app)
+    elif not desired_log and app.log_visible:
+        app.log_frame.pack_forget()
+        app.log_visible = False
+        app.toggle_logs_btn.config(text="Show Logs")
+
+    # Debug/logging levels
+    debug_enabled = bool(app.settings.get("debug_mode", DEFAULT_SETTINGS["debug_mode"]))
+    app.debug_var.set(debug_enabled)
+    update_handler_level(app)
+
+    # LiteLLM debug toggle
+    litellm_debug_enabled = bool(
+        app.settings.get("litellm_debug", DEFAULT_SETTINGS["litellm_debug"])
+    )
+    app.litellm_debug_var.set(litellm_debug_enabled)
+    configure_litellm_debug(litellm_debug_enabled)
+    app.settings["litellm_debug"] = litellm_debug_enabled
+
+    # Historical cache
+    historical_enabled = bool(
+        app.settings.get(
+            "historical_cache_enabled",
+            DEFAULT_SETTINGS["historical_cache_enabled"],
+        )
+    )
+    app.historical_cache_var.set(historical_enabled)
+    app.settings["historical_cache_enabled"] = historical_enabled
+    set_historical_cache_enabled(historical_enabled)
+
+    # Auto refresh
+    auto_enabled = bool(
+        app.settings.get(
+            "auto_refresh_enabled", DEFAULT_SETTINGS["auto_refresh_enabled"]
+        )
+    )
+    minutes = max(
+        1,
+        int(
+            app.settings.get(
+                "auto_refresh_minutes",
+                DEFAULT_SETTINGS["auto_refresh_minutes"],
+            )
+        ),
+    )
+    app.auto_refresh_var.set(auto_enabled)
+    app.auto_refresh_minutes_var.set(minutes)
+    app.settings["auto_refresh_enabled"] = auto_enabled
+    app.settings["auto_refresh_minutes"] = minutes
+
+    # Background watch
+    background_watch_enabled = bool(
+        app.settings.get(
+            "background_watch_enabled",
+            DEFAULT_SETTINGS["background_watch_enabled"],
+        )
+    )
+    app.background_watch_var.set(background_watch_enabled)
+    app.settings["background_watch_enabled"] = background_watch_enabled
+
+    threshold = app.background_watch_controller.coerce_threshold(
+        app.settings.get(
+            "background_watch_refresh_threshold",
+            DEFAULT_SETTINGS["background_watch_refresh_threshold"],
+        )
+    )
+    app._background_refresh_threshold = threshold
+    app.background_watch_threshold_var.set(threshold)
+    app.settings["background_watch_refresh_threshold"] = threshold
+    if not background_watch_enabled:
+        app._pending_new_headlines = 0
+        app._last_reported_pending = 0
+    app.background_watch_controller.update_label()
+    app._schedule_background_watch(immediate=background_watch_enabled)
+
+    # Persist and refresh UI menus/panels
+    app.settings["color_profile"] = app.color_profile_var.get()
+    app.settings["log_visible"] = app.log_visible
+    refresh_profile_menu(app)
+    set_options_visibility(
+        app,
+        bool(app.settings.get("options_visible", app._options_visible)),
+        persist=False,
+    )
+    app._refresh_history_controls_state()
+    update_status_summary(app)
+
+
 __all__ = [
     "toggle_logs",
     "append_log_line",
@@ -476,4 +647,6 @@ __all__ = [
     "clear_headline_list",
     "clear_listbox_selection",
     "select_listbox_line",
+    "apply_settings_from_store",
+    "update_handler_level",
 ]

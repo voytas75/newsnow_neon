@@ -16,9 +16,6 @@ from ..config import COLOR_PROFILES, CUSTOM_PROFILE_NAME
 from ..models import HistoricalSnapshot
 
 
-_SENSITIVE_ENV_PATTERN = re.compile(
-    r"(KEY|TOKEN|SECRET|PASSWORD|API_KEY)$", re.IGNORECASE
-)
 
 
 def derive_hover_color(hex_color: str, factor: float = 0.25) -> str:
@@ -58,24 +55,6 @@ def profile_name_options() -> List[str]:
     return names
 
 
-def sanitize_env_value(name: str, value: Optional[str]) -> Optional[str]:
-    """Mask sensitive environment variable values for safe logging.
-
-    Returns:
-        - "***" for sensitive keys with a value
-        - None for empty values
-        - Truncated long values (> 80 chars)
-        - Original value otherwise
-    """
-    if value is None:
-        return None
-    if _SENSITIVE_ENV_PATTERN.search(name) or any(
-        token in name for token in ("KEY", "TOKEN", "SECRET", "PASSWORD")
-    ):
-        return "***" if value else None
-    if len(value) > 80:
-        return value[:77] + "…"
-    return value
 
 
 def build_system_rows(settings_path: Path | str) -> List[Tuple[str, str]]:
