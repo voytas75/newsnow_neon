@@ -173,12 +173,23 @@ def register_color_profile(
 # --- Settings persistence ----------------------------------------------------------------------
 
 _LOCAL_APPDATA = os.getenv("LOCALAPPDATA")
-if not _LOCAL_APPDATA:
-    raise RuntimeError(
-        "LOCALAPPDATA environment variable must be set so the NewsNow Neon app can store its settings."
-    )
+_XDG_CONFIG_HOME = os.getenv("XDG_CONFIG_HOME")
 
-_DEFAULT_SETTINGS_FILE = Path(_LOCAL_APPDATA) / "NewsNowNeon" / "ainews_settings.json"
+if os.name == "nt":
+    base_dir = (
+        Path(_LOCAL_APPDATA)
+        if _LOCAL_APPDATA
+        else Path.home() / "AppData" / "Local"
+    )
+    _DEFAULT_SETTINGS_FILE = base_dir / "NewsNowNeon" / "ainews_settings.json"
+else:
+    base_dir = (
+        Path(_XDG_CONFIG_HOME)
+        if _XDG_CONFIG_HOME
+        else Path.home() / ".config"
+    )
+    _DEFAULT_SETTINGS_FILE = base_dir / "NewsNowNeon" / "ainews_settings.json"
+
 SETTINGS_PATH = Path(os.getenv("NEWS_APP_SETTINGS", str(_DEFAULT_SETTINGS_FILE)))
 
 DEFAULT_SETTINGS: Dict[str, Any] = {
