@@ -10,7 +10,7 @@ from datetime import datetime, tzinfo, timezone
 
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from ..config import DEFAULT_TIMEZONE, fixed_zone_fallback
+from ...config import DEFAULT_TIMEZONE, fixed_zone_fallback
 
 logger = logging.getLogger(__name__)
 

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Callable, List, Optional, Sequence, Tuple
 
-from ..models import Headline, HistoricalSnapshot, RedisStatistics
+from ...models import Headline, HistoricalSnapshot, RedisStatistics
 
 
 # Module-level service implementations injected at app startup.

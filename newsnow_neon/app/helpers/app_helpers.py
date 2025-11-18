@@ -12,8 +12,8 @@ from pathlib import Path
 from typing import List, Optional, Tuple
 from datetime import datetime, tzinfo
 
-from ..config import COLOR_PROFILES, CUSTOM_PROFILE_NAME
-from ..models import HistoricalSnapshot
+from ...config import COLOR_PROFILES, CUSTOM_PROFILE_NAME
+from ...models import HistoricalSnapshot
 
 
 
