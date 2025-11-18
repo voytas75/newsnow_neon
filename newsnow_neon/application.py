@@ -545,14 +545,8 @@ class AINewsApp(tk.Tk):
         self._refresh_history_controls_state()
 
     def refresh_headlines(self, force_refresh: bool = False) -> None:
-        if self._history_mode:
-            self._exit_history_mode(trigger_refresh=False)
-        self._log_status("Fetching AI headlines…")
-        self.next_refresh_var.set("Refreshing…")
-        self._update_status_summary()
-        threading.Thread(
-            target=self._refresh_worker, args=(force_refresh,), daemon=True
-        ).start()
+        """Delegate refresh to RefreshController."""
+        self.refresh_controller.refresh(force_refresh=force_refresh)
 
     def _refresh_worker(self, force_refresh: bool) -> None:
         logger.info("Refreshing headlines (force_refresh=%s)", force_refresh)
