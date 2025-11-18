@@ -1538,10 +1538,43 @@ class AINewsApp(tk.Tk):
         self.auto_refresh_controller.cancel_pending_jobs()
 
     def _schedule_auto_refresh(self) -> None:
-        self.auto_refresh_controller.schedule()
+        """Schedule the next auto refresh based on current settings."""
+        # Cancel any existing pending jobs before scheduling anew
+        self._cancel_pending_refresh_jobs()
+
+        # If auto refresh is disabled, clear next refresh time and label
+        if not bool(self.auto_refresh_var.get()):
+            self._next_refresh_time = None
+            try:
+                self.next_refresh_var.set("Next refresh: paused")
+            except Exception:
+                pass
+            return
+
+        delay_ms = self._auto_refresh_interval_ms()
+        self._schedule_auto_refresh_with_delay(delay_ms)
 
     def _schedule_auto_refresh_with_delay(self, delay_ms: int) -> None:
-        self.auto_refresh_controller.schedule_with_delay(delay_ms)
+        """Schedule auto refresh with an explicit delay in milliseconds."""
+        # Cancel any existing pending jobs before scheduling anew
+        self._cancel_pending_refresh_jobs()
+
+        if delay_ms <= 0:
+            delay_ms = 1  # guard against non-positive delays
+
+        # Compute next refresh timestamp for countdown display
+        try:
+            self._next_refresh_time = datetime.now() + timedelta(milliseconds=delay_ms)
+        except Exception:
+            self._next_refresh_time = None
+
+        # Schedule the trigger and start/restart countdown
+        try:
+            self._refresh_job = self.after(delay_ms, self._auto_refresh_trigger)
+        except Exception:
+            self._refresh_job = None
+
+        self._start_refresh_countdown()
 
     def _auto_refresh_trigger(self) -> None:
         self._refresh_job = None
