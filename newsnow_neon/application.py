@@ -95,102 +95,49 @@ _MUTE_STOPWORDS: Set[str] = {
     "breaking",
 }
 
-_fetch_headlines_impl: Optional[Callable[..., Tuple[List[Headline], bool, Optional[str]]]] = None
-_build_ticker_text_impl: Optional[Callable[[Sequence[Headline]], str]] = None
-_resolve_article_summary_impl: Optional[Callable[[Headline], Any]] = None
-_persist_headlines_with_ticker_impl: Optional[Callable[..., None]] = None
-_collect_redis_statistics_impl: Optional[Callable[[], RedisStatistics]] = None
-_clear_cached_headlines_impl: Optional[Callable[[], Tuple[bool, str]]] = None
-_load_historical_snapshots_impl: Optional[Callable[..., List[HistoricalSnapshot]]] = None
+from .app.services import (
+    configure_app_services,
+    fetch_headlines,
+    build_ticker_text,
+    resolve_article_summary,
+    persist_headlines_with_ticker,
+    collect_redis_statistics,
+    clear_cached_headlines,
+    load_historical_snapshots,
+)
 
-
-def configure_app_services(
-    *,
-    fetch_headlines: Callable[..., Tuple[List[Headline], bool, Optional[str]]],
-    build_ticker_text: Callable[[Sequence[Headline]], str],
-    resolve_article_summary: Callable[[Headline], Any],
-    persist_headlines_with_ticker: Callable[..., None],
-    collect_redis_statistics: Callable[[], RedisStatistics],
-    clear_cached_headlines: Callable[[], Tuple[bool, str]],
-    load_historical_snapshots: Callable[..., List[HistoricalSnapshot]],
-) -> None:
-    global _fetch_headlines_impl, _build_ticker_text_impl, _resolve_article_summary_impl
-    global _persist_headlines_with_ticker_impl, _collect_redis_statistics_impl
-    global _clear_cached_headlines_impl, _load_historical_snapshots_impl
-    _fetch_headlines_impl = fetch_headlines
-    _build_ticker_text_impl = build_ticker_text
-    _resolve_article_summary_impl = resolve_article_summary
-    _persist_headlines_with_ticker_impl = persist_headlines_with_ticker
-    _collect_redis_statistics_impl = collect_redis_statistics
-    _clear_cached_headlines_impl = clear_cached_headlines
-    _load_historical_snapshots_impl = load_historical_snapshots
-
-
-def fetch_headlines(*args: Any, **kwargs: Any) -> Tuple[List[Headline], bool, Optional[str]]:
-    if _fetch_headlines_impl is None:
-        raise RuntimeError("fetch_headlines service not configured")
-    return _fetch_headlines_impl(*args, **kwargs)
-
-
-def build_ticker_text(headlines: Sequence[Headline]) -> str:
-    if _build_ticker_text_impl is None:
-        raise RuntimeError("build_ticker_text service not configured")
-    return _build_ticker_text_impl(headlines)
-
-
-def resolve_article_summary(headline: Headline) -> Any:
-    if _resolve_article_summary_impl is None:
-        raise RuntimeError("resolve_article_summary service not configured")
-    return _resolve_article_summary_impl(headline)
-
-
-def persist_headlines_with_ticker(*args: Any, **kwargs: Any) -> None:
-    if _persist_headlines_with_ticker_impl is None:
-        raise RuntimeError("persist_headlines_with_ticker service not configured")
-    _persist_headlines_with_ticker_impl(*args, **kwargs)
-
-
-def collect_redis_statistics() -> RedisStatistics:
-    if _collect_redis_statistics_impl is None:
-        raise RuntimeError("collect_redis_statistics service not configured")
-    return _collect_redis_statistics_impl()
-
-
-def clear_cached_headlines() -> Tuple[bool, str]:
-    if _clear_cached_headlines_impl is None:
-        raise RuntimeError("clear_cached_headlines service not configured")
-    return _clear_cached_headlines_impl()
-
-
-def load_historical_snapshots(*args: Any, **kwargs: Any) -> List[HistoricalSnapshot]:
-    if _load_historical_snapshots_impl is None:
-        raise RuntimeError("load_historical_snapshots service not configured")
-    return _load_historical_snapshots_impl(*args, **kwargs)
+# Modularized helpers
+from .app.filtering import (
+    filter_headlines as _filter_headlines_fn,
+    normalise_exclusion_terms as _normalise_exclusion_terms_fn,
+    split_exclusion_string as _split_exclusion_string_fn,
+)
+from .app.timeutils import (
+    coerce_timezone as _coerce_timezone_fn,
+    format_localized_timestamp as _format_localized_timestamp_fn,
+)
+from .app.rendering import (
+    group_headlines_by_age as _group_headlines_by_age_fn,
+    headline_age_minutes as _headline_age_minutes_fn,
+    resolve_age_bucket as _resolve_age_bucket_fn,
+    format_relative_age as _format_relative_age_fn,
+    compose_metadata_parts as _compose_metadata_parts_fn,
+)
+from .app.actions import (
+    extract_keyword_for_mute as _extract_keyword_for_mute_fn,
+    derive_source_term as _derive_source_term_fn,
+)
 
 
 def _coerce_timezone(name: Optional[str]) -> tuple[str, tzinfo]:
-    candidate = (name or "").strip() or DEFAULT_TIMEZONE
-    try:
-        zone = ZoneInfo(candidate)
-        return candidate, zone
-    except ZoneInfoNotFoundError:
-        fallback = fixed_zone_fallback(candidate)
-        if fallback is not None:
-            logger.warning(
-                "Unknown timezone '%s'; using fixed offset fallback.",
-                candidate or "<empty>",
-            )
-            return candidate, fallback
-        logger.warning(
-            "Unknown timezone '%s'; falling back to UTC.",
-            candidate or "<empty>",
-        )
-        return "UTC", timezone.utc
+    """Delegate to modular timeutils.coerce_timezone."""
+    normalized, zone = _coerce_timezone_fn(name)
+    return normalized, zone
 
 
 def _format_localized_timestamp(timestamp: datetime, zone: tzinfo) -> tuple[str, str]:
-    local_dt = timestamp.astimezone(zone)
-    return local_dt.strftime("%H:%M %Z"), local_dt.isoformat()
+    """Delegate to modular timeutils.format_localized_timestamp."""
+    return _format_localized_timestamp_fn(timestamp, zone)
 
 
 def _profile_name_options() -> List[str]:
@@ -1283,72 +1230,22 @@ class AINewsApp(tk.Tk):
     def _group_headlines_by_age(
         self, entries: Sequence[tuple[int, Headline]]
     ) -> List[tuple[str, List[tuple[int, Headline, Optional[float]]]]]:
-        buckets: Dict[str, List[tuple[int, Headline, Optional[float]]]] = {
-            "Last 5 minutes": [],
-            "Last 10 minutes": [],
-            "Last 30 minutes": [],
-            "Older than 1 h": [],
-        }
-        now_utc = datetime.now(timezone.utc)
-        for original_idx, headline in entries:
-            age_minutes = self._headline_age_minutes(headline, now_utc)
-            bucket = self._resolve_age_bucket(age_minutes)
-            buckets[bucket].append((original_idx, headline, age_minutes))
-        ordered_labels = [
-            "Last 5 minutes",
-            "Last 10 minutes",
-            "Last 30 minutes",
-            "Older than 1 h",
-        ]
-        grouped_list: List[tuple[str, List[tuple[int, Headline, Optional[float]]]]] = []
-        for label in ordered_labels:
-            group_items = buckets.get(label, [])
-            if group_items:
-                grouped_list.append((label, group_items))
-        return grouped_list
+        """Delegate to modular rendering.group_headlines_by_age."""
+        return _group_headlines_by_age_fn(entries)
 
     def _headline_age_minutes(
         self, headline: Headline, now_utc: datetime
     ) -> Optional[float]:
-        published_utc = _parse_iso8601_utc(headline.published_at)
-        if published_utc is None:
-            return None
-        delta = now_utc - published_utc
-        minutes = delta.total_seconds() / 60.0
-        if minutes < 0:
-            return 0.0
-        return minutes
+        """Delegate to modular rendering.headline_age_minutes."""
+        return _headline_age_minutes_fn(headline, now_utc)
 
     def _resolve_age_bucket(self, age_minutes: Optional[float]) -> str:
-        if age_minutes is None:
-            return "Older than 1 h"
-        if age_minutes <= 5:
-            return "Last 5 minutes"
-        if age_minutes <= 10:
-            return "Last 10 minutes"
-        if age_minutes <= 30:
-            return "Last 30 minutes"
-        if age_minutes > 60:
-            return "Older than 1 h"
-        return "Older than 1 h"
+        """Delegate to modular rendering.resolve_age_bucket."""
+        return _resolve_age_bucket_fn(age_minutes)
 
     def _format_relative_age(self, age_minutes: Optional[float]) -> Optional[str]:
-        if age_minutes is None:
-            return None
-        total_minutes = int(age_minutes)
-        if total_minutes < 1:
-            return "Just now"
-        if total_minutes < 60:
-            return f"{total_minutes}m ago"
-        hours, minutes = divmod(total_minutes, 60)
-        if hours < 24:
-            if minutes:
-                return f"{hours}h {minutes}m ago"
-            return f"{hours}h ago"
-        days, remaining_hours = divmod(hours, 24)
-        if remaining_hours:
-            return f"{days}d {remaining_hours}h ago"
-        return f"{days}d ago"
+        """Delegate to modular rendering.format_relative_age."""
+        return _format_relative_age_fn(age_minutes)
 
     def _compose_metadata_parts(
         self, localized: Headline, relative_label: Optional[str]

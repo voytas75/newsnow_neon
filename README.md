@@ -180,3 +180,95 @@ Notes:
 ## License
 
 See [LICENSE](LICENSE).
+
+## Modularization Update (v0.52 — 2025-11-18)
+
+This release introduces a modular application layer under `newsnow_neon/app/` to improve separation of concerns, testability, and readability while preserving backward compatibility.
+
+### What changed
+
+- New app package:
+  - `newsnow_neon/app/services.py` — service injection and proxies (central binding point).
+  - `newsnow_neon/app/filtering.py` — pure headline filtering and exclusion normalization.
+  - `newsnow_neon/app/timeutils.py` — timezone coercion and localized timestamp formatting.
+  - `newsnow_neon/app/rendering.py` — age grouping, relative-age labels, metadata composition.
+  - `newsnow_neon/app/actions.py` — “mute keyword/source” derivation helpers.
+  - `newsnow_neon/app/controller.py` — modular wrapper re-exporting the legacy controller.
+- Existing controller remains in `newsnow_neon/application.py` for compatibility; it now uses the modular service layer for bindings.
+- No breaking API changes; legacy imports continue to work.
+
+### Recommended imports (new modular path)
+
+```python
+from newsnow_neon.app.services import configure_app_services  # service binding
+from newsnow_neon.app.controller import AINewsApp            # controller
+
+# Bind your services (examples shown as placeholders):
+configure_app_services(
+    fetch_headlines=...,
+    build_ticker_text=...,
+    resolve_article_summary=...,
+    persist_headlines_with_ticker=...,
+    collect_redis_statistics=...,
+    clear_cached_headlines=...,
+    load_historical_snapshots=...,
+)
+
+# Launch the UI
+AINewsApp().mainloop()
+```
+
+### Backward compatibility (legacy path remains valid)
+
+```python
+# Still supported:
+from newsnow_neon.application import configure_app_services, AINewsApp
+```
+
+### Public function signatures (current state)
+
+```python
+# Bindings
+def configure_app_services(
+    *,
+    fetch_headlines,
+    build_ticker_text,
+    resolve_article_summary,
+    persist_headlines_with_ticker,
+    collect_redis_statistics,
+    clear_cached_headlines,
+    load_historical_snapshots,
+) -> None: ...
+
+# Proxies (identical behavior as before)
+def fetch_headlines(*args, **kwargs) -> tuple[list[Headline], bool, str | None]: ...
+def build_ticker_text(headlines: Sequence[Headline]) -> str: ...
+def resolve_article_summary(headline: Headline) -> object: ...
+def persist_headlines_with_ticker(*args, **kwargs) -> None: ...
+def collect_redis_statistics() -> RedisStatistics: ...
+def clear_cached_headlines() -> tuple[bool, str]: ...
+def load_historical_snapshots(*args, **kwargs) -> list[HistoricalSnapshot]: ...
+```
+
+Types referenced:
+- `Headline`, `HistoricalSnapshot`, `RedisStatistics` from `newsnow_neon/models.py`.
+- `Sequence` from `typing`.
+
+### Architecture overview
+
+- Controller:
+  - `newsnow_neon/app/controller.py` re-exports the legacy `AINewsApp` as the modular import path.
+  - `newsnow_neon/application.py` remains the concrete controller implementation and UI wiring.
+- Services:
+  - `newsnow_neon/app/services.py` is the sole binding/proxy location. This keeps injection explicit and discoverable.
+- Pure helpers:
+  - `filtering`, `rendering`, `timeutils`, `actions` contain focused, UI-agnostic logic for easy unit testing.
+- Views:
+  - `newsnow_neon/ui.py` remains unchanged and continues to host `NewsTicker`, `KeywordHeatmapWindow`, `AppInfoWindow`, `RedisStatsWindow`, `SummaryWindow`.
+
+### Migration notes for developers
+
+- New code should import the controller from `newsnow_neon.app.controller` and bind services via `newsnow_neon.app.services`.
+- Existing code importing from `newsnow_neon.application` continues to work; gradual migration is optional.
+- When adding new pure logic, prefer placing it in the relevant module under `newsnow_neon/app/` to keep the controller thin.
+- The modularization follows KISS/DRY and prepares the codebase for targeted unit tests of pure functions.
