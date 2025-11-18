@@ -468,76 +468,7 @@ class AINewsApp(tk.Tk):
         )
         highlight_hint.pack(fill="x", padx=4, pady=(0, 5))
 
-        history_controls = tk.Frame(self.options_container, bg="black")
-        history_controls.pack(fill="x", pady=(0, 5))
-
-        history_label = tk.Label(
-            history_controls,
-            text="History (last 24h):",
-            bg="black",
-            fg="lightgray",
-            font=("Segoe UI", 10, "bold"),
-        )
-        history_label.pack(side="left")
-
-        self.history_status_var = tk.StringVar(
-            value="History mode off — refresh to browse cached snapshots."
-        )
-        history_status_label = tk.Label(
-            history_controls,
-            textvariable=self.history_status_var,
-            bg="black",
-            fg="#89CFF0",
-            font=("Segoe UI", 10, "italic"),
-        )
-        history_status_label.pack(side="left", padx=(10, 0))
-
-        self.exit_history_btn = tk.Button(
-            history_controls,
-            text="Return to Live",
-            command=self.history_controller.exit_history_mode,
-            state=tk.DISABLED,
-        )
-        self.exit_history_btn.pack(side="right")
-
-        self.history_reload_btn = tk.Button(
-            history_controls,
-            text="Refresh History",
-            command=self.history_controller.request_history_refresh,
-            state=tk.NORMAL if REDIS_URL else tk.DISABLED,
-        )
-        self.history_reload_btn.pack(side="right", padx=(0, 10))
-
-        history_list_frame = tk.Frame(self.options_container, bg="black")
-        history_list_frame.pack(fill="x", pady=(0, 10))
-
-        history_scrollbar = tk.Scrollbar(history_list_frame)
-        history_scrollbar.pack(side="right", fill="y")
-
-        self.history_listbox = tk.Listbox(
-            history_list_frame,
-            height=6,
-            font=("Segoe UI", 11),
-            activestyle="none",
-            bg="#101010",
-            fg="white",
-            selectbackground="#3A506B",
-            selectforeground="white",
-            yscrollcommand=history_scrollbar.set,
-        )
-        self.history_listbox.pack(fill="both", expand=False)
-        history_scrollbar.config(command=self.history_listbox.yview)
-        self.history_listbox.insert(
-            tk.END,
-            "History snapshots appear here when Redis history caching is enabled.",
-        )
-        self.history_listbox.configure(state=tk.DISABLED)
-        self.history_listbox.bind("<<ListboxSelect>>", self.history_controller.on_history_select)
-        self.history_listbox.bind("<Double-Button-1>", self.history_controller.activate_history_selection)
-        self.history_listbox.bind("<Return>", self.history_controller.activate_history_selection)
-        self.history_listbox_hover = HoverTooltip(self.history_listbox, wraplength=360)
-        self.history_listbox.bind("<Motion>", self.history_controller.on_history_motion)
-        self.history_listbox.bind("<Leave>", lambda _event: self.history_listbox_hover.hide())
+        history_controls = build_history_panel(self)
 
         settings_frame = tk.Frame(self.options_container, name="options", bg="black")
         settings_frame.pack(fill="x", pady=(0, 10))
