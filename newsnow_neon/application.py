@@ -98,6 +98,8 @@ from .app.views.ticker_panel import build_ticker_panel
 from .app.views.list_view import build_list_view
 from .app.views.logs_panel import build_logs_panel
 from .app.views.options_panel import build_options_panel
+from .app.views.highlight_panel import build_highlight_panel
+from .app.views.controls_panel import build_controls_panel
 
 # Modularized helpers
 from .app.filtering import (
@@ -383,53 +385,7 @@ class AINewsApp(tk.Tk):
         self.options_container = tk.Frame(self, bg="black")
         self.options_container.pack(fill="x", padx=10, pady=(0, 10))
 
-        controls = tk.Frame(self.options_container, bg="black")
-        controls.pack(fill="x", pady=(0, 10))
-
-        refresh_btn = tk.Button(
-            controls,
-            text="Refresh Headlines",
-            command=lambda: self.refresh_headlines(force_refresh=True),
-        )
-        refresh_btn.pack(side="left")
-
-        self.clear_cache_btn = tk.Button(
-            controls, text="Clear Cache", command=self.redis_controller.clear_cache
-        )
-        self.clear_cache_btn.pack(side="left", padx=10)
-
-        self.redis_stats_btn = tk.Button(
-            controls,
-            text="Redis Stats",
-            command=self.redis_controller.open_redis_stats,
-            state=tk.NORMAL if REDIS_URL else tk.DISABLED,
-        )
-        self.redis_stats_btn.pack(side="left", padx=10)
-
-        heatmap_state = tk.NORMAL if has_highlight_pattern() else tk.DISABLED
-        self.heatmap_btn = tk.Button(
-            controls,
-            text="Keyword Heatmap",
-            command=self.highlight_controller.open_heatmap,
-            state=heatmap_state,
-        )
-        self.heatmap_btn.pack(side="left", padx=10)
-        self.highlight_controller.update_heatmap_button_state()
-
-        self.toggle_logs_btn = tk.Button(
-            controls, text="Show Logs", command=self._toggle_logs
-        )
-        self.toggle_logs_btn.pack(side="left", padx=10)
-
-        self.redis_meter_var = tk.StringVar(value="Redis: checking…")
-        self.redis_meter_label = tk.Label(
-            controls,
-            textvariable=self.redis_meter_var,
-            bg="black",
-            fg="#FFB347",
-            anchor="w",
-        )
-        self.redis_meter_label.pack(side="left", padx=10)
+        build_controls_panel(self)
 
         highlight_frame = tk.Frame(self.options_container, bg="black")
         highlight_frame.pack(fill="x", pady=(0, 10))
@@ -473,22 +429,7 @@ class AINewsApp(tk.Tk):
 
         build_options_panel(self)
 
-        self.log_visible = False
-        self.log_frame = tk.Frame(self, bg="black")
-        log_scroll = tk.Scrollbar(self.log_frame)
-        log_scroll.pack(side="right", fill="y")
-        self.log_text = tk.Text(
-            self.log_frame,
-            wrap="word",
-            bg="#101010",
-            fg="lightgray",
-            height=10,
-            state="disabled",
-            yscrollcommand=log_scroll.set,
-            font=("Consolas", 11),
-        )
-        self.log_text.pack(fill="both", expand=True)
-        log_scroll.config(command=self.log_text.yview)
+        self.log_frame, self.log_text = build_logs_panel(self)
         self._append_log_line("Logs:")
 
         self._apply_settings_from_store()
