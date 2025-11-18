@@ -441,74 +441,13 @@ class AINewsApp(tk.Tk):
         self.redis_controller.update_redis_meter()
 
     def _open_redis_stats(self) -> None:
-        if self._loading_redis_stats:
-            return
-        if not REDIS_URL:
-            messagebox.showinfo(
-                "Redis Statistics",
-                "Redis caching is disabled. Set REDIS_URL to enable diagnostics.",
-            )
-            return
-        self._loading_redis_stats = True
-        try:
-            self.redis_stats_btn.config(state=tk.DISABLED)
-        except Exception:
-            logger.debug("Unable to disable Redis stats button before loading.")
-        threading.Thread(
-            target=self._load_redis_stats_worker,
-            daemon=True,
-        ).start()
+        self.redis_controller.open_stats()
 
     def _load_redis_stats_worker(self) -> None:
-        try:
-            stats = collect_redis_statistics()
-        except Exception as exc:  # pragma: no cover - defensive guard
-            logger.exception("Failed to collect Redis statistics.")
-            stats = RedisStatistics(
-                cache_configured=bool(REDIS_URL),
-                available=False,
-                cache_key=CACHE_KEY,
-                key_present=False,
-                warnings=[f"Unable to collect Redis statistics: {exc}"],
-                error=str(exc),
-            )
-        self.after(0, lambda: self._handle_redis_stats_ready(stats))
+        self.redis_controller.load_stats_worker()
 
     def _handle_redis_stats_ready(self, stats: RedisStatistics) -> None:
-        self._loading_redis_stats = False
-        button_state = tk.NORMAL if REDIS_URL else tk.DISABLED
-        try:
-            self.redis_stats_btn.config(state=button_state)
-        except Exception:
-            logger.debug("Unable to restore Redis stats button state.")
-
-        if not stats.available:
-            detail = "\n".join(stats.warnings) if stats.warnings else "Redis cache unavailable."
-            messagebox.showwarning("Redis Statistics", detail)
-            return
-
-        if self._redis_stats_window and self._redis_stats_window.winfo_exists():
-            self._redis_stats_window.update_stats(stats)
-            self._redis_stats_window.deiconify()
-            self._redis_stats_window.lift()
-            self._redis_stats_window.focus_force()
-            return
-
-        try:
-            self._redis_stats_window = RedisStatsWindow(
-                self,
-                stats,
-                timezone_name=self._timezone_name,
-                timezone_obj=self._timezone,
-                on_close=self._on_redis_stats_closed,
-            )
-        except Exception:
-            self._redis_stats_window = None
-            logger.exception("Failed to open Redis stats window.")
-            messagebox.showerror(
-                "Redis Statistics",
-                "Unable to open Redis statistics window. See logs for details.",
-            )
+        self.redis_controller.handle_stats_ready(stats)
 
     def _on_redis_stats_closed(self) -> None:
         self._redis_stats_window = None
