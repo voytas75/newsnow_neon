@@ -11,6 +11,7 @@ Updates: v0.50 - 2025-01-07 - Added background watch scheduling defaults for the
 from __future__ import annotations
 
 import os
+import sys
 from datetime import timedelta, timezone, tzinfo
 from pathlib import Path
 from typing import Any, Dict, Mapping, Optional
@@ -181,14 +182,20 @@ if os.name == "nt":
         if _LOCAL_APPDATA
         else Path.home() / "AppData" / "Local"
     )
-    _DEFAULT_SETTINGS_FILE = base_dir / "NewsNowNeon" / "ainews_settings.json"
+elif sys.platform == "darwin":
+    base_dir = (
+        Path(_XDG_CONFIG_HOME)
+        if _XDG_CONFIG_HOME
+        else Path.home() / "Library" / "Application Support"
+    )
 else:
     base_dir = (
         Path(_XDG_CONFIG_HOME)
         if _XDG_CONFIG_HOME
         else Path.home() / ".config"
     )
-    _DEFAULT_SETTINGS_FILE = base_dir / "NewsNowNeon" / "ainews_settings.json"
+
+_DEFAULT_SETTINGS_FILE = base_dir / "NewsNowNeon" / "ainews_settings.json"
 
 SETTINGS_PATH = Path(os.getenv("NEWS_APP_SETTINGS", str(_DEFAULT_SETTINGS_FILE)))
 
