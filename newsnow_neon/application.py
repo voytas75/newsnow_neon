@@ -92,6 +92,12 @@ from .app.controller.settings_controller import SettingsController
 from .app.controller.redis_controller import RedisController
 from .app.controller.highlight_controller import HighlightController
 from .app.views.action_bar import build_action_bar
+from .app.views.search_filters import build_search_filters
+from .app.views.history_panel import build_history_panel
+from .app.views.history_panel import build_history_panel
+from .app.views.history_panel import build_history_panel
+from .app.views.history_panel import build_history_panel
+from .app.views.history_panel import build_history_panel
 
 # Modularized helpers
 from .app.filtering import (
@@ -370,67 +376,8 @@ class AINewsApp(tk.Tk):
         )
         self.full_ticker.pack(fill="x", padx=10, pady=(0, 10))
 
-        search_frame = tk.Frame(self, bg="black")
+        search_frame = build_search_filters(self)
         search_frame.pack(fill="x", padx=10, pady=(0, 5))
-
-        search_label = tk.Label(search_frame, text="Search:", bg="black", fg="lightgray")
-        search_label.pack(side="left")
-
-        self.search_entry = tk.Entry(
-            search_frame,
-            textvariable=self.search_var,
-            width=32,
-            highlightthickness=0,
-        )
-        self.search_entry.pack(side="left", padx=(6, 6))
-        self.search_entry.bind("<Escape>", self._clear_search)
-
-        clear_button = tk.Button(search_frame, text="Clear", command=self._clear_search)
-        clear_button.pack(side="left")
-
-        filter_label = tk.Label(search_frame, text="Section:", bg="black", fg="lightgray")
-        filter_label.pack(side="left", padx=(12, 4))
-
-        self.section_filter_menu = tk.OptionMenu(
-            search_frame,
-            self.section_filter_var,
-            *self._section_filter_options,
-        )
-        self.section_filter_menu.configure(bg="#2f2f2f", fg="white", highlightthickness=0)
-        self.section_filter_menu["menu"].configure(bg="#2f2f2f", fg="white")
-        self.section_filter_menu.pack(side="left")
-
-        exclude_label = tk.Label(
-            search_frame,
-            text="Exclude terms:",
-            bg="black",
-            fg="lightgray",
-        )
-        exclude_label.pack(side="left", padx=(12, 4))
-
-        self.exclude_entry = tk.Entry(
-            search_frame,
-            textvariable=self.exclude_terms_var,
-            width=40,
-            highlightthickness=0,
-        )
-        self.exclude_entry.pack(side="left", padx=(6, 6))
-        self.exclude_entry.bind("<Return>", self.exclusions_controller.apply_exclusion_terms)
-        self.exclude_entry.bind("<FocusOut>", self.exclusions_controller.apply_exclusion_terms)
-
-        apply_exclude_btn = tk.Button(
-            search_frame,
-            text="Apply",
-            command=self.exclusions_controller.apply_exclusion_terms,
-        )
-        apply_exclude_btn.pack(side="left")
-
-        clear_exclude_btn = tk.Button(
-            search_frame,
-            text="Clear",
-            command=self.exclusions_controller.clear_exclusion_terms,
-        )
-        clear_exclude_btn.pack(side="left", padx=(6, 0))
 
         list_frame = tk.Frame(self, name="list", bg="black")
         list_frame.pack(fill="both", expand=True, padx=10, pady=5)
