@@ -67,33 +67,6 @@ logger = logging.getLogger(__name__)
 
 _SENSITIVE_ENV_PATTERN = re.compile(r"(KEY|TOKEN|SECRET|PASSWORD|API_KEY)$", re.IGNORECASE)
 
-# Common stopwords ignored when auto-deriving a mute keyword from a title.
-_MUTE_STOPWORDS: Set[str] = {
-    "the",
-    "and",
-    "for",
-    "with",
-    "into",
-    "from",
-    "about",
-    "this",
-    "that",
-    "will",
-    "have",
-    "has",
-    "are",
-    "was",
-    "were",
-    "to",
-    "of",
-    "in",
-    "on",
-    "by",
-    "as",
-    "at",
-    "new",
-    "breaking",
-}
 
 from .app.services import (
     configure_app_services,
@@ -1250,24 +1223,8 @@ class AINewsApp(tk.Tk):
     def _compose_metadata_parts(
         self, localized: Headline, relative_label: Optional[str]
     ) -> List[str]:
-        parts: List[str] = []
-        if isinstance(localized.source, str):
-            source_label = localized.source.strip()
-            if source_label:
-                parts.append(source_label)
-        if isinstance(localized.published_time, str):
-            published_label = localized.published_time.strip()
-            if published_label:
-                parts.append(published_label)
-        if relative_label:
-            parts.append(relative_label)
-        if parts:
-            return parts
-        if isinstance(localized.section, str):
-            section_label = localized.section.strip()
-            if section_label:
-                return [section_label]
-        return ["Unknown source"]
+        """Delegate to modular rendering.compose_metadata_parts."""
+        return _compose_metadata_parts_fn(localized, relative_label)
 
     def _clear_headline_list(self) -> None:
         self.listbox.configure(state="normal")
