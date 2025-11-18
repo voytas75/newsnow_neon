@@ -299,7 +299,7 @@ class AINewsApp(tk.Tk):
         if self._timezone_name not in self._timezone_options:
             self._timezone_options.insert(0, self._timezone_name)
 
-        exclusions_list, exclusions_set = self._normalise_exclusion_terms(
+        exclusions_list, exclusions_set = self.exclusions_controller.normalise_exclusion_terms(
             self.settings.get("headline_exclusions")
         )
         self.settings["headline_exclusions"] = exclusions_list
@@ -882,58 +882,17 @@ class AINewsApp(tk.Tk):
         self._apply_exclusion_filter_to_state(reschedule=False, log_status=log_status)
 
     def _apply_exclusion_terms(self, event: Optional[tk.Event] = None) -> Optional[str]:
-        terms_list, terms_set = self._normalise_exclusion_terms(
-            self.exclude_terms_var.get()
-        )
-        self.exclude_terms_var.set(", ".join(terms_list))
-
-        if terms_set == self._exclusion_terms and terms_list == self.settings.get(
-            "headline_exclusions", []
-        ):
-            if event is not None and getattr(event, "keysym", None) == "Return":
-                return "break"
-            return None
-
-        self._exclusion_terms = terms_set
-        self.settings["headline_exclusions"] = terms_list
-        self._save_settings()
-        self._reapply_exclusion_filters(log_status=True)
-        if event is not None and getattr(event, "keysym", None) == "Return":
-            return "break"
-        return None
+        return self.exclusions_controller.apply_exclusion_terms(event)
 
     def _clear_exclusion_terms(self) -> None:
-        if not self._exclusion_terms and not self.exclude_terms_var.get().strip():
-            return
-        self.exclude_terms_var.set("")
-        self._apply_exclusion_terms()
+        self.exclusions_controller.clear_exclusion_terms()
 
     def _filter_headlines(self, headlines: Sequence[Headline]) -> List[Headline]:
         """Delegate to modular filtering.filter_headlines."""
         return _filter_headlines_fn(headlines, self._exclusion_terms)
 
     def _normalise_exclusion_terms(self, source: Any) -> tuple[List[str], Set[str]]:
-        candidates: List[str] = []
-        if isinstance(source, str):
-            candidates.extend(self._split_exclusion_string(source))
-        elif isinstance(source, Sequence) and not isinstance(source, (str, bytes)):
-            for item in source:
-                if isinstance(item, str):
-                    candidates.extend(self._split_exclusion_string(item))
-
-        unique_terms: List[str] = []
-        seen: Set[str] = set()
-        for candidate in candidates:
-            cleaned = candidate.strip()
-            if not cleaned:
-                continue
-            lowered = cleaned.lower()
-            if lowered in seen:
-                continue
-            unique_terms.append(cleaned)
-            seen.add(lowered)
-
-        return unique_terms, seen
+        return self.exclusions_controller.normalise_exclusion_terms(source)
 
     def _split_exclusion_string(self, text: str) -> List[str]:
         """Split a free-form exclusion string into normalized terms.
