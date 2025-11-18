@@ -94,10 +94,9 @@ from .app.controller.highlight_controller import HighlightController
 from .app.views.action_bar import build_action_bar
 from .app.views.search_filters import build_search_filters
 from .app.views.history_panel import build_history_panel
-from .app.views.history_panel import build_history_panel
-from .app.views.history_panel import build_history_panel
-from .app.views.history_panel import build_history_panel
-from .app.views.history_panel import build_history_panel
+from .app.views.ticker_panel import build_ticker_panel
+from .app.views.list_view import build_list_view
+from .app.views.logs_panel import build_logs_panel
 
 # Modularized helpers
 from .app.filtering import (
@@ -363,73 +362,12 @@ class AINewsApp(tk.Tk):
         self._section_filter_options: List[str] = ["All sections", *initial_sections]
         self._suppress_section_filter_callback = False
 
-        self.ticker = NewsTicker(self, name="neon1")
-        self.ticker.pack(fill="x", padx=10, pady=(10, 5))
-
-        self.full_ticker = NewsTicker(
-            self,
-            speed=1,
-            max_title_length=None,
-            font_spec=("Consolas", 14, "bold"),
-            item_spacing=120,
-            name="neon2",
-        )
-        self.full_ticker.pack(fill="x", padx=10, pady=(0, 10))
+        self.ticker, self.full_ticker = build_ticker_panel(self)
 
         search_frame = build_search_filters(self)
         search_frame.pack(fill="x", padx=10, pady=(0, 5))
 
-        list_frame = tk.Frame(self, name="list", bg="black")
-        list_frame.pack(fill="both", expand=True, padx=10, pady=5)
-
-        scrollbar = tk.Scrollbar(list_frame)
-        scrollbar.pack(side="right", fill="y")
-
-        default_font = font.nametofont("TkDefaultFont")
-        base_family = default_font.actual("family") or "Segoe UI"
-        base_size = max(int(default_font.actual("size")), 12)
-        base_weight = default_font.actual("weight") or "normal"
-        self._listbox_title_font = font.Font(
-            family=base_family,
-            size=base_size,
-            weight=base_weight,
-        )
-        self._listbox_metadata_font = font.Font(
-            family=base_family,
-            size=max(base_size - 2, 8),
-            weight=base_weight,
-            slant="italic",
-        )
-        self._listbox_group_font = font.Font(
-            family=base_family,
-            size=base_size,
-            weight="bold",
-        )
-        self.listbox_default_fg = "#FFFFFF"
-        self._listbox_metadata_fg = "#B0B0B0"
-
-        self.listbox = tk.Text(
-            list_frame,
-            wrap="none",
-            bg="#101010",
-            fg=self.listbox_default_fg,
-            insertbackground="white",
-            height=0,
-            state="disabled",
-            relief="flat",
-        )
-        self.listbox.pack(fill="both", expand=True)
-        self.listbox.configure(yscrollcommand=scrollbar.set, cursor="arrow")
-        scrollbar.config(command=self.listbox.yview)
-        self.listbox.tag_configure("group", font=self._listbox_group_font, foreground="#89CFF0")
-        self.listbox.tag_configure("title", font=self._listbox_title_font, foreground=self.listbox_default_fg)
-        self.listbox.tag_configure("metadata", font=self._listbox_metadata_font, foreground=self._listbox_metadata_fg)
-        self.listbox.tag_configure("message", font=self._listbox_title_font, foreground=self.listbox_default_fg)
-        self.listbox.tag_configure("selected", background="#264653")
-        self.listbox.tag_raise("selected")
-
-        self._listbox_color_tags: Dict[str, str] = {}
-        self._listbox_tooltip = HoverTooltip(self.listbox, wraplength=520)
+        list_frame, self.listbox = build_list_view(self)
         self.listbox.bind("<Button-1>", self.selection_controller.on_click)
         self.listbox.bind("<Double-Button-1>", self.selection_controller.open_selected)
         self.listbox.bind("<Return>", self.selection_controller.open_selected)
