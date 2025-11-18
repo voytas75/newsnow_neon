@@ -28,8 +28,8 @@ def coerce_timezone(name: str | None) -> tuple[str, tzinfo]:
     except ZoneInfoNotFoundError:
         fallback = fixed_zone_fallback(candidate)
         if fallback is not None:
-            logger.warning(
-                "Unknown timezone '%s'; using fixed offset fallback.",
+            logger.debug(
+                "IANA timezone '%s' unavailable; using fixed offset fallback.",
                 candidate or "<empty>",
             )
             return candidate, fallback
