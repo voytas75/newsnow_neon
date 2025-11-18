@@ -585,37 +585,6 @@ class AINewsApp(tk.Tk):
         # Refresh action buttons for current selection state.
         self._refresh_mute_button_state()
 
-    def _ensure_color_tag(self, color: str) -> str:
-        return self.list_renderer.ensure_color_tag(color)
-
-    def _ensure_line_break(self) -> None:
-        self.list_renderer.ensure_line_break()
-
-    def _append_group_label(self, text: str) -> None:
-        self.list_renderer.append_group_label(text)
-
-    def _append_headline_line(
-        self,
-        *,
-        display_index: int,
-        localized: Headline,
-        metadata_text: str,
-        relative_label: Optional[str],
-        row_color: Optional[str],
-        original_idx: int,
-    ) -> None:
-        self.list_renderer.append_headline_row(
-            display_index=display_index,
-            localized=localized,
-            metadata_text=metadata_text,
-            relative_label=relative_label,
-            row_color=row_color,
-            original_idx=original_idx,
-        )
-
-    def _append_message_line(self, text: str) -> None:
-        self.list_renderer.append_message_line(text)
-
     def _clear_listbox_selection(self) -> None:
         self.listbox.configure(state="normal")
         self.listbox.tag_remove("selected", "1.0", tk.END)
@@ -940,29 +909,8 @@ class AINewsApp(tk.Tk):
         self._apply_exclusion_terms()
 
     def _filter_headlines(self, headlines: Sequence[Headline]) -> List[Headline]:
-        if not headlines:
-            return []
-        if not self._exclusion_terms:
-            return list(headlines)
-        filtered: List[Headline] = []
-        for item in headlines:
-            haystack_parts = [
-                item.title,
-                item.source,
-                item.section,
-                item.published_time,
-                item.published_at,
-                item.url,
-            ]
-            haystack = " ".join(
-                part.strip()
-                for part in haystack_parts
-                if isinstance(part, str) and part.strip()
-            ).lower()
-            if any(term in haystack for term in self._exclusion_terms):
-                continue
-            filtered.append(item)
-        return filtered
+        """Delegate to modular filtering.filter_headlines."""
+        return _filter_headlines_fn(headlines, self._exclusion_terms)
 
     def _normalise_exclusion_terms(self, source: Any) -> tuple[List[str], Set[str]]:
         candidates: List[str] = []
@@ -1026,7 +974,7 @@ class AINewsApp(tk.Tk):
             src_val = headline.source if isinstance(headline.source, str) else ""
             enable_source = bool(url_val.strip() or src_val.strip())
             title_val = headline.title if isinstance(headline.title, str) else ""
-            enable_keyword = bool(self._extract_keyword_for_mute(title_val))
+            enable_keyword = bool(_extract_keyword_for_mute_fn(title_val))
         try:
             self.mute_source_btn.config(
                 state=(tk.NORMAL if enable_source else tk.DISABLED)
@@ -1036,22 +984,6 @@ class AINewsApp(tk.Tk):
             )
         except Exception:
             logger.debug("Unable to update mute action button state.")
-
-    def _extract_keyword_for_mute(self, title: str) -> Optional[str]:
-        """Derive a simple, useful keyword from a headline title for muting."""
-        if not isinstance(title, str):
-            return None
-        tokens = re.findall(r"[A-Za-z0-9+#\\-]{3,}", title)
-        for token in tokens:
-            lower = token.lower()
-            if lower in _MUTE_STOPWORDS:
-                continue
-            if lower.isdigit():
-                continue
-            if len(lower) < 4 and lower not in {"ai", "usa", "uk"}:
-                continue
-            return token
-        return None
 
     def _add_exclusion_term(self, term: str, *, show_feedback: bool = True) -> bool:
         """Append a term to exclusions asynchronously and re-render on completion."""
@@ -1168,86 +1100,13 @@ class AINewsApp(tk.Tk):
 
 
 
-    def _on_listbox_click(self, event: tk.Event) -> str:
-        """Delegated to SelectionController to handle listbox click."""
-        return self.selection_controller.on_click(event)
-
-    def _on_listbox_nav(self, delta: int) -> str:
-        """Delegated to SelectionController for keyboard navigation."""
-        return self.selection_controller.on_nav(delta)
-
-    def _on_listbox_motion(self, event: tk.Event) -> None:
-        if not self._listbox_line_to_headline:
-            self._listbox_tooltip.hide()
-            self._listbox_hover_line = None
-            self._listbox_last_tooltip_text = None
-            return
-        try:
-            index = self.listbox.index(f"@{event.x},{event.y}")
-        except tk.TclError:
-            self._listbox_tooltip.hide()
-            self._listbox_hover_line = None
-            self._listbox_last_tooltip_text = None
-            return
-        line = int(float(index.split(".")[0]))
-        context = self._listbox_line_details.get(line)
-        candidate_line = line
-        candidate_index = index
-        if context is None:
-            for offset in (-1, 1, -2, 2):
-                probe = line + offset
-                if probe < 1:
-                    continue
-                probe_context = self._listbox_line_details.get(probe)
-                if probe_context is not None:
-                    context = probe_context
-                    candidate_line = probe
-                    candidate_index = f"{probe}.0"
-                    break
-        if context is None:
-            self._listbox_tooltip.hide()
-            self._listbox_hover_line = None
-            self._listbox_last_tooltip_text = None
-            return
-        tooltip_text = compose_headline_tooltip(
-            context.headline, relative_age=context.relative_age
-        )
-        if (
-            candidate_line != self._listbox_hover_line
-            or tooltip_text != (self._listbox_last_tooltip_text or "")
-        ):
-            self._listbox_hover_line = candidate_line
-            self._listbox_last_tooltip_text = tooltip_text
-            coords = self._tooltip_coords(candidate_index, event)
-            x_root, y_root = coords
-            self._listbox_tooltip.show(tooltip_text, x_root, y_root)
-        else:
-            coords = self._tooltip_coords(candidate_index, event)
-            x_root, y_root = coords
-            self._listbox_tooltip.move(x_root, y_root)
-
     def _on_listbox_leave(self, _event: tk.Event) -> None:
-        self._listbox_hover_line = None
-        self._listbox_last_tooltip_text = None
-        self._listbox_tooltip.hide()
+        """Delegated to SelectionController to keep application thin."""
+        self.selection_controller.on_leave(_event)
 
     def _tooltip_coords(self, index: str, event: tk.Event) -> tuple[int, int]:
-        try:
-            bbox = self.listbox.bbox(index)
-        except tk.TclError:
-            bbox = None
-        if bbox:
-            x_pix, y_pix, width, height = bbox
-        else:
-            return event.x_root, event.y_root
-
-        width = max(width, 1)
-        height = max(height, 1)
-        widget_root_x = self.listbox.winfo_rootx()
-        widget_root_y = self.listbox.winfo_rooty()
-        x_root = widget_root_x + x_pix + width + 12
-        y_root = widget_root_y + y_pix + height // 2
-        return x_root, y_root
+        """Delegated to SelectionController for hover placement."""
+        return self.selection_controller._tooltip_coords(index, event)
 
     def _request_history_refresh(self) -> None:
         """Delegate history refresh workflow to HistoryController."""
@@ -2132,51 +1991,20 @@ class AINewsApp(tk.Tk):
         self._countdown_job = self.after(1000, self._tick_refresh_countdown)
 
     def _schedule_background_watch(self, *, immediate: bool = False) -> None:
-        self._cancel_background_watch()
-        if not bool(self.background_watch_var.get()):
-            self._background_watch_next_run = None
-            return
-        delay = BACKGROUND_WATCH_INITIAL_DELAY_MS if immediate else BACKGROUND_WATCH_INTERVAL_MS
-        if delay <= 0:
-            delay = BACKGROUND_WATCH_INTERVAL_MS
-        self._background_watch_next_run = datetime.now() + timedelta(milliseconds=delay)
-        self._background_watch_job = self.after(delay, self._background_watch_trigger)
+        """Delegate to BackgroundWatchController."""
+        self.background_watch_controller.schedule(immediate=immediate)
 
     def _schedule_background_watch_with_delay(self, delay_ms: int) -> None:
-        self._cancel_background_watch()
-        if not bool(self.background_watch_var.get()):
-            self._background_watch_next_run = None
-            return
-        delay = max(0, int(delay_ms))
-        if delay == 0:
-            self._background_watch_next_run = datetime.now()
-            self._background_watch_job = self.after_idle(self._background_watch_trigger)
-        else:
-            self._background_watch_next_run = datetime.now() + timedelta(milliseconds=delay)
-            self._background_watch_job = self.after(delay, self._background_watch_trigger)
+        """Delegate to BackgroundWatchController."""
+        self.background_watch_controller.schedule_with_delay(delay_ms)
 
     def _cancel_background_watch(self) -> None:
-        if self._background_watch_job is not None:
-            try:
-                self.after_cancel(self._background_watch_job)
-            except tk.TclError:
-                pass
-            self._background_watch_job = None
-        self._background_watch_next_run = None
+        """Delegate to BackgroundWatchController."""
+        self.background_watch_controller.cancel()
 
     def _background_watch_trigger(self) -> None:
-        self._background_watch_next_run = None
-        self._background_watch_job = None
-        if not bool(self.background_watch_var.get()):
-            return
-        if self._background_watch_running:
-            self._schedule_background_watch()
-            return
-        if self._history_mode:
-            self._schedule_background_watch()
-            return
-        self._background_watch_running = True
-        threading.Thread(target=self._background_watch_worker, daemon=True).start()
+        """Delegate to BackgroundWatchController."""
+        self.background_watch_controller.trigger()
 
     def _background_watch_worker(self) -> None:
         try:
