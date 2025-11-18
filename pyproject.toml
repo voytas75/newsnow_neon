@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE" }
 authors = [
-  { name = "voytas75", email = "you@example.com" }
+  { name = "voytas75" }
 ]
 keywords = ["news", "desktop", "ticker", "summaries"]
 
@@ -26,6 +26,15 @@ dev = [
   "ruff>=0.4.0",
   "mypy>=1.8",
   "pytest>=8.0",
+]
+redis = [
+  "redis>=5.0",
+]
+llm = [
+  "litellm>=1.40",
+]
+dotenv = [
+  "python-dotenv>=1.0",
 ]
 
 #[project.scripts]
