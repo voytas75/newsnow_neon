@@ -1837,10 +1837,17 @@ class AINewsApp(tk.Tk):
         return unique_terms, seen
 
     def _split_exclusion_string(self, text: str) -> List[str]:
-        if not text:
-            return []
-        return [token.strip() for token in re.split(r"[,;\n]+", text) if token.strip()]
+        """Split a free-form exclusion string into normalized terms.
 
+        Accepts commas, semicolons, and whitespace as separators. Returns a
+        list of terms in their original order, trimmed and lowercased,
+        without empty entries.
+        """
+        if not isinstance(text, str):
+            return []
+        raw = re.split(r"[;,]|\s+", text.strip())
+        terms = [t.strip().lower() for t in raw if t and t.strip()]
+        return terms
     def _resolve_selected_headline(self) -> Optional[Headline]:
         """Resolve the Headline object for the currently selected list row."""
         line = self._selected_line
@@ -1879,31 +1886,6 @@ class AINewsApp(tk.Tk):
         except Exception:
             logger.debug("Unable to update mute action button state.")
 
-    def _add_exclusion_term(self, term: str, *, show_feedback: bool = True) -> bool:
-        """Append a term to exclusions, persist, and re-render if it changes state."""
-        cleaned = (term or "").strip()
-        if not cleaned:
-            return False
-        current_text = (
-            self.exclude_terms_var.get() if hasattr(self, "exclude_terms_var") else ""
-        )
-        combined = f"{current_text}, {cleaned}" if current_text.strip() else cleaned
-        terms_list, terms_set = self._normalise_exclusion_terms(combined)
-        if terms_set == self._exclusion_terms:
-            if show_feedback:
-                self._log_status(f"Exclusion term already present: '{cleaned}'.")
-            return False
-        self._exclusion_terms = terms_set
-        self.settings["headline_exclusions"] = terms_list
-        if hasattr(self, "exclude_terms_var"):
-            self.exclude_terms_var.set(", ".join(terms_list))
-        self._save_settings()
-        self._reapply_exclusion_filters(log_status=True)
-        self._refresh_mute_button_state()
-        if show_feedback:
-            self._log_status(f"Added exclusion term: '{cleaned}'.")
-        return True
-
     def _extract_keyword_for_mute(self, title: str) -> Optional[str]:
         """Derive a simple, useful keyword from a headline title for muting."""
         if not isinstance(title, str):
@@ -1919,6 +1901,55 @@ class AINewsApp(tk.Tk):
                 continue
             return token
         return None
+
+    def _add_exclusion_term(self, term: str, *, show_feedback: bool = True) -> bool:
+        """Append a term to exclusions asynchronously and re-render on completion."""
+        cleaned = (term or "").strip()
+        if not cleaned:
+            return False
+
+        # Disable actions and show a short status message to keep UI responsive.
+        try:
+            if hasattr(self, "mute_source_btn"):
+                self.mute_source_btn.config(state=tk.DISABLED)
+            if hasattr(self, "mute_keyword_btn"):
+                self.mute_keyword_btn.config(state=tk.DISABLED)
+        except Exception:
+            pass
+        self._log_status("Applying exclusion…")
+
+        current_text = (
+            self.exclude_terms_var.get() if hasattr(self, "exclude_terms_var") else ""
+        )
+
+        def worker() -> None:
+            combined = f"{current_text}, {cleaned}" if current_text.strip() else cleaned
+            terms_list, terms_set = self._normalise_exclusion_terms(combined)
+            is_changed = terms_set != self._exclusion_terms
+
+            def finalize() -> None:
+                if not is_changed:
+                    if show_feedback:
+                        self._log_status(
+                            f"Exclusion term already present: '{cleaned}'."
+                        )
+                    self._refresh_mute_button_state()
+                    return
+                self._exclusion_terms = terms_set
+                self.settings["headline_exclusions"] = terms_list
+                if hasattr(self, "exclude_terms_var"):
+                    self.exclude_terms_var.set(", ".join(terms_list))
+                self._save_settings()
+                # Re-render on the main thread.
+                self._reapply_exclusion_filters(log_status=True)
+                self._refresh_mute_button_state()
+                if show_feedback:
+                    self._log_status(f"Added exclusion term: '{cleaned}'.")
+
+            self.after(0, finalize)
+
+        threading.Thread(target=worker, daemon=True).start()
+        return True
 
     def _mute_selected_source(self) -> None:
         """Mute the source (domain or label) of the currently selected headline."""
@@ -1965,6 +1996,9 @@ class AINewsApp(tk.Tk):
             )
             return
         self._add_exclusion_term(keyword, show_feedback=True)
+        return
+
+
 
     def _on_listbox_click(self, event: tk.Event) -> str:
         try:
