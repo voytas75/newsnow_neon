@@ -33,11 +33,12 @@ class HighlightController:
 
     def on_highlight_keywords_return(self, *_args: object) -> str:
         """Handle Return key in the highlight entry; keep 'break' behavior."""
-        return self.app._on_highlight_keywords_return()
+        self.app.apply_highlight_keywords_from_var(show_feedback=True)
+        return "break"
 
     def on_highlight_keywords_button(self) -> None:
         """Handle Apply button in the highlight panel."""
-        self.app._on_highlight_keywords_button()
+        self.app.apply_highlight_keywords_from_var(show_feedback=True)
 
     # Heatmap window management
 

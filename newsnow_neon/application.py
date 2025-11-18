@@ -387,43 +387,7 @@ class AINewsApp(tk.Tk):
 
         build_controls_panel(self)
 
-        highlight_frame = tk.Frame(self.options_container, bg="black")
-        highlight_frame.pack(fill="x", pady=(0, 10))
-
-        highlight_label = tk.Label(
-            highlight_frame,
-            text="Highlight keywords:",
-            bg="black",
-            fg="lightgray",
-        )
-        highlight_label.pack(side="left")
-
-        self.highlight_entry = tk.Entry(
-            highlight_frame,
-            textvariable=self.highlight_keywords_var,
-            width=60,
-            highlightthickness=0,
-        )
-        self.highlight_entry.pack(side="left", padx=(10, 6), fill="x", expand=True)
-        self.highlight_entry.bind("<Return>", self.highlight_controller.on_highlight_keywords_return)
-
-        highlight_apply_btn = tk.Button(
-            highlight_frame,
-            text="Apply",
-            command=self.highlight_controller.on_highlight_keywords_button,
-        )
-        highlight_apply_btn.pack(side="left")
-
-        highlight_hint = tk.Label(
-            self.options_container,
-            text="Format: keyword:#HEX; term2:#HEX (leave blank to use defaults or NEWS_HIGHLIGHT_KEYWORDS).",
-            bg="black",
-            fg="#888888",
-            font=("Segoe UI", 9, "italic"),
-            justify="left",
-            wraplength=760,
-        )
-        highlight_hint.pack(fill="x", padx=4, pady=(0, 5))
+        build_highlight_panel(self)
 
         history_controls = build_history_panel(self)
 
@@ -457,7 +421,7 @@ class AINewsApp(tk.Tk):
 
     def _handle_cache_clear_result(self, message: str, level: int) -> None:
         self._log_status(message, level=level)
-        self._update_redis_meter()
+        self.redis_controller.update_redis_meter()
 
     def _open_redis_stats(self) -> None:
         if self._loading_redis_stats:
@@ -630,7 +594,7 @@ class AINewsApp(tk.Tk):
         self._update_content(
             headlines=headlines, ticker_text=ticker_text, from_cache=from_cache
         )
-        self._update_redis_meter()
+        self.redis_controller.update_redis_meter()
         self._update_last_refresh_label()
 
     def _headline_with_timezone(self, headline: Headline) -> Headline:
