@@ -43,7 +43,7 @@ from .models import (
 )
 
 if TYPE_CHECKING:  # pragma: no cover - type checking import only
-    from .app import AINewsApp
+    from .application import AINewsApp
 
 logger = logging.getLogger(__name__)
 
