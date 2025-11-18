@@ -91,7 +91,7 @@ The module auto-loads a `.env` file when `python-dotenv` is installed; see
 | `NEWS_HISTORY_PREFIX` / `NEWS_HISTORY_TTL` | Redis prefix and TTL for historical snapshots (defaults: `news`, 86400s). |
 | `REDIS_URL` | Enables Redis caching when set (e.g. `redis://localhost:6379/0`). See [REDIS_URL](newsnow_neon/config.py:86). |
 | `NEWS_APP_SETTINGS` | Custom path for the persisted settings JSON; overrides [SETTINGS_PATH](newsnow_neon/config.py:200). |
-| `NEWS_HIGHLIGHT_KEYWORDS` | Custom highlight rules in the format `keyword:#HEX; term2:#HEX`. Parsed by [parse_highlight_keywords()](newsnow_neon/highlight.py:75). |
+| `NEWS_HIGHLIGHT_KEYWORDS` | Custom highlight rules in the format `keyword:#HEX; term2:#HEX`. Parsed by [parse_highlight_keywords()](newsnow_neon/highlight.py:46). |
 | `NEWS_SUMMARY_MODEL` / `NEWS_SUMMARY_PROVIDER` / `NEWS_SUMMARY_API_*` | Override the LiteLLM model/provider/base/key used exclusively for article summaries. |
 | `NEWS_SUMMARY_AZURE_*` | Azure-specific overrides for summaries (deployment, API version, AD token). |
 | `LITELLM_MODEL` / `LITELLM_PROVIDER` / `LITELLM_API_BASE` / `LITELLM_API_KEY` | Default LiteLLM configuration when summary-specific overrides are absent. |
