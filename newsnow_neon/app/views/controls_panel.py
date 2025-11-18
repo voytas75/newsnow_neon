@@ -1,29 +1,17 @@
+"""Controls panel builder for AINewsApp.
+
+Updates: v0.52 - 2025-11-18 - Extracted common control buttons and meters.
+"""
 from __future__ import annotations
 
 import tkinter as tk
-from typing import Optional
+from ...config import REDIS_URL
+from ...highlight import has_highlight_pattern
 
 
 def build_controls_panel(app: tk.Tk) -> tk.Frame:
-    """Build controls panel with refresh and diagnostics actions.
-
-    Creates the top controls row inside the options container:
-    - Refresh Headlines
-    - Clear Cache
-    - Redis Stats
-    - Keyword Heatmap
-    - Show/Hide Logs toggle
-    - Redis meter label
-
-    The builder sets created widgets back onto the app for controller access.
-    """
-    parent: Optional[tk.Frame] = getattr(app, "options_container", None)
-    if parent is None or not isinstance(parent, tk.Frame):
-        parent = tk.Frame(app, name="options_container", bg="black")
-        parent.pack(fill="x", padx=10, pady=(0, 10))
-        setattr(app, "options_container", parent)
-
-    controls = tk.Frame(parent, bg="black")
+    """Create controls row: refresh, clear cache, redis stats, heatmap, logs, meter."""
+    controls = tk.Frame(app.options_container, bg="black")
     controls.pack(fill="x", pady=(0, 10))
 
     refresh_btn = tk.Button(
@@ -33,60 +21,37 @@ def build_controls_panel(app: tk.Tk) -> tk.Frame:
     )
     refresh_btn.pack(side="left")
 
-    clear_cache_btn = tk.Button(
-        controls,
-        text="Clear Cache",
-        command=getattr(app, "redis_controller").clear_cache,
-    )
-    clear_cache_btn.pack(side="left", padx=10)
-    setattr(app, "clear_cache_btn", clear_cache_btn)
+    app.clear_cache_btn = tk.Button(controls, text="Clear Cache", command=getattr(app, "clear_cache"))
+    app.clear_cache_btn.pack(side="left", padx=10)
 
-    redis_stats_btn = tk.Button(
+    app.redis_stats_btn = tk.Button(
         controls,
         text="Redis Stats",
-        command=getattr(app, "redis_controller").open_redis_stats,
-        state=tk.DISABLED,
+        command=getattr(app, "_open_redis_stats"),
+        state=tk.NORMAL if REDIS_URL else tk.DISABLED,
     )
-    redis_stats_btn.pack(side="left", padx=10)
-    setattr(app, "redis_stats_btn", redis_stats_btn)
+    app.redis_stats_btn.pack(side="left", padx=10)
 
-    heatmap_btn = tk.Button(
+    heatmap_state = tk.NORMAL if has_highlight_pattern() else tk.DISABLED
+    app.heatmap_btn = tk.Button(
         controls,
         text="Keyword Heatmap",
-        command=getattr(app, "highlight_controller").open_heatmap,
-        state=tk.DISABLED,
+        command=getattr(app, "open_heatmap"),
+        state=heatmap_state,
     )
-    heatmap_btn.pack(side="left", padx=10)
-    setattr(app, "heatmap_btn", heatmap_btn)
-    try:
-        getattr(app, "highlight_controller").update_heatmap_button_state()
-    except Exception:
-        pass
+    app.heatmap_btn.pack(side="left", padx=10)
 
-    toggle_logs_btn = tk.Button(
-        controls,
-        text="Show Logs",
-        command=getattr(app, "_toggle_logs"),
-    )
-    toggle_logs_btn.pack(side="left", padx=10)
-    setattr(app, "toggle_logs_btn", toggle_logs_btn)
+    app.toggle_logs_btn = tk.Button(controls, text="Show Logs", command=getattr(app, "_toggle_logs"))
+    app.toggle_logs_btn.pack(side="left", padx=10)
 
-    redis_meter_var = tk.StringVar(value="Redis: checking…")
-    redis_meter_label = tk.Label(
+    app.redis_meter_var = tk.StringVar(value="Redis: checking…")
+    app.redis_meter_label = tk.Label(
         controls,
-        textvariable=redis_meter_var,
+        textvariable=app.redis_meter_var,
         bg="black",
         fg="#FFB347",
         anchor="w",
     )
-    redis_meter_label.pack(side="left", padx=10)
-    setattr(app, "redis_meter_var", redis_meter_var)
-    setattr(app, "redis_meter_label", redis_meter_label)
-
-    # Trigger an initial meter update if controller is available
-    try:
-        getattr(app, "redis_controller").update_redis_meter()
-    except Exception:
-        pass
+    app.redis_meter_label.pack(side="left", padx=10)
 
     return controls

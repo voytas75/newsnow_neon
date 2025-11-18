@@ -1,17 +1,16 @@
+"""Ticker panel builder.
+
+Updates: v0.52 - 2025-11-18 - Extracted ticker widgets construction.
+"""
 from __future__ import annotations
 
-import tkinter as tk
 from typing import Tuple
+from tkinter import Frame
+from ...ui.widgets.news_ticker import NewsTicker
 
-from ...ui import NewsTicker
 
-
-def build_ticker_panel(app: tk.Tk) -> Tuple[NewsTicker, NewsTicker]:
-    """Create primary and full tickers and attach them to the app.
-
-    Returns:
-        Tuple[NewsTicker, NewsTicker]: (ticker, full_ticker) created widgets.
-    """
+def build_ticker_panel(app) -> Tuple[NewsTicker, NewsTicker]:
+    """Create primary and full tickers and attach to the application."""
     ticker = NewsTicker(app, name="neon1")
     ticker.pack(fill="x", padx=10, pady=(10, 5))
 
@@ -24,9 +23,4 @@ def build_ticker_panel(app: tk.Tk) -> Tuple[NewsTicker, NewsTicker]:
         name="neon2",
     )
     full_ticker.pack(fill="x", padx=10, pady=(0, 10))
-
-    # Attach to app for downstream usage
-    setattr(app, "ticker", ticker)
-    setattr(app, "full_ticker", full_ticker)
-
     return ticker, full_ticker

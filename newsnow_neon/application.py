@@ -127,6 +127,17 @@ from .app.actions import (
     extract_keyword_for_mute as _extract_keyword_for_mute_fn,
     derive_source_term as _derive_source_term_fn,
 )
+# Controllers and renderer imports
+from .app.controller.refresh_controller import RefreshController
+from .app.controller.auto_refresh_controller import AutoRefreshController
+from .app.controller.background_watch_controller import BackgroundWatchController
+from .app.controller.history_controller import HistoryController
+from .app.controller.selection_controller import SelectionController
+from .app.controller.exclusions_controller import ExclusionsController
+from .app.controller.settings_controller import SettingsController
+from .app.controller.redis_controller import RedisController
+from .app.controller.highlight_controller import HighlightController
+from .app.renderers.list_renderer import ListRenderer
 
 
 def _coerce_timezone(name: Optional[str]) -> tuple[str, tzinfo]:
