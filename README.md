@@ -8,8 +8,8 @@ It is packaged as a Python module and can be launched via:
 python -m newsnow_neon
 ```
 
-This aligns with [__main__._run()](newsnow_neon/__main__.py:17) and the entry
-wiring in [main.main()](newsnow_neon/main.py:35).
+This aligns with [__main__._run()](newsnow_neon/__main__.py#L17) and the entry
+wiring in [main.main()](newsnow_neon/main.py#L35).
 
 ## Feature Highlights
 
@@ -68,18 +68,18 @@ pip install .
 
 - Optional extras:
 ```bash
-# Redis cache via [REDIS_URL](newsnow_neon/config.py:86)
+# Redis cache via [REDIS_URL](newsnow_neon/config.py#L86)
 pip install .[redis]
 
 # LiteLLM-based summaries
 pip install .[llm]
 
-# Auto-load .env (see [dotenv load](newsnow_neon/config.py:19))
+# Auto-load .env (see [dotenv load](newsnow_neon/config.py#L24))
 pip install .[dotenv]
 ```
 
 The module auto-loads a `.env` file when `python-dotenv` is installed; see
-[config.py](newsnow_neon/config.py:19).
+[config.py](newsnow_neon/config.py#L24).
 
 ## Optional Environment Variables
 
@@ -89,9 +89,9 @@ The module auto-loads a `.env` file when `python-dotenv` is installed; see
 | `NEWS_TICKER_TIMEOUT` | Legacy ticker LLM timeout; kept for backwards compatibility (min 3, default 8). |
 | `NEWS_CACHE_KEY` / `NEWS_CACHE_TTL` | Redis key name and TTL (defaults: `ainews:headlines:v1`, 900s). |
 | `NEWS_HISTORY_PREFIX` / `NEWS_HISTORY_TTL` | Redis prefix and TTL for historical snapshots (defaults: `news`, 86400s). |
-| `REDIS_URL` | Enables Redis caching when set (e.g. `redis://localhost:6379/0`). See [REDIS_URL](newsnow_neon/config.py:86). |
-| `NEWS_APP_SETTINGS` | Custom path for the persisted settings JSON; overrides [SETTINGS_PATH](newsnow_neon/config.py:200). |
-| `NEWS_HIGHLIGHT_KEYWORDS` | Custom highlight rules in the format `keyword:#HEX; term2:#HEX`. Parsed by [parse_highlight_keywords()](newsnow_neon/highlight.py:46). |
+| `REDIS_URL` | Enables Redis caching when set (e.g. `redis://localhost:6379/0`). See [REDIS_URL](newsnow_neon/config.py#L86). |
+| `NEWS_APP_SETTINGS` | Custom path for the persisted settings JSON; overrides [SETTINGS_PATH](newsnow_neon/config.py#L200). |
+| `NEWS_HIGHLIGHT_KEYWORDS` | Custom highlight rules in the format `keyword:#HEX; term2:#HEX`. Parsed by [parse_highlight_keywords()](newsnow_neon/highlight.py#L46). |
 | `NEWS_SUMMARY_MODEL` / `NEWS_SUMMARY_PROVIDER` / `NEWS_SUMMARY_API_*` | Override the LiteLLM model/provider/base/key used exclusively for article summaries. |
 | `NEWS_SUMMARY_AZURE_*` | Azure-specific overrides for summaries (deployment, API version, AD token). |
 | `LITELLM_MODEL` / `LITELLM_PROVIDER` / `LITELLM_API_BASE` / `LITELLM_API_KEY` | Default LiteLLM configuration when summary-specific overrides are absent. |
@@ -108,13 +108,13 @@ The module auto-loads a `.env` file when `python-dotenv` is installed; see
 ## Settings storage
 
 - Default settings file location depends on OS (resolved by
-  [SETTINGS_PATH](newsnow_neon/config.py:200)):
+  [SETTINGS_PATH](newsnow_neon/config.py#L200)):
   - Windows: `%LOCALAPPDATA%/NewsNowNeon/ainews_settings.json`
   - macOS: `~/Library/Application Support/NewsNowNeon/ainews_settings.json`
   - Linux: `~/.config/NewsNowNeon/ainews_settings.json`
 - Override the location with `NEWS_APP_SETTINGS`.
 - Resolution logic uses `LOCALAPPDATA`/`XDG_CONFIG_HOME` as shown in
-  [config.py](newsnow_neon/config.py:176).
+  [config.py](newsnow_neon/config.py#L176).
 
 ## Development
 
@@ -134,9 +134,9 @@ python -m newsnow_neon
 pytest -q          # add -vv for verbose output
 ```
 
-Entrypoint wiring is defined in [__main__._run()](newsnow_neon/__main__.py:17)
-which calls [main.main()](newsnow_neon/main.py:35). The presence of this wrapper
-is validated in [tests/test_main_metadata.py](tests/test_main_metadata.py:49).
+Entrypoint wiring is defined in [__main__._run()](newsnow_neon/__main__.py#L17)
+which calls [main.main()](newsnow_neon/main.py#L35). The presence of this wrapper
+is validated in [tests/test_main_metadata.py](tests/test_main_metadata.py#L49).
 
 - Whenever you change user-visible behaviour, update both this README and the
   change log in [newsnow_neon/legacy_app.py](newsnow_neon/legacy_app.py)
@@ -173,9 +173,9 @@ python -m newsnow_neon
 
 Notes:
 - If [python-dotenv](pyproject.toml) is installed, a `.env` file will be
-  auto-loaded during startup (see [newsnow_neon/config.py](newsnow_neon/config.py:19)).
+  auto-loaded during startup (see [newsnow_neon/config.py](newsnow_neon/config.py#L24)).
 - Settings are persisted at
-  [SETTINGS_PATH](newsnow_neon/config.py:200). Override with `NEWS_APP_SETTINGS`.
+  [SETTINGS_PATH](newsnow_neon/config.py#L200). Override with `NEWS_APP_SETTINGS`.
 
 ## License
 
