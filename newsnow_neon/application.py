@@ -9,17 +9,13 @@ from __future__ import annotations
 
 import logging
 import os
-import platform
-import re
 import tkinter as tk
 from collections import deque
 from datetime import datetime, timedelta, timezone, tzinfo
 from dataclasses import replace
-from tkinter import colorchooser, font, messagebox
+from tkinter import colorchooser, messagebox
 from typing import Any, Callable, Dict, FrozenSet, Iterable, List, Mapping, Optional, Sequence, Set, Tuple
 import threading
-from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
-import webbrowser
 from urllib.parse import urlparse
 
 from .config import (
@@ -40,12 +36,8 @@ from .config import (
     fixed_zone_fallback,
 )
 from .highlight import (
-    ENV_HIGHLIGHT_KEYWORDS,
-    apply_highlight_keywords,
-    compose_headline_tooltip,
     has_highlight_pattern,
     headline_highlight_color,
-    parse_highlight_keywords,
 )
 from .models import (
     Headline,
@@ -56,10 +48,8 @@ from .models import (
     RedisStatistics,
     TkQueueHandler,
 )
-from .cache import get_redis_client
 from .settings_store import load_settings, save_settings
 from .summaries import configure_litellm_debug
-from .ui.widgets.news_ticker import NewsTicker
 from .ui.windows.summary_window import SummaryWindow
 from .ui.windows.keyword_heatmap_window import KeywordHeatmapWindow
 from .ui.windows.redis_stats_window import RedisStatsWindow
@@ -69,7 +59,6 @@ from .main import APP_METADATA
 
 logger = logging.getLogger(__name__)
 
-_SENSITIVE_ENV_PATTERN = re.compile(r"(KEY|TOKEN|SECRET|PASSWORD|API_KEY)$", re.IGNORECASE)
 
 
 from .app.services import (
@@ -109,8 +98,6 @@ from .app.renderers.list_renderer import ListRenderer
 # Modularized helpers
 from .app.filtering import (
     filter_headlines as _filter_headlines_fn,
-    normalise_exclusion_terms as _normalise_exclusion_terms_fn,
-    split_exclusion_string as _split_exclusion_string_fn,
 )
 from .app.timeutils import (
     coerce_timezone as _coerce_timezone_fn,
@@ -139,6 +126,15 @@ from .app.actions import (
 #
 #
 
+from .app.helpers.app_helpers import (
+    derive_hover_color,
+    profile_name_options,
+    sanitize_env_value,
+    build_system_rows,
+    format_history_entry,
+    format_history_tooltip,
+)
+
 
 def _coerce_timezone(name: Optional[str]) -> tuple[str, tzinfo]:
     """Delegate to modular timeutils.coerce_timezone."""
@@ -151,36 +147,8 @@ def _format_localized_timestamp(timestamp: datetime, zone: tzinfo) -> tuple[str,
     return _format_localized_timestamp_fn(timestamp, zone)
 
 
-def _profile_name_options() -> List[str]:
-    names = list(COLOR_PROFILES.keys())
-    if CUSTOM_PROFILE_NAME not in COLOR_PROFILES:
-        names.append(CUSTOM_PROFILE_NAME)
-    else:
-        names = [n for n in names if n != CUSTOM_PROFILE_NAME] + [CUSTOM_PROFILE_NAME]
-    return names
 
 
-def _derive_hover_color(hex_color: str, factor: float = 0.25) -> str:
-    if not isinstance(hex_color, str) or not hex_color.startswith("#"):
-        return hex_color
-
-    hex_value = hex_color.lstrip("#")
-    if len(hex_value) == 3:
-        hex_value = ''.join(ch * 2 for ch in hex_value)
-    if len(hex_value) != 6:
-        return hex_color
-
-    try:
-        r = int(hex_value[0:2], 16)
-        g = int(hex_value[2:4], 16)
-        b = int(hex_value[4:6], 16)
-    except ValueError:
-        return hex_color
-
-    def _mix(component: int) -> int:
-        return min(255, int(component + (255 - component) * factor))
-
-    return "#{:02X}{:02X}{:02X}".format(_mix(r), _mix(g), _mix(b))
 
 
 
@@ -369,7 +337,7 @@ class AINewsApp(tk.Tk):
                 "custom_background", DEFAULT_SETTINGS["custom_background"]
             ),
             "text": self.settings.get("custom_text", DEFAULT_SETTINGS["custom_text"]),
-            "hover": _derive_hover_color(
+            "hover": derive_hover_color(
                 self.settings.get("custom_text", DEFAULT_SETTINGS["custom_text"])
             ),
         }
@@ -894,18 +862,6 @@ class AINewsApp(tk.Tk):
     def _normalise_exclusion_terms(self, source: Any) -> tuple[List[str], Set[str]]:
         return self.exclusions_controller.normalise_exclusion_terms(source)
 
-    def _split_exclusion_string(self, text: str) -> List[str]:
-        """Split a free-form exclusion string into normalized terms.
-
-        Accepts commas, semicolons, and whitespace as separators. Returns a
-        list of terms in their original order, trimmed and lowercased,
-        without empty entries.
-        """
-        if not isinstance(text, str):
-            return []
-        raw = re.split(r"[;,]|\s+", text.strip())
-        terms = [t.strip().lower() for t in raw if t and t.strip()]
-        return terms
     def _resolve_selected_headline(self) -> Optional[Headline]:
         """Resolve the Headline object for the currently selected list row."""
         line = self._selected_line
@@ -1059,13 +1015,6 @@ class AINewsApp(tk.Tk):
 
 
 
-    def _on_listbox_leave(self, _event: tk.Event) -> None:
-        """Delegated to SelectionController to keep application thin."""
-        self.selection_controller.on_leave(_event)
-
-    def _tooltip_coords(self, index: str, event: tk.Event) -> tuple[int, int]:
-        """Delegated to SelectionController for hover placement."""
-        return self.selection_controller._tooltip_coords(index, event)
 
     def _request_history_refresh(self) -> None:
         """Delegate history refresh workflow to HistoryController."""
@@ -1115,7 +1064,10 @@ class AINewsApp(tk.Tk):
 
         self.history_listbox.configure(state=tk.NORMAL)
         for snapshot in self._history_entries:
-            self.history_listbox.insert(tk.END, self._format_history_entry(snapshot))
+            self.history_listbox.insert(
+                tk.END,
+                format_history_entry(snapshot, self._timezone, self._timezone_name),
+            )
         self.history_status_var.set(
             f"{len(self._history_entries)} snapshots loaded (newest first). Select to view."
         )
@@ -1134,28 +1086,6 @@ class AINewsApp(tk.Tk):
 
         self._refresh_history_controls_state()
 
-    def _format_history_entry(self, snapshot: HistoricalSnapshot) -> str:
-        local_dt = snapshot.captured_at.astimezone(self._timezone)
-        tz_label = local_dt.tzname() or self._timezone_name
-        timestamp = local_dt.strftime("%Y-%m-%d %H:%M")
-        headline_label = "headline" if snapshot.headline_count == 1 else "headlines"
-        return f"{timestamp} {tz_label} • {snapshot.headline_count} {headline_label}"
-
-    def _format_history_tooltip(self, snapshot: HistoricalSnapshot) -> str:
-        local_dt = snapshot.captured_at.astimezone(self._timezone)
-        tz_label = local_dt.tzname() or self._timezone_name
-        lines = [
-            f"Captured: {local_dt.strftime('%Y-%m-%d %H:%M:%S')} {tz_label}",
-            f"Redis key: {snapshot.key}",
-            f"Headlines: {snapshot.headline_count}",
-        ]
-        if snapshot.summary_count:
-            lines.append(f"Summaries: {snapshot.summary_count}")
-        ticker_preview = snapshot.cache.ticker_text or ""
-        if ticker_preview:
-            truncated = ticker_preview if len(ticker_preview) <= 120 else ticker_preview[:117].rstrip() + "…"
-            lines.append(f"Ticker: {truncated}")
-        return "\n".join(lines)
 
     def _on_history_select(self, _event: tk.Event) -> None:
         if self.history_listbox.cget("state") != tk.NORMAL:
@@ -1189,7 +1119,9 @@ class AINewsApp(tk.Tk):
             self.history_listbox_hover.hide()
             return
         snapshot = self._history_entries[index]
-        tooltip = self._format_history_tooltip(snapshot)
+        tooltip = format_history_tooltip(
+            snapshot, self._timezone, self._timezone_name
+        )
         self.history_listbox_hover.show(tooltip, event.x_root, event.y_root)
 
     def _capture_live_flow_state(self) -> LiveFlowState:
@@ -1233,7 +1165,7 @@ class AINewsApp(tk.Tk):
         self.exit_history_btn.config(state=tk.NORMAL)
         ticker_text = snapshot.cache.ticker_text or build_ticker_text(snapshot.cache.headlines)
         self.history_status_var.set(
-            f"History mode: {self._format_history_entry(snapshot)}"
+            f"History mode: {format_history_entry(snapshot, self._timezone, self._timezone_name)}"
         )
         self._log_status(
             f"Viewing historical snapshot captured at {snapshot.captured_at.isoformat()}."
@@ -1442,7 +1374,7 @@ class AINewsApp(tk.Tk):
             self._info_window.focus_force()
             return
 
-        system_rows = self._build_system_rows()
+        system_rows = build_system_rows(SETTINGS_PATH)
         try:
             self._info_window = AppInfoWindow(
                 self,
@@ -1458,40 +1390,6 @@ class AINewsApp(tk.Tk):
     def _on_info_window_closed(self) -> None:
         self._info_window = None
 
-    def _build_system_rows(self) -> List[tuple[str, str]]:
-        system_name_raw = platform.system()
-        os_name = system_name_raw.strip() if system_name_raw else ""
-
-        release_raw = platform.release()
-        os_release = release_raw.strip() if release_raw else ""
-
-        version_raw = platform.version()
-        os_version = version_raw.strip() if version_raw else ""
-
-        os_summary_parts = [part for part in (os_name, os_release) if part]
-        os_summary = " ".join(os_summary_parts) or "Unknown OS"
-        if os_version:
-            os_summary = f"{os_summary} ({os_version})"
-
-        python_impl_raw = platform.python_implementation()
-        python_impl = python_impl_raw.strip() if python_impl_raw else "Python"
-        python_version_raw = platform.python_version()
-        python_version = python_version_raw.strip() if python_version_raw else ""
-
-        machine_raw = platform.machine()
-        machine = machine_raw.strip() if machine_raw else ""
-
-        processor_raw = platform.processor()
-        processor = processor_raw.strip() if processor_raw else ""
-
-        rows: List[tuple[str, str]] = [("Operating system", os_summary)]
-        if machine:
-            rows.append(("Machine", machine))
-        if processor and processor.lower() != "unknown":
-            rows.append(("Processor", processor))
-        rows.append(("Python", f"{python_impl} {python_version}".strip()))
-        rows.append(("Settings file", str(SETTINGS_PATH)))
-        return rows
 
     def _filtered_entries(self) -> List[tuple[int, Headline]]:
         results: List[tuple[int, Headline]] = []
@@ -1726,16 +1624,6 @@ class AINewsApp(tk.Tk):
     def _on_highlight_keywords_button(self) -> None:
         self.highlight_controller.on_apply_button()
 
-    def _sanitize_env_value(self, name: str, value: Optional[str]) -> Optional[str]:
-        if value is None:
-            return None
-        if _SENSITIVE_ENV_PATTERN.search(name) or any(
-            token in name for token in ("KEY", "TOKEN", "SECRET", "PASSWORD")
-        ):
-            return "***" if value else None
-        if len(value) > 80:
-            return value[:77] + "…"
-        return value
 
     def _log_startup_report(self) -> None:
         logger.info("AI News app initialised; settings file: %s", SETTINGS_PATH)
@@ -1768,7 +1656,7 @@ class AINewsApp(tk.Tk):
         safe_env = {
             name: sanitized
             for name, value in env_overrides.items()
-            if (sanitized := self._sanitize_env_value(name, value)) is not None
+            if (sanitized := sanitize_env_value(name, value)) is not None
         }
         logger.info(
             "Startup settings: %s",
@@ -2166,7 +2054,7 @@ class AINewsApp(tk.Tk):
             COLOR_PROFILES[CUSTOM_PROFILE_NAME] = {
                 "background": background,
                 "text": text_color,
-                "hover": _derive_hover_color(text_color),
+                "hover": derive_hover_color(text_color),
             }
             self.color_profile_var.set(CUSTOM_PROFILE_NAME)
             self.ticker_bg_var.set(background)
@@ -2284,7 +2172,7 @@ class AINewsApp(tk.Tk):
         COLOR_PROFILES[CUSTOM_PROFILE_NAME] = {
             "background": self.settings["custom_background"],
             "text": self.settings["custom_text"],
-            "hover": _derive_hover_color(self.settings["custom_text"]),
+            "hover": derive_hover_color(self.settings["custom_text"]),
         }
         was_loading = getattr(self, "_loading_settings", False)
         self._loading_settings = True
@@ -2360,7 +2248,7 @@ class AINewsApp(tk.Tk):
         self._save_settings()
 
     def _refresh_profile_menu(self) -> None:
-        options = _profile_name_options()
+        options = profile_name_options(COLOR_PROFILES, CUSTOM_PROFILE_NAME)
         menu = self.profile_menu["menu"]
         menu.delete(0, "end")
         for name in options:
