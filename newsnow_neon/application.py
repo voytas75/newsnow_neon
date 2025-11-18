@@ -2892,59 +2892,13 @@ class AINewsApp(tk.Tk):
         self._schedule_auto_refresh()
 
     def _cancel_pending_refresh_jobs(self) -> None:
-        if self._refresh_job is not None:
-            try:
-                self.after_cancel(self._refresh_job)
-            except tk.TclError:
-                pass
-            self._refresh_job = None
-        if self._countdown_job is not None:
-            try:
-                self.after_cancel(self._countdown_job)
-            except tk.TclError:
-                pass
-            self._countdown_job = None
+        self.auto_refresh_controller.cancel_pending_jobs()
 
     def _schedule_auto_refresh(self) -> None:
-        self._cancel_pending_refresh_jobs()
-        if self._history_mode:
-            self._next_refresh_time = None
-            self.next_refresh_var.set("Next refresh: history view")
-            return
-        auto_enabled = bool(self.auto_refresh_var.get())
-        if not auto_enabled:
-            self._next_refresh_time = None
-            self.next_refresh_var.set("Next refresh: paused")
-        else:
-            interval_ms = self._auto_refresh_interval_ms()
-            self.refresh_interval = interval_ms
-            self._next_refresh_time = datetime.now() + timedelta(milliseconds=interval_ms)
-            self._refresh_job = self.after(interval_ms, self._auto_refresh_trigger)
-        self._start_refresh_countdown()
-        self._update_status_summary()
+        self.auto_refresh_controller.schedule()
 
     def _schedule_auto_refresh_with_delay(self, delay_ms: int) -> None:
-        delay = max(0, int(delay_ms))
-        self._cancel_pending_refresh_jobs()
-        if self._history_mode:
-            self._next_refresh_time = None
-            self.next_refresh_var.set("Next refresh: history view")
-            return
-        if not bool(self.auto_refresh_var.get()):
-            self._next_refresh_time = None
-            self.next_refresh_var.set("Next refresh: paused")
-            self._start_refresh_countdown()
-            return
-        interval_ms = self._auto_refresh_interval_ms()
-        self.refresh_interval = interval_ms
-        if delay == 0:
-            self._next_refresh_time = datetime.now()
-            self._refresh_job = self.after_idle(self._auto_refresh_trigger)
-        else:
-            self._next_refresh_time = datetime.now() + timedelta(milliseconds=delay)
-            self._refresh_job = self.after(delay, self._auto_refresh_trigger)
-        self._start_refresh_countdown()
-        self._update_status_summary()
+        self.auto_refresh_controller.schedule_with_delay(delay_ms)
 
     def _auto_refresh_trigger(self) -> None:
         self._refresh_job = None
