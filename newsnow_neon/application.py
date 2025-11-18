@@ -79,6 +79,13 @@ from .app.services import (
     load_historical_snapshots,
 )
 
+# Controllers
+from .app.controller.refresh_controller import RefreshController
+from .app.controller.auto_refresh_controller import AutoRefreshController
+from .app.controller.background_watch_controller import (
+    BackgroundWatchController,
+)
+
 # Modularized helpers
 from .app.filtering import (
     filter_headlines as _filter_headlines_fn,
@@ -206,6 +213,10 @@ class AINewsApp(tk.Tk):
 
         self.protocol("WM_DELETE_WINDOW", self._on_close)
         self.bind("<Configure>", self._on_root_configure)
+        # Controllers
+        self.refresh_controller = RefreshController(self)
+        self.auto_refresh_controller = AutoRefreshController(self)
+        self.background_watch_controller = BackgroundWatchController(self)
 
         self.log_handler = TkQueueHandler(self._handle_log_record)
         self.log_handler.setFormatter(
