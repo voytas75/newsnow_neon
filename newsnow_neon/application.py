@@ -200,7 +200,7 @@ class AINewsApp(tk.Tk):
 
     def __init__(self, refresh_interval_ms: int = 900_000) -> None:
         super().__init__()
-        self.title("AI Headlines")
+        self.title("NewsNow Neon")
         self.geometry(DEFAULT_SETTINGS["window_geometry"])
         self.configure(bg="black")
 
