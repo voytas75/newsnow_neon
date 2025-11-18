@@ -2,6 +2,7 @@
 
 Updates: v0.50 - 2025-01-07 - Moved AINewsApp controller and helpers from the legacy script and introduced service injection.
 Updates: v0.51 - 2025-10-29 - Wired application metadata import after relocating legacy launcher.
+Updates: v0.52 - 2025-11-18 - Added one-click mute source/keyword actions and UI wiring.
 """
 
 from __future__ import annotations
@@ -19,6 +20,7 @@ from typing import Any, Callable, Dict, FrozenSet, Iterable, List, Mapping, Opti
 import threading
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 import webbrowser
+from urllib.parse import urlparse
 
 from .config import (
     COLOR_PROFILES,
@@ -64,6 +66,34 @@ from .main import APP_METADATA
 logger = logging.getLogger(__name__)
 
 _SENSITIVE_ENV_PATTERN = re.compile(r"(KEY|TOKEN|SECRET|PASSWORD|API_KEY)$", re.IGNORECASE)
+
+# Common stopwords ignored when auto-deriving a mute keyword from a title.
+_MUTE_STOPWORDS: Set[str] = {
+    "the",
+    "and",
+    "for",
+    "with",
+    "into",
+    "from",
+    "about",
+    "this",
+    "that",
+    "will",
+    "have",
+    "has",
+    "are",
+    "was",
+    "were",
+    "to",
+    "of",
+    "in",
+    "on",
+    "by",
+    "as",
+    "at",
+    "new",
+    "breaking",
+}
 
 _fetch_headlines_impl: Optional[Callable[..., Tuple[List[Headline], bool, Optional[str]]]] = None
 _build_ticker_text_impl: Optional[Callable[[Sequence[Headline]], str]] = None
@@ -559,6 +589,23 @@ class AINewsApp(tk.Tk):
             right_action_cluster, text="Info", command=self._show_info_window
         )
         self.info_btn.pack(side="right", padx=(10, 0))
+
+        # One-click mute actions for selected headline.
+        self.mute_keyword_btn = tk.Button(
+            right_action_cluster,
+            text="Mute Keyword",
+            command=self._mute_selected_keyword,
+            state=tk.DISABLED,
+        )
+        self.mute_keyword_btn.pack(side="right", padx=(10, 0))
+
+        self.mute_source_btn = tk.Button(
+            right_action_cluster,
+            text="Mute Source",
+            command=self._mute_selected_source,
+            state=tk.DISABLED,
+        )
+        self.mute_source_btn.pack(side="right", padx=(10, 0))
 
         self.options_container = tk.Frame(self, bg="black")
         self.options_container.pack(fill="x", padx=10, pady=(0, 10))
@@ -1342,6 +1389,8 @@ class AINewsApp(tk.Tk):
         self._clear_listbox_selection()
         if hasattr(self, "_listbox_tooltip"):
             self._listbox_tooltip.hide()
+        # Refresh action buttons for current selection state.
+        self._refresh_mute_button_state()
 
     def _ensure_color_tag(self, color: str) -> str:
         tag = self._listbox_color_tags.get(color)
@@ -1627,6 +1676,7 @@ class AINewsApp(tk.Tk):
                     f"{total_count} headlines ({self._base_source_label}) | {summary}"
                 )
         self._recompute_background_pending()
+        self._refresh_mute_button_state()
         if reschedule:
             self._schedule_auto_refresh()
 
@@ -1791,6 +1841,131 @@ class AINewsApp(tk.Tk):
             return []
         return [token.strip() for token in re.split(r"[,;\n]+", text) if token.strip()]
 
+    def _resolve_selected_headline(self) -> Optional[Headline]:
+        """Resolve the Headline object for the currently selected list row."""
+        line = self._selected_line
+        if line is None:
+            return None
+        detail = self._listbox_line_details.get(line)
+        if detail is not None and isinstance(detail.headline, Headline):
+            return detail.headline
+        index = self._listbox_line_to_headline.get(line)
+        if index is None or index < 0 or index >= len(self.headlines):
+            return None
+        return self.headlines[index]
+
+    def _refresh_mute_button_state(self) -> None:
+        """Enable or disable 'Mute' buttons based on current selection suitability."""
+        if not hasattr(self, "mute_source_btn") or not hasattr(
+            self, "mute_keyword_btn"
+        ):
+            return
+        headline = self._resolve_selected_headline()
+        enable_source = False
+        enable_keyword = False
+        if headline is not None:
+            url_val = headline.url if isinstance(headline.url, str) else ""
+            src_val = headline.source if isinstance(headline.source, str) else ""
+            enable_source = bool(url_val.strip() or src_val.strip())
+            title_val = headline.title if isinstance(headline.title, str) else ""
+            enable_keyword = bool(self._extract_keyword_for_mute(title_val))
+        try:
+            self.mute_source_btn.config(
+                state=(tk.NORMAL if enable_source else tk.DISABLED)
+            )
+            self.mute_keyword_btn.config(
+                state=(tk.NORMAL if enable_keyword else tk.DISABLED)
+            )
+        except Exception:
+            logger.debug("Unable to update mute action button state.")
+
+    def _add_exclusion_term(self, term: str, *, show_feedback: bool = True) -> bool:
+        """Append a term to exclusions, persist, and re-render if it changes state."""
+        cleaned = (term or "").strip()
+        if not cleaned:
+            return False
+        current_text = (
+            self.exclude_terms_var.get() if hasattr(self, "exclude_terms_var") else ""
+        )
+        combined = f"{current_text}, {cleaned}" if current_text.strip() else cleaned
+        terms_list, terms_set = self._normalise_exclusion_terms(combined)
+        if terms_set == self._exclusion_terms:
+            if show_feedback:
+                self._log_status(f"Exclusion term already present: '{cleaned}'.")
+            return False
+        self._exclusion_terms = terms_set
+        self.settings["headline_exclusions"] = terms_list
+        if hasattr(self, "exclude_terms_var"):
+            self.exclude_terms_var.set(", ".join(terms_list))
+        self._save_settings()
+        self._reapply_exclusion_filters(log_status=True)
+        self._refresh_mute_button_state()
+        if show_feedback:
+            self._log_status(f"Added exclusion term: '{cleaned}'.")
+        return True
+
+    def _extract_keyword_for_mute(self, title: str) -> Optional[str]:
+        """Derive a simple, useful keyword from a headline title for muting."""
+        if not isinstance(title, str):
+            return None
+        tokens = re.findall(r"[A-Za-z0-9+#\\-]{3,}", title)
+        for token in tokens:
+            lower = token.lower()
+            if lower in _MUTE_STOPWORDS:
+                continue
+            if lower.isdigit():
+                continue
+            if len(lower) < 4 and lower not in {"ai", "usa", "uk"}:
+                continue
+            return token
+        return None
+
+    def _mute_selected_source(self) -> None:
+        """Mute the source (domain or label) of the currently selected headline."""
+        headline = self._resolve_selected_headline()
+        if headline is None:
+            return
+        term: Optional[str] = None
+        url_val = headline.url if isinstance(headline.url, str) else ""
+        if url_val.strip():
+            try:
+                parsed = urlparse(url_val)
+                netloc = parsed.netloc or ""
+                netloc = netloc.split("@")[-1]
+                netloc = netloc.split(":")[0]
+                netloc = netloc.lower()
+                if netloc.startswith("www."):
+                    netloc = netloc[4:]
+                if netloc:
+                    term = netloc
+            except Exception:
+                term = None
+        if term is None:
+            src_val = headline.source if isinstance(headline.source, str) else ""
+            label = src_val.strip()
+            if label:
+                term = label
+        if not term:
+            messagebox.showinfo(
+                "Mute Source", "Unable to derive a source to mute for this item."
+            )
+            return
+        self._add_exclusion_term(term, show_feedback=True)
+
+    def _mute_selected_keyword(self) -> None:
+        """Mute a heuristic keyword derived from the selected headline's title."""
+        headline = self._resolve_selected_headline()
+        if headline is None:
+            return
+        title_val = headline.title if isinstance(headline.title, str) else ""
+        keyword = self._extract_keyword_for_mute(title_val)
+        if not keyword:
+            messagebox.showinfo(
+                "Mute Keyword", "Unable to derive a keyword to mute from the title."
+            )
+            return
+        self._add_exclusion_term(keyword, show_feedback=True)
+
     def _on_listbox_click(self, event: tk.Event) -> str:
         try:
             index = self.listbox.index(f"@{event.x},{event.y}")
@@ -1823,6 +1998,7 @@ class AINewsApp(tk.Tk):
                 return "break"
         self._select_listbox_line(line)
         self.listbox.see(f"{line}.0")
+        self._refresh_mute_button_state()
         return "break"
 
     def _on_listbox_nav(self, delta: int) -> str:
@@ -1840,6 +2016,7 @@ class AINewsApp(tk.Tk):
             line = sorted_lines[new_index]
         self._select_listbox_line(line)
         self.listbox.see(f"{line}.0")
+        self._refresh_mute_button_state()
         return "break"
 
     def _on_listbox_motion(self, event: tk.Event) -> None:
