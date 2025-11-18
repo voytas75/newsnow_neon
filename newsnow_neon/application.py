@@ -450,49 +450,11 @@ class AINewsApp(tk.Tk):
         self.redis_controller.handle_stats_ready(stats)
 
     def _on_redis_stats_closed(self) -> None:
-        self._redis_stats_window = None
-        if not hasattr(self, "redis_stats_btn"):
-            return
-        if self._loading_redis_stats:
-            self.redis_stats_btn.config(state=tk.DISABLED)
-            return
-        self.redis_stats_btn.config(state=tk.NORMAL if REDIS_URL else tk.DISABLED)
+        self.redis_controller.on_stats_closed()
 
     def _update_redis_meter(self) -> None:
-        client = get_redis_client()
-        if client is None:
-            self.redis_meter_var.set("Redis: OFF")
-            self.redis_meter_label.config(fg="#FF6B6B")
-            if hasattr(self, "redis_stats_btn"):
-                state = tk.DISABLED if not REDIS_URL else (
-                    tk.DISABLED if self._loading_redis_stats else tk.NORMAL
-                )
-                self.redis_stats_btn.config(state=state)
-            self._refresh_history_controls_state()
-            return
-
-        try:
-            client.ping()  # type: ignore[attr-defined]
-        except Exception as exc:  # pragma: no cover - redis ping failure
-            logger.debug("Redis ping failed; treating cache as unavailable: %s", exc)
-            self.redis_meter_var.set("Redis: OFF")
-            self.redis_meter_label.config(fg="#FF6B6B")
-            if hasattr(self, "redis_stats_btn"):
-                state = tk.DISABLED if not REDIS_URL else (
-                    tk.DISABLED if self._loading_redis_stats else tk.NORMAL
-                )
-                self.redis_stats_btn.config(state=state)
-            self._refresh_history_controls_state()
-            return
-
-        self.redis_meter_var.set("Redis: ON")
-        self.redis_meter_label.config(fg="#32CD32")
-        if hasattr(self, "redis_stats_btn"):
-            state = tk.DISABLED if not REDIS_URL else (
-                tk.DISABLED if self._loading_redis_stats else tk.NORMAL
-            )
-            self.redis_stats_btn.config(state=state)
-        self._refresh_history_controls_state()
+        """Delegate Redis meter updates to RedisController."""
+        self.redis_controller.update_redis_meter()
 
     def refresh_headlines(self, force_refresh: bool = False) -> None:
         """Delegate refresh to RefreshController."""
@@ -1288,33 +1250,8 @@ class AINewsApp(tk.Tk):
         return x_root, y_root
 
     def _request_history_refresh(self) -> None:
-        if self._loading_history:
-            return
-        if not REDIS_URL:
-            messagebox.showinfo(
-                "History unavailable",
-                "Redis caching is disabled. Set REDIS_URL to browse history snapshots.",
-            )
-            return
-        if not bool(self.historical_cache_var.get()):
-            messagebox.showinfo(
-                "History disabled",
-                "Enable the 24h history toggle to start collecting historical snapshots.",
-            )
-            return
-        if get_redis_client() is None:
-            messagebox.showwarning(
-                "History unavailable",
-                "Redis connection is unavailable. Check the Redis URL and retry.",
-            )
-            return
-
-        self._loading_history = True
-        self.history_status_var.set("Loading history snapshots…")
-        self.history_reload_btn.config(state=tk.DISABLED)
-        self.history_listbox.configure(state=tk.DISABLED)
-        self.history_listbox_hover.hide()
-        threading.Thread(target=self._history_loader_worker, daemon=True).start()
+        """Delegate history refresh workflow to HistoryController."""
+        self.history_controller.request_refresh()
 
     def _history_loader_worker(self) -> None:
         error: Optional[str] = None
@@ -1952,58 +1889,24 @@ class AINewsApp(tk.Tk):
         persist: bool,
         show_feedback: bool,
     ) -> None:
-        candidate = raw_value.strip() if isinstance(raw_value, str) else ""
-        if candidate:
-            parsed = parse_highlight_keywords(
-                candidate,
-                ENV_HIGHLIGHT_KEYWORDS,
-                allow_empty_fallback=False,
-            )
-            if not parsed:
-                if show_feedback:
-                    messagebox.showwarning(
-                        "Highlight Keywords",
-                        "No valid highlight keywords were detected. Reverting to defaults.",
-                    )
-                candidate = ""
-                parsed = dict(ENV_HIGHLIGHT_KEYWORDS)
-        else:
-            parsed = dict(ENV_HIGHLIGHT_KEYWORDS)
-        if candidate:
-            canonical = "; ".join(f"{keyword}:{parsed[keyword]}" for keyword in parsed)
-            candidate = canonical
-        else:
-            candidate = ""
-        if hasattr(self, "highlight_keywords_var"):
-            self.highlight_keywords_var.set(candidate)
-        self.settings["highlight_keywords"] = candidate
-        apply_highlight_keywords(parsed)
-        self._update_heatmap_button_state()
-        if refresh_views:
-            self._refresh_views_for_highlight_update()
-            if show_feedback:
-                if candidate:
-                    self._log_status("Highlight keywords updated from settings.")
-                else:
-                    self._log_status("Highlight keywords reset to defaults.")
-        if persist:
-            self._save_settings()
-
-    def apply_highlight_keywords_from_var(self, *, show_feedback: bool) -> None:
-        value = self.highlight_keywords_var.get() if hasattr(self, "highlight_keywords_var") else ""
-        self._update_highlight_keywords_setting(
-            value,
-            refresh_views=True,
-            persist=True,
+        self.highlight_controller.update_keywords_setting(
+            raw_value,
+            refresh_views=refresh_views,
+            persist=persist,
             show_feedback=show_feedback,
         )
 
+    def apply_highlight_keywords_from_var(self, *, show_feedback: bool) -> None:
+        self.highlight_controller.apply_keywords_from_var(
+            show_feedback=show_feedback
+        )
+
     def _on_highlight_keywords_return(self, *_args: object) -> str:
-        self.apply_highlight_keywords_from_var(show_feedback=True)
+        self.highlight_controller.on_return()
         return "break"
 
     def _on_highlight_keywords_button(self) -> None:
-        self.apply_highlight_keywords_from_var(show_feedback=True)
+        self.highlight_controller.on_apply_button()
 
     def _sanitize_env_value(self, name: str, value: Optional[str]) -> Optional[str]:
         if value is None:
