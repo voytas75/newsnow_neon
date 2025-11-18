@@ -1849,25 +1849,53 @@ class AINewsApp(tk.Tk):
         return True
 
     def _mute_selected_source(self) -> None:
-        """Mute the source (domain or label) of the currently selected headline."""
+        """Mute the source (final article domain or label) of the selection."""
         headline = self._resolve_selected_headline()
         if headline is None:
             return
 
-        # Use modular helper to derive source term (domain first, then label).
-        try:
-            term = _derive_source_term_fn(headline)
-        except Exception:
-            term = None
+        # Resolve the final URL in a background thread to avoid UI blocking.
+        def worker() -> None:
+            term: Optional[str] = None
+            url_val = headline.url if isinstance(headline.url, str) else ""
+            if url_val.strip():
+                try:
+                    # Lightweight final-URL resolution via shared HTTP client
+                    from .http_client import resolve_final_url
+                    resolved = resolve_final_url(url_val, timeout=8)
+                    parsed = urlparse(resolved)
+                    netloc = parsed.netloc or ""
+                    # Normalize domain: strip auth/port and www prefix
+                    netloc = netloc.split("@")[-1].split(":")[0].lower()
+                    if netloc.startswith("www."):
+                        netloc = netloc[4:]
+                    # Avoid muting NewsNow redirector domains
+                    redirect_suffixes = ("newsnow.com", "newsnow.co.uk")
+                    if netloc and not any(netloc.endswith(s) for s in redirect_suffixes):
+                        term = netloc
+                except Exception:
+                    # Fall back to deriving from existing helpers
+                    term = None
 
-        if not term:
-            messagebox.showinfo(
-                "Mute Source", "Unable to derive a source to mute for this item."
-            )
-            return
+            if not term:
+                try:
+                    term = _derive_source_term_fn(headline)
+                except Exception:
+                    term = None
 
-        # Defer the exclusion update to idle to avoid blocking the UI callback.
-        self.after_idle(lambda: self._add_exclusion_term(term, show_feedback=True))
+            def finalize() -> None:
+                if not term:
+                    messagebox.showinfo(
+                        "Mute Source",
+                        "Unable to derive a source to mute for this item.",
+                    )
+                    return
+                # Apply exclusion on the main thread
+                self._add_exclusion_term(term, show_feedback=True)
+
+            self.after(0, finalize)
+
+        threading.Thread(target=worker, daemon=True).start()
 
     def _mute_selected_keyword(self) -> None:
         """Mute a heuristic keyword derived from the selected headline's title."""
