@@ -135,5 +135,56 @@ class ListRenderer:
         finally:
             self.app.listbox.configure(state="disabled")
 
+    def update_row_metadata(
+        self,
+        line: int,
+        localized: Headline,
+        relative_label: Optional[str],
+        display_index: int,
+        row_color: Optional[str],
+        metadata_text: str,
+        prefix_len: int,
+    ) -> None:
+        """Update metadata segment and color tag for an existing row.
+
+        Mirrors legacy behavior while consolidating listbox mutations and
+        cache updates within the renderer to reduce application.py size.
+        """
+        metadata_with_dash = f" — {metadata_text}"
+        insert_index = f"{line}.0 + {prefix_len}c"
+        line_end = f"{line}.end"
+
+        # Mutate listbox text and tags
+        self.app.listbox.configure(state="normal")
+        try:
+            self.app.listbox.delete(insert_index, line_end)
+            row_tag = self.app._line_to_row_tag.get(line)
+            if row_tag:
+                metadata_tags = ("metadata", row_tag)
+            else:
+                metadata_tags = ("metadata",)
+            self.app.listbox.insert(insert_index, metadata_with_dash, metadata_tags)
+
+            # Refresh color tag on the title prefix
+            color_tag = self.ensure_color_tag(
+                row_color or self.app.listbox_default_fg
+            )
+            prefix_start = f"{line}.0"
+            prefix_end = f"{line}.0 + {prefix_len}c"
+            for tag in self.app._listbox_color_tags.values():
+                self.app.listbox.tag_remove(tag, prefix_start, prefix_end)
+            self.app.listbox.tag_add(color_tag, prefix_start, prefix_end)
+        finally:
+            self.app.listbox.configure(state="disabled")
+
+        # Update caches used by tooltips and re-renders
+        self.app._listbox_line_metadata[line] = metadata_with_dash
+        self.app._listbox_line_details[line] = HeadlineTooltipData(
+            headline=localized,
+            relative_age=relative_label,
+            display_index=display_index,
+            row_kind="title",
+        )
+
 
 __all__ = ["ListRenderer"]

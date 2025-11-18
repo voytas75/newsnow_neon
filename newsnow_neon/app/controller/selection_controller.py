@@ -219,11 +219,11 @@ class SelectionController:
 
     def ensure_color_tag(self, color: str) -> str:
         """Return a tag name for the given foreground color, creating as needed."""
-        return self.app._ensure_color_tag(color)
+        return self.app.list_renderer.ensure_color_tag(color)
 
     def append_group_label(self, text: str) -> None:
         """Append a group label line to the listbox."""
-        self.app._append_group_label(text)
+        self.app.list_renderer.append_group_label(text)
 
     def append_headline_row(
         self,
@@ -236,7 +236,7 @@ class SelectionController:
         original_idx: int,
     ) -> None:
         """Append a headline row with metadata and color tags."""
-        self.app._append_headline_line(
+        self.app.list_renderer.append_headline_row(
             display_index=display_index,
             localized=localized,
             metadata_text=metadata_text,
@@ -247,7 +247,7 @@ class SelectionController:
 
     def append_message_line(self, text: str) -> None:
         """Append a message line to the listbox."""
-        self.app._append_message_line(text)
+        self.app.list_renderer.append_message_line(text)
 
     # Mute action integration
 

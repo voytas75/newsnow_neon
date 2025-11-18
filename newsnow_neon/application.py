@@ -100,6 +100,7 @@ from .app.views.logs_panel import build_logs_panel
 from .app.views.options_panel import build_options_panel
 from .app.views.highlight_panel import build_highlight_panel
 from .app.views.controls_panel import build_controls_panel
+from .app.renderers.list_renderer import ListRenderer
 
 # Modularized helpers
 from .app.filtering import (
@@ -238,6 +239,7 @@ class AINewsApp(tk.Tk):
         self.settings_controller = SettingsController(self)
         self.redis_controller = RedisController(self)
         self.highlight_controller = HighlightController(self)
+        self.list_renderer = ListRenderer(self)
 
         self.log_handler = TkQueueHandler(self._handle_log_record)
         self.log_handler.setFormatter(
@@ -674,29 +676,13 @@ class AINewsApp(tk.Tk):
         self._refresh_mute_button_state()
 
     def _ensure_color_tag(self, color: str) -> str:
-        tag = self._listbox_color_tags.get(color)
-        if tag is not None:
-            return tag
-        tag = f"color_{len(self._listbox_color_tags)}"
-        self.listbox.tag_configure(tag, foreground=color)
-        self._listbox_color_tags[color] = tag
-        return tag
+        return self.list_renderer.ensure_color_tag(color)
 
     def _ensure_line_break(self) -> None:
-        try:
-            last_char = self.listbox.get("end-1c")
-        except tk.TclError:
-            return
-        if not last_char or last_char == "\n":
-            return
-        self.listbox.insert("end", "\n")
+        self.list_renderer.ensure_line_break()
 
     def _append_group_label(self, text: str) -> None:
-        self.listbox.configure(state="normal")
-        self._ensure_line_break()
-        self.listbox.insert("end", text, ("group",))
-        self.listbox.insert("end", "\n")
-        self.listbox.configure(state="disabled")
+        self.list_renderer.append_group_label(text)
 
     def _append_headline_line(
         self,
@@ -708,45 +694,17 @@ class AINewsApp(tk.Tk):
         row_color: Optional[str],
         original_idx: int,
     ) -> None:
-        color_tag = self._ensure_color_tag(row_color or self.listbox_default_fg)
-        prefix_text = f"{display_index}. {localized.title}"
-        row_tag = f"row_{len(self._row_tag_to_headline)}"
-        self.listbox.configure(state="normal")
-        self._ensure_line_break()
-        insertion_index = self.listbox.index("end")
-        self.listbox.insert("end", prefix_text, ("title", color_tag, row_tag))
-        metadata_with_dash = f" — {metadata_text}"
-        self.listbox.insert("end", metadata_with_dash, ("metadata", row_tag))
-        self.listbox.insert("end", "\n", (row_tag,))
-        ranges = self.listbox.tag_ranges(row_tag)
-        if ranges:
-            start_index = str(ranges[0])
-        else:
-            start_index = str(insertion_index)
-        try:
-            line_no = int(float(start_index.split(".")[0]))
-        except (ValueError, IndexError):
-            line_no = int(float(self.listbox.index("end-1c").split(".")[0]))
-        self.listbox.configure(state="disabled")
-        self._row_tag_to_headline[row_tag] = original_idx
-        self._row_tag_to_line[row_tag] = line_no
-        self._line_to_row_tag[line_no] = row_tag
-        self._listbox_line_to_headline[line_no] = original_idx
-        self._listbox_line_details[line_no] = HeadlineTooltipData(
-            headline=localized,
-            relative_age=relative_label,
+        self.list_renderer.append_headline_row(
             display_index=display_index,
-            row_kind="title",
+            localized=localized,
+            metadata_text=metadata_text,
+            relative_label=relative_label,
+            row_color=row_color,
+            original_idx=original_idx,
         )
-        self._listbox_line_prefix[line_no] = len(prefix_text)
-        self._listbox_line_metadata[line_no] = metadata_with_dash
 
     def _append_message_line(self, text: str) -> None:
-        self.listbox.configure(state="normal")
-        self._ensure_line_break()
-        self.listbox.insert("end", text, ("message",))
-        self.listbox.insert("end", "\n")
-        self.listbox.configure(state="disabled")
+        self.list_renderer.append_message_line(text)
 
     def _clear_listbox_selection(self) -> None:
         self.listbox.configure(state="normal")
@@ -870,7 +828,7 @@ class AINewsApp(tk.Tk):
             filtered_headlines: List[Headline] = []
             full_headlines: List[Headline] = []
             for label, items in grouped:
-                self._append_group_label(f"-- {label} --")
+                self.list_renderer.append_group_label(f"-- {label} --")
                 for original_idx, headline, age_minutes in items:
                     localized = localized_cache.get(original_idx)
                     if localized is None:
@@ -884,7 +842,7 @@ class AINewsApp(tk.Tk):
                     row_color = headline_highlight_color(localized)
 
                     metadata_text = " • ".join(metadata_parts)
-                    self._append_headline_line(
+                    self.list_renderer.append_headline_row(
                         display_index=display_idx,
                         localized=localized,
                         metadata_text=metadata_text,
@@ -930,7 +888,7 @@ class AINewsApp(tk.Tk):
                 )
             else:
                 message = "No headlines available right now."
-            self._append_message_line(message)
+            self.list_renderer.append_message_line(message)
             if update_tickers:
                 self.ticker.set_text(message)
                 self.full_ticker.set_text(message)
@@ -1021,7 +979,9 @@ class AINewsApp(tk.Tk):
             else:
                 metadata_tags = ("metadata",)
             self.listbox.insert(insert_index, metadata_with_dash, metadata_tags)
-            color_tag = self._ensure_color_tag(row_color or self.listbox_default_fg)
+            color_tag = self.list_renderer.ensure_color_tag(
+                row_color or self.listbox_default_fg
+            )
             prefix_start = f"{line}.0"
             prefix_end = f"{line}.0 + {prefix_len}c"
             for tag in self._listbox_color_tags.values():
