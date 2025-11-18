@@ -1,7 +1,7 @@
-"""Common helper utilities for NewsNow Neon application.
+"""UI helper functions extracted from the application controller.
 
-Updates: v0.53 - 2025-11-18 - Extracted color, env, system, and history
-helpers from application controller.
+Updates: v0.52 - 2025-11-18 - Extracted color, env, system, and history helpers
+into a dedicated module to slim down the main application controller.
 """
 
 from __future__ import annotations
@@ -9,21 +9,22 @@ from __future__ import annotations
 import platform
 import re
 from pathlib import Path
-from typing import Any, List, Mapping, Optional, Tuple
-from datetime import tzinfo
+from typing import List, Optional, Tuple
+from datetime import datetime, tzinfo
 
-from ...models import HistoricalSnapshot
+from ..config import COLOR_PROFILES, CUSTOM_PROFILE_NAME
+from ..models import HistoricalSnapshot
+
 
 _SENSITIVE_ENV_PATTERN = re.compile(
-    r"(KEY|TOKEN|SECRET|PASSWORD|API_KEY)$",
-    re.IGNORECASE,
+    r"(KEY|TOKEN|SECRET|PASSWORD|API_KEY)$", re.IGNORECASE
 )
 
 
 def derive_hover_color(hex_color: str, factor: float = 0.25) -> str:
-    """Compute a lighter hover color based on a hex text color.
+    """Derive a lighter hover color from a hex color value.
 
-    If input is invalid, it is returned unchanged.
+    Returns the input value unchanged if it is not a valid hex color.
     """
     if not isinstance(hex_color, str) or not hex_color.startswith("#"):
         return hex_color
@@ -47,23 +48,25 @@ def derive_hover_color(hex_color: str, factor: float = 0.25) -> str:
     return "#{:02X}{:02X}{:02X}".format(_mix(r), _mix(g), _mix(b))
 
 
-def profile_name_options(
-    color_profiles: Mapping[str, Any],
-    custom_profile_name: str,
-) -> List[str]:
-    """Return profile names with custom profile at the end."""
-    names = list(color_profiles.keys())
-    if custom_profile_name not in color_profiles:
-        names.append(custom_profile_name)
+def profile_name_options() -> List[str]:
+    """Return available color profile names, ensuring CUSTOM is last."""
+    names = list(COLOR_PROFILES.keys())
+    if CUSTOM_PROFILE_NAME not in COLOR_PROFILES:
+        names.append(CUSTOM_PROFILE_NAME)
     else:
-        names = [n for n in names if n != custom_profile_name] + [
-            custom_profile_name
-        ]
+        names = [n for n in names if n != CUSTOM_PROFILE_NAME] + [CUSTOM_PROFILE_NAME]
     return names
 
 
 def sanitize_env_value(name: str, value: Optional[str]) -> Optional[str]:
-    """Mask sensitive environment variables and truncate long values."""
+    """Mask sensitive environment variable values for safe logging.
+
+    Returns:
+        - "***" for sensitive keys with a value
+        - None for empty values
+        - Truncated long values (> 80 chars)
+        - Original value otherwise
+    """
     if value is None:
         return None
     if _SENSITIVE_ENV_PATTERN.search(name) or any(
@@ -75,8 +78,8 @@ def sanitize_env_value(name: str, value: Optional[str]) -> Optional[str]:
     return value
 
 
-def build_system_rows(settings_path: Path) -> List[Tuple[str, str]]:
-    """Collect system information rows shown in the App Info window."""
+def build_system_rows(settings_path: Path | str) -> List[Tuple[str, str]]:
+    """Compose key-value rows describing the host system and settings path."""
     system_name_raw = platform.system()
     os_name = system_name_raw.strip() if system_name_raw else ""
 
@@ -113,27 +116,24 @@ def build_system_rows(settings_path: Path) -> List[Tuple[str, str]]:
 
 
 def format_history_entry(
-    snapshot: HistoricalSnapshot,
-    tz: tzinfo,
-    tz_name: str,
+    snapshot: HistoricalSnapshot, tz: tzinfo, tz_name: str
 ) -> str:
-    """Format a single history listbox entry label."""
+    """Format a snapshot entry label for the history listbox."""
     local_dt = snapshot.captured_at.astimezone(tz)
+    tz_label = local_dt.tzname() or tz_name
     timestamp = local_dt.strftime("%Y-%m-%d %H:%M")
     headline_label = "headline" if snapshot.headline_count == 1 else "headlines"
-    return f"{timestamp} {tz_name} • {snapshot.headline_count} {headline_label}"
+    return f"{timestamp} {tz_label} • {snapshot.headline_count} {headline_label}"
 
 
 def format_history_tooltip(
-    snapshot: HistoricalSnapshot,
-    tz: tzinfo,
-    tz_name: str,
-    max_ticker_chars: int = 120,
+    snapshot: HistoricalSnapshot, tz: tzinfo, tz_name: str
 ) -> str:
-    """Compose a multi-line tooltip for a history snapshot."""
+    """Compose a multi-line tooltip for a snapshot listbox hover."""
     local_dt = snapshot.captured_at.astimezone(tz)
+    tz_label = local_dt.tzname() or tz_name
     lines = [
-        f"Captured: {local_dt.strftime('%Y-%m-%d %H:%M:%S')} {tz_name}",
+        f"Captured: {local_dt.strftime('%Y-%m-%d %H:%M:%S')} {tz_label}",
         f"Redis key: {snapshot.key}",
         f"Headlines: {snapshot.headline_count}",
     ]
@@ -143,18 +143,8 @@ def format_history_tooltip(
     if ticker_preview:
         truncated = (
             ticker_preview
-            if len(ticker_preview) <= max_ticker_chars
-            else ticker_preview[: max_ticker_chars - 3].rstrip() + "…"
+            if len(ticker_preview) <= 120
+            else ticker_preview[:117].rstrip() + "…"
         )
         lines.append(f"Ticker: {truncated}")
     return "\n".join(lines)
-
-
-__all__ = [
-    "derive_hover_color",
-    "profile_name_options",
-    "sanitize_env_value",
-    "build_system_rows",
-    "format_history_entry",
-    "format_history_tooltip",
-]

@@ -3,6 +3,7 @@
 Updates: v0.50 - 2025-01-07 - Moved AINewsApp controller and helpers from the legacy script and introduced service injection.
 Updates: v0.51 - 2025-10-29 - Wired application metadata import after relocating legacy launcher.
 Updates: v0.52 - 2025-11-18 - Added one-click mute source/keyword actions and UI wiring.
+Updates: v0.53 - 2025-11-18 - Slimmed controller by delegating background watch and history UI to controllers/helpers, removed duplicate methods.
 """
 
 from __future__ import annotations
@@ -13,7 +14,7 @@ import tkinter as tk
 from collections import deque
 from datetime import datetime, timedelta, timezone, tzinfo
 from dataclasses import replace
-from tkinter import colorchooser, messagebox
+from tkinter import messagebox
 from typing import Any, Callable, Dict, FrozenSet, Iterable, List, Mapping, Optional, Sequence, Set, Tuple
 import threading
 from urllib.parse import urlparse
@@ -134,6 +135,46 @@ from .app.helpers.app_helpers import (
     format_history_entry,
     format_history_tooltip,
 )
+from .app.ui.ui_helpers import (
+    toggle_logs as ui_toggle_logs,
+    append_log_line as ui_append_log_line,
+    flush_log_buffer as ui_flush_log_buffer,
+    handle_log_record as ui_handle_log_record,
+    set_options_visibility as ui_set_options_visibility,
+    ensure_options_visible as ui_ensure_options_visible,
+    update_status_summary as ui_update_status_summary,
+    clear_search as ui_clear_search,
+    on_search_change as ui_on_search_change,
+    on_section_filter_change as ui_on_section_filter_change,
+    matches_filters as ui_matches_filters,
+    filtered_entries as ui_filtered_entries,
+    refresh_section_filter_menu as ui_refresh_section_filter_menu,
+    refresh_timezone_menu as ui_refresh_timezone_menu,
+    on_timezone_change as ui_on_timezone_change,
+    apply_timezone_selection as ui_apply_timezone_selection,
+    refresh_timezone_display as ui_refresh_timezone_display,
+    apply_color_profile as ui_apply_color_profile,
+    choose_color as ui_choose_color,
+    update_ticker_colors as ui_update_ticker_colors,
+    refresh_profile_menu as ui_refresh_profile_menu,
+    on_profile_selected as ui_on_profile_selected,
+    refresh_color_profiles as ui_refresh_color_profiles,
+    refresh_relative_age_labels as ui_refresh_relative_age_labels,
+    clear_headline_list as ui_clear_headline_list,
+    clear_listbox_selection as ui_clear_listbox_selection,
+    select_listbox_line as ui_select_listbox_line,
+)
+from .app.ui.history_ui import (
+    handle_history_loaded as history_handle_history_loaded,
+    on_history_select as history_on_history_select,
+    activate_history_selection as history_activate_history_selection,
+    on_history_motion as history_on_history_motion,
+    capture_live_flow_state as history_capture_live_flow_state,
+    apply_history_snapshot as history_apply_history_snapshot,
+    restore_live_flow_state as history_restore_live_flow_state,
+    exit_history_mode as history_exit_history_mode,
+    refresh_history_controls_state as history_refresh_history_controls_state,
+)
 
 
 def _coerce_timezone(name: Optional[str]) -> tuple[str, tzinfo]:
@@ -224,7 +265,9 @@ class AINewsApp(tk.Tk):
         self.highlight_controller = HighlightController(self)
         self.list_renderer = ListRenderer(self)
 
-        self.log_handler = TkQueueHandler(self._handle_log_record)
+        self.log_handler = TkQueueHandler(
+            lambda level, message: ui_handle_log_record(self, level, message)
+        )
         self.log_handler.setFormatter(
             logging.Formatter(
                 "%(asctime)s | %(levelname)s | %(message)s", datefmt="%H:%M:%S"
@@ -316,7 +359,7 @@ class AINewsApp(tk.Tk):
             "background_watch_refresh_threshold",
             DEFAULT_SETTINGS["background_watch_refresh_threshold"],
         )
-        self._background_refresh_threshold = self._coerce_background_watch_threshold(
+        self._background_refresh_threshold = self.background_watch_controller.coerce_threshold(
             threshold_value
         )
         self.settings["background_watch_refresh_threshold"] = self._background_refresh_threshold
@@ -379,14 +422,14 @@ class AINewsApp(tk.Tk):
         build_options_panel(self)
 
         self.log_frame, self.log_text = build_logs_panel(self)
-        self._append_log_line("Logs:")
+        ui_append_log_line(self, "Logs:")
 
         self._apply_settings_from_store()
         self._loading_settings = False
         self._save_settings()
         self._log_startup_report()
         self.after(0, self.refresh_headlines)
-        self.after(0, self._flush_log_buffer)
+        self.after(0, lambda: ui_flush_log_buffer(self))
         self.after(0, self.redis_controller.update_redis_meter)
         current_geometry = self.geometry()
         if current_geometry:
@@ -469,7 +512,7 @@ class AINewsApp(tk.Tk):
         self._pending_new_headlines = 0
         self._last_reported_pending = 0
         self._background_candidate_keys.clear()
-        self._update_background_watch_label()
+        self.background_watch_controller.update_label()
         self._last_refresh_time = fetched_at
         self._update_content(
             headlines=headlines, ticker_text=ticker_text, from_cache=from_cache
@@ -534,41 +577,16 @@ class AINewsApp(tk.Tk):
         return _compose_metadata_parts_fn(localized, relative_label)
 
     def _clear_headline_list(self) -> None:
-        self.listbox.configure(state="normal")
-        self.listbox.delete("1.0", tk.END)
-        self.listbox.configure(state="disabled")
-        self._listbox_line_to_headline.clear()
-        self._listbox_line_details.clear()
-        self._listbox_line_prefix.clear()
-        self._listbox_line_metadata.clear()
-        self._row_tag_to_line.clear()
-        self._row_tag_to_headline.clear()
-        self._line_to_row_tag.clear()
-        self._listbox_hover_line = None
-        self._listbox_last_tooltip_text = None
-        self._selected_line = None
-        self._clear_listbox_selection()
-        if hasattr(self, "_listbox_tooltip"):
-            self._listbox_tooltip.hide()
-        # Refresh action buttons for current selection state.
-        self._refresh_mute_button_state()
+        """Delegate list clearing to UI helper to keep controller thin."""
+        ui_clear_headline_list(self)
 
     def _clear_listbox_selection(self) -> None:
-        self.listbox.configure(state="normal")
-        self.listbox.tag_remove("selected", "1.0", tk.END)
-        self.listbox.configure(state="disabled")
-        self._selected_line = None
+        """Delegate selection clearing to UI helper."""
+        ui_clear_listbox_selection(self)
 
     def _select_listbox_line(self, line: int) -> None:
-        line_count = int(float(self.listbox.index("end-1c").split(".")[0]))
-        if line < 1 or line > line_count:
-            return
-        self.listbox.configure(state="normal")
-        self.listbox.tag_remove("selected", "1.0", tk.END)
-        self.listbox.tag_add("selected", f"{line}.0", f"{line}.end")
-        self.listbox.tag_raise("selected")
-        self.listbox.configure(state="disabled")
-        self._selected_line = line
+        """Delegate line selection to UI helper."""
+        ui_select_listbox_line(self, line)
 
     def _update_content(
         self,
@@ -761,7 +779,7 @@ class AINewsApp(tk.Tk):
                 self._log_status(
                     f"{total_count} headlines ({self._base_source_label}) | {summary}"
                 )
-        self._recompute_background_pending()
+        self.background_watch_controller.recompute_pending()
         self._refresh_mute_button_state()
         if reschedule:
             self._schedule_auto_refresh()
@@ -791,60 +809,12 @@ class AINewsApp(tk.Tk):
         self._cancel_relative_age_refresh()
         if not self._listbox_line_to_headline:
             return
-        self._relative_age_job = self.after(60_000, self._refresh_relative_age_labels)
+        self._relative_age_job = self.after(60_000, lambda: ui_refresh_relative_age_labels(self))
 
     def _refresh_relative_age_labels(self) -> None:
+        """Delegate to UI helper to reduce controller size."""
         self._relative_age_job = None
-        if not self._listbox_line_to_headline:
-            return
-        now_utc = datetime.now(timezone.utc)
-        updated_any = False
-        for line, original_idx in list(self._listbox_line_to_headline.items()):
-            if original_idx < 0 or original_idx >= len(self.headlines):
-                continue
-            headline = self.headlines[original_idx]
-            localized = self._headline_with_timezone(headline)
-            age_minutes = self._headline_age_minutes(headline, now_utc)
-            relative_label = self._format_relative_age(age_minutes)
-            context = self._listbox_line_details.get(line)
-            display_index = (
-                context.display_index if context and context.display_index is not None else original_idx + 1
-            )
-            row_color = headline_highlight_color(localized)
-            metadata_parts = self._compose_metadata_parts(localized, relative_label)
-            metadata_text = " • ".join(metadata_parts)
-            metadata_with_dash = f" — {metadata_text}"
-            prefix_len = self._listbox_line_prefix.get(line, 0)
-            insert_index = f"{line}.0 + {prefix_len}c"
-            line_end = f"{line}.end"
-            self.listbox.configure(state="normal")
-            self.listbox.delete(insert_index, line_end)
-            row_tag = self._line_to_row_tag.get(line)
-            metadata_tags: tuple[str, ...]
-            if row_tag:
-                metadata_tags = ("metadata", row_tag)
-            else:
-                metadata_tags = ("metadata",)
-            self.listbox.insert(insert_index, metadata_with_dash, metadata_tags)
-            color_tag = self.list_renderer.ensure_color_tag(
-                row_color or self.listbox_default_fg
-            )
-            prefix_start = f"{line}.0"
-            prefix_end = f"{line}.0 + {prefix_len}c"
-            for tag in self._listbox_color_tags.values():
-                self.listbox.tag_remove(tag, prefix_start, prefix_end)
-            self.listbox.tag_add(color_tag, prefix_start, prefix_end)
-            self.listbox.configure(state="disabled")
-            self._listbox_line_metadata[line] = metadata_with_dash
-            self._listbox_line_details[line] = HeadlineTooltipData(
-                headline=localized,
-                relative_age=relative_label,
-                display_index=display_index,
-                row_kind="title",
-            )
-            updated_any = True
-        if updated_any:
-            self._schedule_relative_age_refresh()
+        ui_refresh_relative_age_labels(self)
 
     def _reapply_exclusion_filters(self, *, log_status: bool) -> None:
         self._apply_exclusion_filter_to_state(reschedule=False, log_status=log_status)
@@ -1033,96 +1003,19 @@ class AINewsApp(tk.Tk):
     def _handle_history_loaded(
         self, snapshots: Sequence[HistoricalSnapshot], error: Optional[str]
     ) -> None:
-        self._loading_history = False
-        can_refresh = bool(REDIS_URL) and bool(self.historical_cache_var.get())
-        try:
-            self.history_reload_btn.config(state=tk.NORMAL if can_refresh else tk.DISABLED)
-        except Exception:
-            logger.debug("Unable to update history refresh button state.")
-
-        self.history_listbox.configure(state=tk.NORMAL)
-        self.history_listbox.delete(0, tk.END)
-        self._history_entries = list(snapshots)
-
-        if error:
-            self.history_status_var.set(f"History load failed: {error}")
-            self.history_listbox.insert(
-                tk.END, "Unable to load history snapshots right now."
-            )
-            self.history_listbox.configure(state=tk.DISABLED)
-            return
-
-        if not self._history_entries:
-            message = "No cached headlines captured in the last 24 hours."
-            self.history_status_var.set(message)
-            self.history_listbox.insert(tk.END, message)
-            self.history_listbox.configure(state=tk.DISABLED)
-            self.history_listbox_hover.hide()
-            if self._history_mode:
-                self._exit_history_mode(trigger_refresh=False)
-            return
-
-        self.history_listbox.configure(state=tk.NORMAL)
-        for snapshot in self._history_entries:
-            self.history_listbox.insert(
-                tk.END,
-                format_history_entry(snapshot, self._timezone, self._timezone_name),
-            )
-        self.history_status_var.set(
-            f"{len(self._history_entries)} snapshots loaded (newest first). Select to view."
-        )
-        self.history_listbox.selection_clear(0, tk.END)
-        self.history_listbox_hover.hide()
-
-        if self._history_mode and self._history_active_snapshot is not None:
-            active_key = self._history_active_snapshot.key
-            keys = [entry.key for entry in self._history_entries]
-            if active_key not in keys:
-                self._exit_history_mode(trigger_refresh=False)
-            else:
-                index = keys.index(active_key)
-                self.history_listbox.selection_set(index)
-                self.history_listbox.see(index)
-
-        self._refresh_history_controls_state()
+        history_handle_history_loaded(self, snapshots, error)
 
 
     def _on_history_select(self, _event: tk.Event) -> None:
-        if self.history_listbox.cget("state") != tk.NORMAL:
-            return
-        self._activate_history_selection()
+        history_on_history_select(self, _event)
 
     def _activate_history_selection(
         self, _event: Optional[tk.Event] = None
     ) -> Optional[str]:
-        if self.history_listbox.cget("state") != tk.NORMAL:
-            return "break" if _event is not None else None
-        selection = self.history_listbox.curselection()
-        if not selection:
-            return "break" if _event is not None else None
-        index = selection[0]
-        if index < 0 or index >= len(self._history_entries):
-            return "break" if _event is not None else None
-        snapshot = self._history_entries[index]
-        self._apply_history_snapshot(snapshot)
-        return "break" if _event is not None else None
+        return history_activate_history_selection(self, _event)
 
     def _on_history_motion(self, event: tk.Event) -> None:
-        if self.history_listbox.cget("state") != tk.NORMAL:
-            self.history_listbox_hover.hide()
-            return
-        if not self._history_entries:
-            self.history_listbox_hover.hide()
-            return
-        index = self.history_listbox.nearest(event.y)
-        if index < 0 or index >= len(self._history_entries):
-            self.history_listbox_hover.hide()
-            return
-        snapshot = self._history_entries[index]
-        tooltip = format_history_tooltip(
-            snapshot, self._timezone, self._timezone_name
-        )
-        self.history_listbox_hover.show(tooltip, event.x_root, event.y_root)
+        history_on_history_motion(self, event)
 
     def _capture_live_flow_state(self) -> LiveFlowState:
         listbox_view_top: Optional[float] = None
@@ -1148,47 +1041,7 @@ class AINewsApp(tk.Tk):
         )
 
     def _apply_history_snapshot(self, snapshot: HistoricalSnapshot) -> None:
-        self.history_listbox_hover.hide()
-        self._ensure_options_visible()
-        if not self._history_mode:
-            raw_headlines = (
-                list(self._raw_headlines) if self._raw_headlines else list(self.headlines)
-            )
-            self._last_live_payload = (
-                raw_headlines,
-                self._current_ticker_text,
-                self._last_headline_from_cache,
-            )
-            self._last_live_flow_state = self._capture_live_flow_state()
-        self._history_mode = True
-        self._history_active_snapshot = snapshot
-        self.exit_history_btn.config(state=tk.NORMAL)
-        ticker_text = snapshot.cache.ticker_text or build_ticker_text(snapshot.cache.headlines)
-        self.history_status_var.set(
-            f"History mode: {format_history_entry(snapshot, self._timezone, self._timezone_name)}"
-        )
-        self._log_status(
-            f"Viewing historical snapshot captured at {snapshot.captured_at.isoformat()}."
-        )
-        self._cancel_pending_refresh_jobs()
-        self._next_refresh_time = None
-        self.next_refresh_var.set("Next refresh: history view")
-        self._update_content(
-            headlines=list(snapshot.cache.headlines),
-            ticker_text=ticker_text,
-            from_cache=True,
-            reschedule=False,
-            log_status=False,
-            update_tickers=False,
-        )
-        self._log_status(
-            f"Loaded {snapshot.headline_count} cached headlines captured at {snapshot.captured_at.isoformat()}."
-        )
-        try:
-            self._clear_listbox_selection()
-            self.listbox.yview_moveto(0.0)
-        except Exception:
-            logger.debug("Unable to reset main listbox selection after history load.")
+        history_apply_history_snapshot(self, snapshot)
 
     def _restore_live_flow_state(self) -> tuple[bool, bool, bool]:
         snapshot = self._last_live_flow_state
@@ -1392,46 +1245,12 @@ class AINewsApp(tk.Tk):
 
 
     def _filtered_entries(self) -> List[tuple[int, Headline]]:
-        results: List[tuple[int, Headline]] = []
-        for index, headline in enumerate(self.headlines):
-            if self._matches_filters(headline):
-                results.append((index, headline))
-        return results
+        """Delegate to UI helper for filter matching."""
+        return ui_filtered_entries(self)
 
     def _matches_filters(self, headline: Headline) -> bool:
-        section_filter = (self.section_filter_var.get() or "").strip()
-        if section_filter and section_filter != "All sections":
-            section_value = (
-                headline.section.strip()
-                if isinstance(headline.section, str)
-                else ""
-            )
-            if section_value != section_filter:
-                return False
-
-        query = (self.search_var.get() or "").strip().lower()
-        if not query:
-            return True
-
-        tokens = [token for token in query.split() if token]
-        if not tokens:
-            return True
-
-        haystack_parts = [
-            headline.title,
-            headline.source,
-            headline.section,
-            headline.published_time,
-            headline.published_at,
-            headline.url,
-        ]
-        haystack = " ".join(
-            part.strip()
-            for part in haystack_parts
-            if isinstance(part, str) and part.strip()
-        ).lower()
-
-        return all(token in haystack for token in tokens)
+        """Delegate to UI helper for filter matching."""
+        return ui_matches_filters(self, headline)
 
     def _filters_active(self) -> bool:
         if (self.search_var.get() or "").strip():
@@ -1440,47 +1259,19 @@ class AINewsApp(tk.Tk):
         return bool(section_filter and section_filter != "All sections")
 
     def _refresh_section_filter_menu(self, headlines: Sequence[Headline]) -> None:
-        sections = {
-            headline.section.strip()
-            for headline in headlines
-            if isinstance(headline.section, str) and headline.section.strip()
-        }
-        options = ["All sections", *sorted(sections)]
-        if options == self._section_filter_options:
-            return
-
-        self._section_filter_options = options
-        menu = self.section_filter_menu["menu"]
-        menu.delete(0, "end")
-        for option in options:
-            menu.add_command(
-                label=option,
-                command=lambda value=option: self.section_filter_var.set(value),
-            )
-
-        if self.section_filter_var.get() not in options:
-            self._suppress_section_filter_callback = True
-            self.section_filter_var.set("All sections")
-            self._suppress_section_filter_callback = False
+        ui_refresh_section_filter_menu(self, headlines)
 
     def _clear_search(self, event: Optional[tk.Event] = None) -> Optional[str]:
-        if self.search_var.get():
-            self.search_var.set("")
-        if event is not None:
-            return "break"
-        return None
+        """Delegate to UI helper to clear search."""
+        return ui_clear_search(self, event)
 
     def _on_search_change(self, *_args: object) -> None:
-        if getattr(self, "_loading_settings", False):
-            return
-        self._render_filtered_headlines()
+        """Delegate to UI helper for search change handling."""
+        ui_on_search_change(self, *_args)
 
     def _on_section_filter_change(self, *_args: object) -> None:
-        if getattr(self, "_loading_settings", False):
-            return
-        if getattr(self, "_suppress_section_filter_callback", False):
-            return
-        self._render_filtered_headlines()
+        """Delegate to UI helper for section filter change handling."""
+        ui_on_section_filter_change(self, *_args)
 
     def _handle_fetch_error(self, exc: Exception) -> None:
         self.headlines = []
@@ -1498,7 +1289,7 @@ class AINewsApp(tk.Tk):
         self._pending_new_headlines = 0
         self._last_reported_pending = 0
         self._background_candidate_keys.clear()
-        self._update_background_watch_label()
+        self.background_watch_controller.update_label()
         self._schedule_auto_refresh()
 
     def _apply_speed(self, *_args: object) -> None:
@@ -1511,59 +1302,19 @@ class AINewsApp(tk.Tk):
         self._save_settings()
 
     def _toggle_logs(self) -> None:
-        if self.log_visible:
-            self.log_frame.pack_forget()
-            self.log_visible = False
-            self.toggle_logs_btn.config(text="Show Logs")
-        else:
-            self.log_frame.pack(fill="both", expand=True, padx=10, pady=(0, 10))
-            self.log_visible = True
-            self.toggle_logs_btn.config(text="Hide Logs")
-            self._flush_log_buffer()
-        self.settings["log_visible"] = self.log_visible
-        self._save_settings()
+        ui_toggle_logs(self)
 
     def _toggle_options_panel(self) -> None:
         self._set_options_visibility(not self._options_visible)
 
     def _set_options_visibility(self, visible: bool, *, persist: bool = True) -> None:
-        self._options_visible = bool(visible)
-        if visible:
-            if not self.options_container.winfo_ismapped():
-                self.options_container.pack(fill="x", padx=10, pady=(0, 10))
-            self.options_toggle_btn.config(text="Hide Options")
-        else:
-            self.options_container.pack_forget()
-            self.options_toggle_btn.config(text="Show Options")
-        if persist:
-            self.settings["options_visible"] = self._options_visible
-            self._save_settings()
-        self._update_status_summary()
+        ui_set_options_visibility(self, visible, persist=persist)
 
     def _ensure_options_visible(self) -> None:
-        if not self._options_visible:
-            self._set_options_visibility(True, persist=False)
+        ui_ensure_options_visible(self)
 
     def _update_status_summary(self) -> None:
-        if not hasattr(self, "status_summary_label"):
-            return
-        if self._options_visible:
-            if self.status_summary_label.winfo_ismapped():
-                self.status_summary_label.pack_forget()
-            self.status_summary_var.set("")
-            return
-        parts: List[str] = []
-        if bool(self.background_watch_var.get()):
-            parts.append(self.new_headlines_var.get())
-        parts.append(self.last_refresh_var.get())
-        if bool(self.auto_refresh_var.get()):
-            parts.append(self.next_refresh_var.get())
-        text = " | ".join(part for part in parts if part)
-        if not text:
-            text = "Options hidden"
-        self.status_summary_var.set(text)
-        if not self.status_summary_label.winfo_ismapped():
-            self.status_summary_label.pack(side="right", padx=(10, 0))
+        ui_update_status_summary(self)
 
     def _update_heatmap_button_state(self) -> None:
         if not hasattr(self, "heatmap_btn"):
@@ -1757,11 +1508,11 @@ class AINewsApp(tk.Tk):
             self._last_reported_pending = 0
             self._background_candidate_keys.clear()
         logger.info("Background watch %s", "enabled" if enabled else "disabled")
-        self._update_background_watch_label()
+        self.background_watch_controller.update_label()
         self._save_settings()
         self._schedule_background_watch(immediate=enabled)
         if enabled:
-            self._maybe_auto_refresh_for_pending()
+            self.background_watch_controller.maybe_auto_refresh_for_pending()
         self._update_status_summary()
 
     def _auto_refresh_interval_ms(self) -> int:
@@ -1854,73 +1605,16 @@ class AINewsApp(tk.Tk):
         self.background_watch_controller.trigger()
 
     def _background_watch_worker(self) -> None:
-        try:
-            headlines, _from_cache, _ticker = fetch_headlines(force_refresh=True)
-        except Exception as exc:  # pragma: no cover - network failures
-            logger.debug("Background watch fetch failed: %s", exc)
-            self.after(0, lambda: self._handle_background_watch_failure())
-            return
-        self.after(0, lambda: self._handle_background_watch_result(headlines))
+        self.background_watch_controller.worker()
 
     def _handle_background_watch_failure(self) -> None:
-        self._background_watch_running = False
-        if bool(self.background_watch_var.get()):
-            self._schedule_background_watch()
+        self.background_watch_controller.handle_failure()
 
     def _handle_background_watch_result(self, headlines: List[Headline]) -> None:
-        self._background_watch_running = False
-        if not bool(self.background_watch_var.get()):
-            self._pending_new_headlines = 0
-            self._last_reported_pending = 0
-            self._update_background_watch_label()
-            return
-        if self._history_mode:
-            self._schedule_background_watch()
-            return
-        filtered = self._filter_headlines(headlines)
-        current_keys = {
-            self._headline_key(headline)
-            for _, headline in self._filtered_entries()
-        }
-        candidate_keys = {
-            self._headline_key(headline)
-            for headline in filtered
-            if self._matches_filters(headline)
-        }
-        self._background_candidate_keys = candidate_keys
-        pending = len(candidate_keys.difference(current_keys))
-        self._pending_new_headlines = pending
-        if pending != self._last_reported_pending:
-            if pending > 0:
-                logger.info(
-                    "Background watch detected %s unseen headline(s).", pending
-                )
-            elif self._last_reported_pending > 0:
-                logger.info("Background watch count cleared after refresh.")
-            self._last_reported_pending = pending
-        self._update_background_watch_label()
-        self._maybe_auto_refresh_for_pending()
-        self._schedule_background_watch()
+        self.background_watch_controller.handle_result(headlines)
 
     def _update_background_watch_label(self) -> None:
-        if not hasattr(self, "new_headlines_var"):
-            return
-        enabled = bool(self.background_watch_var.get())
-        if not enabled:
-            self.new_headlines_var.set("Background watch: off")
-            if hasattr(self, "new_headlines_label"):
-                self.new_headlines_label.config(fg="lightgray")
-            return
-        count = max(0, int(self._pending_new_headlines))
-        if count > 0:
-            self.new_headlines_var.set(f"New headlines pending: {count}")
-            if hasattr(self, "new_headlines_label"):
-                self.new_headlines_label.config(fg="#FFD54F")
-        else:
-            self.new_headlines_var.set("New headlines pending: 0")
-            if hasattr(self, "new_headlines_label"):
-                self.new_headlines_label.config(fg="#89CFF0")
-        self._update_status_summary()
+        self.background_watch_controller.update_label()
 
     @staticmethod
     def _headline_key(headline: Headline) -> tuple[str, str]:
@@ -1928,69 +1622,10 @@ class AINewsApp(tk.Tk):
         url = headline.url.strip() if isinstance(headline.url, str) else ""
         return title, url
 
-    def _coerce_background_watch_threshold(self, value: Any) -> int:
-        try:
-            numeric = int(value)
-        except (TypeError, ValueError):
-            numeric = DEFAULT_SETTINGS["background_watch_refresh_threshold"]
-        return max(1, min(999, numeric))
 
     def _apply_background_watch_threshold(self, *_args: object) -> None:
-        threshold = self._coerce_background_watch_threshold(
-            self.background_watch_threshold_var.get()
-        )
-        if threshold != self.background_watch_threshold_var.get():
-            self.background_watch_threshold_var.set(threshold)
-        if threshold == self._background_refresh_threshold:
-            return
-        self._background_refresh_threshold = threshold
-        self.settings["background_watch_refresh_threshold"] = threshold
-        self._save_settings()
-        self._maybe_auto_refresh_for_pending()
+        self.background_watch_controller.apply_threshold()
 
-    def _recompute_background_pending(self) -> None:
-        if not bool(self.background_watch_var.get()):
-            return
-        if not self._background_candidate_keys:
-            return
-        current_keys = {
-            self._headline_key(headline)
-            for _, headline in self._filtered_entries()
-        }
-        pending = len(self._background_candidate_keys.difference(current_keys))
-        if pending == self._pending_new_headlines:
-            return
-        self._pending_new_headlines = pending
-        self._last_reported_pending = pending
-        self._update_background_watch_label()
-        self._maybe_auto_refresh_for_pending()
-
-    def _maybe_auto_refresh_for_pending(self) -> None:
-        if not bool(self.background_watch_var.get()):
-            return
-        if self._history_mode:
-            return
-        threshold = max(1, int(self._background_refresh_threshold))
-        if self._pending_new_headlines < threshold:
-            return
-        if getattr(self, "_background_watch_running", False):
-            return
-        if self._refresh_job is not None:
-            self._cancel_pending_refresh_jobs()
-            self._next_refresh_time = None
-
-        self._log_status(
-            f"Auto-refreshing for {self._pending_new_headlines} unseen headline(s)."
-        )
-        logger.info(
-            "Triggering auto refresh after reaching unseen headline threshold (%s).",
-            self._pending_new_headlines,
-        )
-        self._pending_new_headlines = 0
-        self._last_reported_pending = 0
-        self._background_candidate_keys.clear()
-        self._update_background_watch_label()
-        self.refresh_headlines(force_refresh=True)
 
     def _update_handler_level(self) -> None:
         if bool(self.debug_var.get()):
@@ -2005,22 +1640,13 @@ class AINewsApp(tk.Tk):
             logger.info("Debug logging disabled; showing INFO and above.")
 
     def _handle_log_record(self, level: int, message: str) -> None:
-        self.log_buffer.append((level, message))
-        self.after(0, self._flush_log_buffer)
+        ui_handle_log_record(self, level, message)
 
     def _flush_log_buffer(self) -> None:
-        while self.log_buffer:
-            _level, msg = self.log_buffer.popleft()
-            self._append_log_line(msg)
+        ui_flush_log_buffer(self)
 
     def _append_log_line(self, message: str) -> None:
-        self.log_text.config(state="normal")
-        self.log_text.insert(tk.END, message + "\n")
-        line_count = int(self.log_text.index("end-1c").split(".")[0])
-        if line_count > 500:
-            self.log_text.delete("1.0", f"{line_count - 500}.0")
-        self.log_text.see(tk.END)
-        self.log_text.config(state="disabled")
+        ui_append_log_line(self, message)
 
     def _apply_settings_from_store(self) -> None:
         highlight_value = self.settings.get("highlight_keywords", "")
@@ -2131,7 +1757,7 @@ class AINewsApp(tk.Tk):
         )
         self.background_watch_var.set(background_watch_enabled)
         self.settings["background_watch_enabled"] = background_watch_enabled
-        threshold = self._coerce_background_watch_threshold(
+        threshold = self.background_watch_controller.coerce_threshold(
             self.settings.get(
                 "background_watch_refresh_threshold",
                 DEFAULT_SETTINGS["background_watch_refresh_threshold"],
@@ -2143,7 +1769,7 @@ class AINewsApp(tk.Tk):
         if not background_watch_enabled:
             self._pending_new_headlines = 0
             self._last_reported_pending = 0
-        self._update_background_watch_label()
+        self.background_watch_controller.update_label()
         self._schedule_background_watch(immediate=background_watch_enabled)
         self.settings["color_profile"] = self.color_profile_var.get()
         self.settings["log_visible"] = self.log_visible
@@ -2187,126 +1813,42 @@ class AINewsApp(tk.Tk):
         self.auto_refresh_var.set(self.settings["auto_refresh_enabled"])
         self.auto_refresh_minutes_var.set(self.settings["auto_refresh_minutes"])
         self.background_watch_var.set(self.settings["background_watch_enabled"])
-        self._background_refresh_threshold = self._coerce_background_watch_threshold(
+        self._background_refresh_threshold = self.background_watch_controller.coerce_threshold(
             self.settings["background_watch_refresh_threshold"]
         )
         self.background_watch_threshold_var.set(self._background_refresh_threshold)
         self._pending_new_headlines = 0
         self._last_reported_pending = 0
         self._background_candidate_keys.clear()
-        self._update_background_watch_label()
+        self.background_watch_controller.update_label()
         self._save_settings()
         self._schedule_auto_refresh()
         self._schedule_background_watch(immediate=bool(self.background_watch_var.get()))
         self._log_status("Settings reset to defaults.")
 
     def _apply_color_profile(self, selected: Optional[str] = None) -> None:
-        name = selected or self.color_profile_var.get()
-        if name not in COLOR_PROFILES:
-            return
-        profile = COLOR_PROFILES[name]
-        self.ticker.apply_color_profile(profile)
-        self.full_ticker.apply_color_profile(profile)
-        if hasattr(self, "ticker_bg_var"):
-            self.ticker_bg_var.set(profile["background"])
-            self.ticker_fg_var.set(profile["text"])
-        self.settings["color_profile"] = name
-        self._save_settings()
+        ui_apply_color_profile(self, selected)
 
     def _choose_color(self, target: str) -> None:
-        initial = (
-            self.ticker_bg_var.get()
-            if target == "background"
-            else self.ticker_fg_var.get()
-        )
-        color = colorchooser.askcolor(initialcolor=initial)[1]
-        if not color:
-            return
-        if target == "background":
-            self.ticker_bg_var.set(color)
-        else:
-            self.ticker_fg_var.set(color)
-        self._update_ticker_colors()
-        self.color_profile_var.set(CUSTOM_PROFILE_NAME)
+        ui_choose_color(self, target)
 
     def _update_ticker_colors(self) -> None:
-        background = self.ticker_bg_var.get()
-        text = self.ticker_fg_var.get()
-        self.ticker.set_colors(background=background, text=text)
-        hover_color = self.ticker.hover_color
-        COLOR_PROFILES[CUSTOM_PROFILE_NAME] = {
-            "background": background,
-            "text": text,
-            "hover": hover_color,
-        }
-        self.settings["custom_background"] = background
-        self.settings["custom_text"] = text
-        self.settings["color_profile"] = CUSTOM_PROFILE_NAME
-        if not getattr(self, "_loading_settings", False):
-            self.color_profile_var.set(CUSTOM_PROFILE_NAME)
-        self._refresh_profile_menu()
-        self._save_settings()
+        ui_update_ticker_colors(self)
 
     def _refresh_profile_menu(self) -> None:
-        options = profile_name_options(COLOR_PROFILES, CUSTOM_PROFILE_NAME)
-        menu = self.profile_menu["menu"]
-        menu.delete(0, "end")
-        for name in options:
-            menu.add_command(
-                label=name,
-                command=lambda value=name: self._on_profile_selected(value),
-            )
+        ui_refresh_profile_menu(self)
 
     def _refresh_timezone_menu(self) -> None:
-        menu = self.timezone_menu["menu"]
-        menu.delete(0, "end")
-        # Maintain insertion order while avoiding duplicates.
-        seen: set[str] = set()
-        deduped_options: List[str] = []
-        for option in self._timezone_options:
-            if option not in seen:
-                seen.add(option)
-                deduped_options.append(option)
-        self._timezone_options = deduped_options
-        for option in self._timezone_options:
-            menu.add_command(
-                label=option,
-                command=lambda value=option: self.timezone_var.set(value),
-            )
+        ui_refresh_timezone_menu(self)
 
     def _on_timezone_change(self, *_args: object) -> None:
-        if self._suppress_timezone_callback:
-            return
-        persist = not getattr(self, "_loading_settings", False)
-        self._apply_timezone_selection(self.timezone_var.get(), persist=persist)
+        ui_on_timezone_change(self, *_args)
 
     def _apply_timezone_selection(self, value: str, *, persist: bool) -> None:
-        normalized, zone = _coerce_timezone(value)
-        self._timezone_name = normalized
-        self._timezone = zone
-        if normalized not in self._timezone_options:
-            self._timezone_options.append(normalized)
-            self._refresh_timezone_menu()
-        if self.timezone_var.get() != normalized:
-            self._suppress_timezone_callback = True
-            self.timezone_var.set(normalized)
-            self._suppress_timezone_callback = False
-        self.settings["timezone"] = normalized
-        if persist and not getattr(self, "_loading_settings", False):
-            self._save_settings()
-        self._refresh_timezone_display()
+        ui_apply_timezone_selection(self, value, persist=persist)
 
     def _refresh_timezone_display(self) -> None:
-        if not self.headlines:
-            return
-        ticker_text = self._current_ticker_text or build_ticker_text(self.headlines)
-        self._update_content(
-            headlines=self.headlines,
-            ticker_text=ticker_text,
-            from_cache=self._last_headline_from_cache,
-            reschedule=False,
-            log_status=False,
-        )
+        ui_refresh_timezone_display(self)
 
     def _on_profile_selected(self, name: str) -> None:
         self.color_profile_var.set(name)
