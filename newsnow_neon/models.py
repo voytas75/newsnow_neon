@@ -312,7 +312,7 @@ class HoverTooltip:
         y_position = min(y, screen_height - height - 10)
         window.geometry(f"+{x_position}+{y_position}")
 
-    def _on_master_destroy(self, _event: tk.Event[tk.Misc]) -> None:
+    def _on_master_destroy(self, _event: tk.Event) -> None:
         self.destroy()
 
 

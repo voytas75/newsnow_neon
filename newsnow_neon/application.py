@@ -35,6 +35,7 @@ from .config import (
     BACKGROUND_WATCH_INITIAL_DELAY_MS,
     SETTINGS_PATH,
     set_historical_cache_enabled,
+    fixed_zone_fallback,
 )
 from .highlight import (
     ENV_HIGHLIGHT_KEYWORDS,
@@ -143,7 +144,17 @@ def _coerce_timezone(name: Optional[str]) -> tuple[str, tzinfo]:
         zone = ZoneInfo(candidate)
         return candidate, zone
     except ZoneInfoNotFoundError:
-        logger.warning("Unknown timezone '%s'; falling back to UTC.", candidate or "<empty>")
+        fallback = fixed_zone_fallback(candidate)
+        if fallback is not None:
+            logger.warning(
+                "Unknown timezone '%s'; using fixed offset fallback.",
+                candidate or "<empty>",
+            )
+            return candidate, fallback
+        logger.warning(
+            "Unknown timezone '%s'; falling back to UTC.",
+            candidate or "<empty>",
+        )
         return "UTC", timezone.utc
 
 

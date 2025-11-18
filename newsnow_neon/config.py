@@ -28,7 +28,7 @@ from .models import NewsSection
 
 SECTIONS: list[NewsSection] = [
     NewsSection("Tech latest", "https://www.newsnow.com/us/Tech?type=ln"),
-    NewsSection("Science lates", "https://www.newsnow.com/us/Science?type=ln"),
+    NewsSection("Science latest", "https://www.newsnow.com/us/Science?type=ln"),
 ]
 
 REQUEST_SELECTORS: list[str] = [
