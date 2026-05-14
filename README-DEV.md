@@ -77,7 +77,7 @@ Sensitive values (`*KEY`, `*TOKEN`, `*SECRET`, `*PASSWORD`) are masked automatic
 - **Controller package surface**: `newsnow_neon.app.controller` now resolves its exports lazily, so importing the package itself no longer eagerly imports Tk-bound controller modules.
 - **Diagnostics seam**: `--check` now renders Python/Tk/display/settings readiness through `newsnow_neon.main` without starting the GUI, and returns a readiness verdict with non-zero exit when required launch prerequisites fail.
 - **Next operational seam**: after the first explicit legacy-binding step and lazy controller-package export cleanup, continue with the remaining package-surface cleanup before broader typing work.
-- **Application layer**: `newsnow_neon/app/` hosts service wiring (`services.py`) and controller adaptors so the UI stays thin.
+- **Application layer**: `newsnow_neon/app/` now exposes a real `services` package surface for modular provider stubs, while the legacy runtime still binds concrete implementations at startup.
 - **UI**: `newsnow_neon/ui/` plus `application.py` define Tkinter windows, dialogs, keyword heatmaps, and ticker widgets.
 - **Domain models**: Shared dataclasses and helpers live in `models.py`, `cache.py`, `summaries.py`, and `settings_store.py`.
 - **Legacy wrapper**: `legacy_app.py` retains the pre-modularized implementation; keep its embedded change log synchronized when behaviour shifts.

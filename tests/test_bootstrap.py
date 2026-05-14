@@ -94,6 +94,40 @@ def test_app_controller_package_exposes_lazy_ainnewsapp_export(
     assert controller_pkg.AINewsApp is FakeAINewsApp
 
 
+def test_app_services_package_exports_news_service_module() -> None:
+    """The services package should expose its modular news service surface."""
+    news_service = importlib.import_module("newsnow_neon.app.services.news_service")
+
+    assert news_service.__name__ == "newsnow_neon.app.services.news_service"
+    assert hasattr(news_service, "fetch_headlines")
+
+
+def test_app_controller_module_wrapper_is_still_distinct_from_package_export(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The file wrapper still exposes a different AINewsApp symbol than the package."""
+    controller_pkg = importlib.import_module("newsnow_neon.app.controller")
+    controller_file = importlib.util.spec_from_file_location(
+        "newsnow_neon.app._controller_file",
+        Path(__file__).resolve().parents[1] / "newsnow_neon" / "app" / "controller.py",
+    )
+    assert controller_file is not None and controller_file.loader is not None
+
+    fake_application = types.ModuleType("newsnow_neon.application")
+
+    class FakeAINewsApp:
+        pass
+
+    fake_application.AINewsApp = FakeAINewsApp
+    monkeypatch.setitem(sys.modules, "newsnow_neon.application", fake_application)
+
+    controller_file_module = importlib.util.module_from_spec(controller_file)
+    controller_file.loader.exec_module(controller_file_module)
+
+    assert controller_pkg.AINewsApp is FakeAINewsApp
+    assert controller_file_module.AINewsApp is not FakeAINewsApp
+
+
 def test_load_app_class_wraps_missing_tkinter_dependency(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
