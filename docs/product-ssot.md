@@ -6,221 +6,265 @@ Updated: 2026-05-14
 
 ## Purpose
 
-This document is the single source of truth for NewsNowNeon product direction, operational hardening priorities, and quality-improvement order.
+This document is the single source of truth for NewsNowNeon product direction, operational hardening priorities, and ordered execution focus.
 
-It consolidates what the current repo already says in:
+It governs and should stay aligned with:
 - `README.md`
 - `README-DEV.md`
-- `AGENTS.md`
+- `CHANGELOG.md`
 - `pyproject.toml`
 
-When those files drift, this file wins and the others should be synced to it.
+When repo-facing docs drift, this file wins and the others should be synced to it.
 
 ## Product definition
 
-NewsNowNeon is a desktop news dashboard for curated NewsNow headlines with:
+NewsNowNeon is a desktop operator tool for curated NewsNow headline monitoring with:
 - headline aggregation,
-- scrolling ticker + list views,
+- ticker and list-based triage,
 - cached article summaries,
-- persistent operator settings,
-- optional Redis-backed history and diagnostics.
+- persistent desktop settings,
+- optional Redis-backed cache/history/diagnostics.
 
 It is not:
 - a generic LLM workstation,
 - a workflow orchestrator,
-- a broad automation platform,
-- a backend service-first product.
+- a backend-first service,
+- a broad automation platform.
 
 Primary product center:
-- **fast headline monitoring and triage in a desktop UI**.
+- **fast desktop monitoring and triage of curated headlines**.
 
 Supporting layers:
-- **operational reliability** — predictable startup, usable diagnostics, stable refresh/caching behavior.
-- **engineering quality** — maintainable module boundaries, runnable checks, and safe incremental refactoring.
+- **operational trust** — predictable startup, readable diagnostics, explicit environment requirements.
+- **engineering maintainability** — bounded seams, safe refactors, trustworthy verification.
 
 ## Confirmed current baseline
 
-Confirmed from repo state on 2026-05-14:
-- package: `newsnow-neon`
-- version in `pyproject.toml`: `0.53.0`
-- runtime model: Tkinter desktop app with package entrypoint files present
-- tests: `pytest -q` passing (`19 passed` in the review snapshot)
-- static quality baseline is weak:
-  - `ruff check .` reports high error volume
-  - `mypy newsnow_neon` reports high error volume
-- local GUI runtime was not confirmed in the Hermes environment because `tkinter` is missing there
+Confirmed from live repo/runtime checks in this cycle:
+- package/version in `pyproject.toml`: `0.53.0`
+- canonical runtime entrypoints:
+  - `python -m newsnow_neon`
+  - installed script `newsnow-neon`
+- `uv run newsnow_neon` is not a supported invocation
+- current test baseline: `pytest -q` passing locally
+- startup contract is now hardened across real front doors:
+  - `python -m newsnow_neon` without `tkinter` prints a bounded CLI message instead of an early traceback
+  - `uv run newsnow-neon` in a headless GUI-less environment prints a bounded display message instead of a raw Tk traceback
+- subprocess smoke coverage exists for:
+  - module front door without `tkinter`
+  - `__main__` / console-script path without `tkinter`
+- static-quality debt remains high at repo scope and is not yet the active primary slice
 
 Interpretation:
-- the project has a working codebase and passing focused tests,
-- but is not yet operationally polished or quality-stable enough to treat as fully hardened.
+- the app now has a materially more trustworthy startup/runtime contract,
+- but broader maintainability and legacy-boundary work still remain.
 
 ## North star
 
-Make NewsNowNeon feel like a **reliable desktop operator tool** rather than a useful prototype.
+Make NewsNowNeon feel like a **trustworthy desktop monitoring tool** rather than a useful but fragile prototype.
 
 That means:
-- startup is predictable,
+- startup failures are classified clearly,
 - runtime expectations are explicit,
 - docs match reality,
-- quality checks are scoped and trustworthy,
-- modular code can be improved without reopening the whole legacy surface every time.
+- environment issues are separable from app regressions,
+- future quality work lands in bounded slices instead of reopening the whole legacy surface.
 
 ## Roadmap order
 
-### Priority 1 — operational readiness and truthful runtime contract
+### Priority 1 — operational trust and diagnostics-first runtime contract
 
 Goal:
-Make the app easy to start, understand, and verify on a real desktop machine.
+Make the app easy to verify before and during launch on a real desktop machine.
 
 This includes:
-- confirming and documenting the real entrypoint contract,
-- documenting platform requirements explicitly, especially `tkinter`,
-- aligning README and developer docs with real startup behavior,
-- adding a bounded smoke-verification path for launch/bootstrap,
-- separating environment failures from application failures.
+- preserving the hardened startup contract,
+- adding an explicit non-GUI diagnostics path,
+- checking Tk/display/settings/runtime prerequisites without requiring full app launch,
+- making operator-visible failure states short and actionable,
+- keeping docs aligned with real runtime behavior.
 
 Success condition:
-A developer can read the docs, install the known prerequisites, and understand exactly how to launch and verify the app.
+A developer or operator can run one clear diagnostic path and know whether the environment is launch-ready before troubleshooting the GUI itself.
 
-### Priority 2 — quality-noise reduction on the non-legacy front door
+### Priority 2 — bounded front-door and support-surface cleanup
 
 Goal:
-Reduce obvious engineering noise in the entrypoint and shared support surfaces before attacking the legacy core.
+Reduce engineering noise around entrypoints and small support modules without widening into a repo-wide cleanup.
 
 This includes:
-- cleanup of front-door files such as `__main__.py`, `main.py`, `utils.py`, and selected small UI windows,
-- import/order/docstring/type-modernization cleanup,
-- reducing low-value Ruff noise in small safe slices,
-- keeping tests green after each slice.
+- front-door cleanup in `__main__.py`, `main.py`, `utils.py`, and other small support seams,
+- bounded cleanup of small windows/helpers,
+- preserving behavior while tightening lint/type signal in touched seams.
 
 Success condition:
-The front door and small support modules become clean enough that future work is less noisy and less risky.
+Front-door and adjacent support modules remain low-risk, readable, and cheap to modify.
 
 ### Priority 3 — typed and explicit UI/controller seams
 
 Goal:
-Stop the modularized Tkinter layer from generating large amounts of ambiguous static-analysis noise.
+Reduce ambiguous dynamic-Tk coupling by introducing clearer contracts where the modular UI/controller layer currently leaks state.
 
 This includes:
-- deciding the intended typing boundary for the app/controller/UI surface,
-- introducing explicit app-state contracts or limited typing boundaries where justified,
-- reducing repeated `Tk has no attribute ...` errors by design rather than by ad hoc suppression,
-- keeping the solution simple and local-first.
+- defining the intended typing boundary for app/controller/UI seams,
+- reducing repeated `Tk has no attribute ...` style debt by design,
+- keeping the solution local and minimal.
 
 Success condition:
-The modular UI/controller layer has a clear contract and static analysis becomes more meaningful.
+Static analysis on active non-legacy seams becomes more meaningful and less noisy.
 
 ### Priority 4 — legacy boundary containment
 
 Goal:
-Treat `legacy_app.py` as a deliberate compatibility boundary instead of a constantly leaking maintenance burden.
+Treat `legacy_app.py` as a deliberate compatibility boundary instead of a constantly expanding maintenance surface.
 
 This includes:
 - documenting its role explicitly,
-- reducing accidental coupling between new modules and legacy internals,
-- deciding which checks apply strictly outside the legacy boundary,
-- moving future work into modular files instead of reopening the monolith by default.
+- reducing accidental coupling to new code,
+- moving future work into modular files by default,
+- deciding which checks stay strict outside the legacy boundary.
 
 Success condition:
-New work can continue safely without pretending the entire legacy surface must be fully cleaned at once.
+New work can continue safely without pretending the whole monolith must be cleaned in one pass.
 
-### Priority 5 — deeper UX polish after operational trust is restored
+### Priority 5 — deeper UX polish after trust is restored
 
 Goal:
-Only after priorities 1–4 improve trust, continue UI/feature polish.
+Only after operational trust and maintainability improve, continue UI/feature polish.
 
 This includes:
-- clarity of diagnostics/status labels,
+- better status/diagnostic cues,
 - smoother refresh/history/Redis operator flows,
-- higher-confidence summary and cache surfaces,
-- bounded UX improvements driven by observed friction.
+- clearer cache/summary surfaces,
+- bounded polish driven by observed operator friction.
 
 Success condition:
-Polish work is built on a trustworthy runtime and maintainable code path, not on top of unresolved foundation issues.
+Polish work sits on top of a trustworthy runtime and cleaner seams.
 
 ## Ordered implementation backlog
 
-1. **Runtime contract and docs sync**
-   - Create canonical SSOT and sync repo-facing docs to it.
-   - Add explicit startup prerequisites and known platform requirements.
-   - Clarify the supported launch command and verification path.
+1. **Diagnostics command / startup readiness check**
+   - Add a non-GUI diagnostics command such as `newsnow-neon --check`.
+   - Verify Python/Tk/display/settings-path readiness before full GUI launch.
+   - Keep output short, terminal-friendly, and explicitly split into confirmed vs failing prerequisites.
 
-2. **Smoke verification slice**
-   - Add a bounded non-interactive startup/bootstrap verification path where possible.
-   - Ensure docs distinguish missing OS GUI deps from app regressions.
+2. **Diagnostics docs sync**
+   - Document the check flow in `README.md` and `README-DEV.md`.
+   - Clarify how to interpret environment failures vs app regressions.
 
-3. **Front-door hygiene slice**
-   - Clean `newsnow_neon/__main__.py`, `newsnow_neon/main.py`, `newsnow_neon/utils.py`.
-   - Remove trivial Ruff noise in those files.
-   - Keep behavior unchanged.
+3. **Front-door/support cleanup continuation**
+   - Continue bounded cleanup in small non-legacy files only.
+   - Keep tests green and avoid scope expansion.
 
-4. **Small-window cleanup slice**
-   - Clean one or two isolated UI window modules first (`app_info_window.py`, `redis_stats_window.py`, `summary_window.py` are likely candidates).
-   - Prefer local cleanup with tests over wide refactors.
+4. **UI/controller contract slice**
+   - Pick one active seam and define the smallest explicit runtime contract.
 
-5. **UI/controller contract slice**
-   - Define how the modular Tkinter surface should be typed.
-   - Introduce the smallest explicit boundary that reduces repeated attribute errors.
+5. **Legacy containment slice**
+   - Mark and constrain `legacy_app.py` as a compatibility boundary with explicit expectations.
 
-6. **Legacy containment slice**
-   - Mark and constrain `legacy_app.py` as a compatibility boundary.
-   - Adjust check expectations and developer docs accordingly.
+6. **Broader quality recovery decision**
+   - Only after the above, decide how Ruff/Mypy debt should be reduced by seam/boundary.
 
-7. **Broader quality recovery plan**
-   - After the seams above are cleaner, decide whether Ruff/Mypy debt should be reduced by package, by feature seam, or by boundary configuration.
+## Current recommended next slice
 
-## What should not drive the roadmap
+### Active next slice
+**Diagnostics command / `--check`**
 
-Do not prioritize these before the foundation work above:
-- broad new feature expansion,
-- UI redesign for its own sake,
-- large architectural rewrites,
-- replacing Tkinter only because tooling around it is noisy,
-- repo-wide style cleanups without a bounded seam,
-- trying to eliminate all legacy debt in one pass.
+### Why this is next
+- It builds directly on the now-hardened startup contract.
+- It improves operator trust without requiring GUI launch.
+- It gives a reusable troubleshooting path for missing Tk, missing display, and bad local runtime setup.
+- It is smaller and safer than jumping straight into legacy containment or broad typing work.
+
+## Implementation plan for the next slice
+
+### Goal
+Add a terminal-first diagnostics path that verifies launch readiness without starting the GUI.
+
+### Scope
+The diagnostics command should report, at minimum:
+- Python version
+- package/app version
+- whether `tkinter` is importable
+- whether a GUI display looks available in the current environment
+- whether the settings path can be resolved and is writable
+- optional note when Redis/LLM-related env is absent, but without turning optional integrations into hard failures
+
+### Non-goals
+Do not in this slice:
+- build a TUI,
+- add deep Redis live probing unless it is already trivial and low-risk,
+- redesign the startup contract,
+- widen into global refactors.
+
+### Preferred UX
+- one clear command, ideally through the existing front door / console script surface,
+- short output,
+- explicit separation between:
+  - **potwierdzone**,
+  - **problem / missing prerequisite**,
+  - **optional / not configured**.
+
+### Suggested execution order
+1. inspect current CLI/front-door seams and choose the smallest place to add `--check`
+2. write failing behavior tests for the diagnostics mode
+3. implement the minimal command path without disturbing normal GUI launch
+4. run focused tests
+5. run real CLI smoke for `--check`
+6. sync README / README-DEV / CHANGELOG if shipped behavior changes visibly
+
+### Acceptance criteria
+- `newsnow-neon --check` or equivalent supported diagnostics invocation exists
+- it does not start the GUI mainloop
+- it returns useful terminal output for:
+  - Tk missing
+  - display missing
+  - settings path readiness
+- normal launch flow still works unchanged
+- tests cover the diagnostics path
+
+## What should not drive the roadmap now
+
+Do not prioritize these before the diagnostics slice:
+- repo-wide Ruff cleanup,
+- repo-wide Mypy cleanup,
+- framework replacement,
+- broad UI redesign,
+- deep legacy refactors without a bounded seam,
+- feature expansion unrelated to operator trust.
 
 ## Engineering rules for this repo
 
 - Prefer bounded slices over wide rewrites.
 - Keep `pytest` green after every slice.
-- Verify real runtime claims before documenting them as done.
-- Separate:
+- Verify runtime claims with real command output before documenting them as shipped.
+- Separate explicitly:
   - **potwierdzone** — confirmed by code/tests/tool output,
-  - **do weryfikacji** — needs real desktop/runtime confirmation.
-- Prefer simple, local fixes over framework-heavy abstractions.
-- Improve docs and code together when changing operational behavior.
+  - **do weryfikacji** — needs confirmation in another runtime or on another machine.
+- Prefer simple local fixes over new abstraction layers.
+- Sync docs when user-visible operational behavior changes.
 
 ## Documentation sync rules
 
 The following files must stay aligned with this SSOT:
-- `README.md` — user-facing installation, startup, feature framing
-- `README-DEV.md` — developer setup, environment, workflow, architecture notes
-- `CHANGELOG.md` — shipped history once created/populated
+- `README.md`
+- `README-DEV.md`
+- `CHANGELOG.md`
 
-Current doc gaps to close:
-- `docs/` directory did not exist before this SSOT was created
-- `CHANGELOG.md` has now been added and should stay aligned with shipped slices
-- README/README-DEV should be updated to reflect this SSOT and current operational priorities
-
-## Current execution recommendation
-
-Recommended first execution slice:
-- **entrypoint + runtime prerequisites + README/README-DEV sync**
-
-Reason:
-- it improves operator trust immediately,
-- it is lower risk than attacking the Tkinter typing debt first,
-- it creates a stable base for later quality work.
+Current sync status:
+- README and README-DEV already point to this canonical SSOT
+- CHANGELOG reflects the recent startup-hardening slice
+- next sync point should happen when the diagnostics command ships
 
 ## Status summary
 
 ### Potwierdzone
-- repo has passing focused tests
-- repo has substantial static-analysis debt
-- desktop runtime is not confirmed in the current Hermes environment
-- current highest-value improvement area is operational polish plus bounded quality hardening
+- the repo has a working hardened startup contract for the main front doors
+- full local `pytest -q` is green
+- missing Tk and missing display now surface as bounded CLI-facing outcomes instead of raw startup tracebacks
+- the next highest-value slice is diagnostics-first runtime verification
 
 ### Do weryfikacji
-- exact supported startup path on a machine with working `tkinter`
-- whether `python -m newsnow_neon` is the final supported invocation in the intended user environment
-- how far current docs differ from real runtime behavior on the user’s actual desktop
+- final exact diagnostics invocation shape (`--check` on which front door surface)
+- whether Redis/LLM optional status belongs in v1 diagnostics output or a later follow-up
+- any GUI-specific smoke beyond current command-line/runtime checks
