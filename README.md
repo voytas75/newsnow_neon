@@ -43,7 +43,8 @@ export NEWS_TICKER_TIMEOUT=15
 # export REDIS_URL=redis://localhost:6379/0
 
 # Run the desktop app
-uv run newsnow-neon
+uv run newsnow-neon  # installed console script
+uv run python -m newsnow_neon  # module entrypoint
 ```
 
 Alternative pip-based flow:
@@ -54,7 +55,7 @@ python -m newsnow_neon
 
 - `.env` files are auto-loaded when `python-dotenv` is installed (see `newsnow_neon/config.py`).
 - Settings persist at the platform-specific path resolved by `NEWS_APP_SETTINGS` (default shown below).
-- Canonical runtime entrypoint: `python -m newsnow_neon`.
+- Canonical runtime entrypoints: `python -m newsnow_neon` and the installed script `newsnow-neon`.
 - Startup now uses a bounded bootstrap seam in `newsnow_neon.main` before entering `mainloop()`.
 - If startup fails with `RuntimeError: Tkinter is not available...`, fix the OS/runtime dependency first; treat that as an environment issue, not as confirmed app regression.
 - If startup fails in a headless shell with no GUI display, the CLI now prints a short terminal message instead of a raw Tk traceback.
@@ -113,6 +114,7 @@ uv run pytest tests/test_main_metadata.py tests/test_bootstrap.py -q
 
 # run the desktop app
 uv run newsnow-neon
+uv run python -m newsnow_neon
 
 # execute full test suite
 uv run pytest -q
