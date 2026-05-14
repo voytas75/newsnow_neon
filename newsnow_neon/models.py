@@ -59,14 +59,18 @@ class Headline:
         url = payload.get("url")
         if not isinstance(title, str) or not isinstance(url, str):
             return None
-        section = payload.get("section") if isinstance(payload.get("section"), str) else "News"
-        source = payload.get("source") if isinstance(payload.get("source"), str) else None
-        published_time = (
-            payload.get("published_time") if isinstance(payload.get("published_time"), str) else None
-        )
-        published_at = (
-            payload.get("published_at") if isinstance(payload.get("published_at"), str) else None
-        )
+
+        raw_section = payload.get("section")
+        section = raw_section if isinstance(raw_section, str) else "News"
+
+        raw_source = payload.get("source")
+        source = raw_source if isinstance(raw_source, str) else None
+
+        raw_published_time = payload.get("published_time")
+        published_time = raw_published_time if isinstance(raw_published_time, str) else None
+
+        raw_published_at = payload.get("published_at")
+        published_at = raw_published_at if isinstance(raw_published_at, str) else None
         return cls(
             title=title,
             url=url,

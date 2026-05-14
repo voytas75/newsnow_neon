@@ -12,12 +12,10 @@ from __future__ import annotations
 import os
 import time
 from datetime import datetime, timezone
-from typing import Optional
 
 
-def read_optional_env(name: str) -> Optional[str]:
+def read_optional_env(name: str) -> str | None:
     """Return trimmed environment variable or ``None`` when unset/blank."""
-
     value = os.getenv(name)
     if value is None:
         return None
@@ -25,9 +23,11 @@ def read_optional_env(name: str) -> Optional[str]:
     return stripped or None
 
 
-def compute_deadline_timeout(deadline: Optional[float], fallback: float) -> Optional[float]:
+def compute_deadline_timeout(
+    deadline: float | None,
+    fallback: float,
+) -> float | None:
     """Resolve remaining timeout based on a monotonic deadline."""
-
     if deadline is None:
         return float(fallback)
     remaining = deadline - time.monotonic()
@@ -36,9 +36,8 @@ def compute_deadline_timeout(deadline: Optional[float], fallback: float) -> Opti
     return max(1.0, min(float(fallback), remaining))
 
 
-def isoformat_epoch(value: str) -> Optional[str]:
+def isoformat_epoch(value: str) -> str | None:
     """Return a UTC ISO-8601 string from a NewsNow epoch value when possible."""
-
     candidate = value.strip()
     if not candidate:
         return None
@@ -57,9 +56,8 @@ def isoformat_epoch(value: str) -> Optional[str]:
     return iso_value[:-6] + "Z" if iso_value.endswith("+00:00") else iso_value
 
 
-def parse_iso8601_utc(value: Optional[str]) -> Optional[datetime]:
+def parse_iso8601_utc(value: str | None) -> datetime | None:
     """Parse ISO-8601 strings into aware UTC datetimes."""
-
     if not isinstance(value, str):
         return None
     text = value.strip()
@@ -75,4 +73,9 @@ def parse_iso8601_utc(value: Optional[str]) -> Optional[datetime]:
     return timestamp.astimezone(timezone.utc)
 
 
-__all__ = ["read_optional_env", "compute_deadline_timeout", "isoformat_epoch", "parse_iso8601_utc"]
+__all__ = [
+    "read_optional_env",
+    "compute_deadline_timeout",
+    "isoformat_epoch",
+    "parse_iso8601_utc",
+]
