@@ -102,10 +102,10 @@ def test_app_services_package_exports_news_service_module() -> None:
     assert hasattr(news_service, "fetch_headlines")
 
 
-def test_app_controller_module_wrapper_is_still_distinct_from_package_export(
+def test_app_controller_file_wrapper_matches_package_export(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """The file wrapper still exposes a different AINewsApp symbol than the package."""
+    """The file wrapper should expose the same AINewsApp symbol as the package."""
     controller_pkg = importlib.import_module("newsnow_neon.app.controller")
     controller_file = importlib.util.spec_from_file_location(
         "newsnow_neon.app._controller_file",
@@ -125,7 +125,7 @@ def test_app_controller_module_wrapper_is_still_distinct_from_package_export(
     controller_file.loader.exec_module(controller_file_module)
 
     assert controller_pkg.AINewsApp is FakeAINewsApp
-    assert controller_file_module.AINewsApp is not FakeAINewsApp
+    assert controller_file_module.AINewsApp is FakeAINewsApp
 
 
 def test_load_app_class_wraps_missing_tkinter_dependency(

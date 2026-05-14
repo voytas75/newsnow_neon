@@ -88,8 +88,8 @@ These came out of the bounded repo review and should drive the next planning cyc
 
 3. **There are still false or dead package surfaces**
    - `newsnow_neon/app/services.py` still collides with `newsnow_neon/app/services/`, but the package is now at least a real importable surface via `app/services/__init__.py`.
-   - `newsnow_neon/app/controller.py` still collides with `newsnow_neon/app/controller/`.
-   - The controller package export is now lazy, which removes one eager-import trap, but the package/file split is still misleading.
+   - `newsnow_neon/app/controller.py` still exists beside `newsnow_neon/app/controller/`, but it is now only a compatibility alias instead of a second class surface.
+   - The remaining cleanup question is whether these parallel shapes should keep existing at all.
 
 4. **Back-compat exports are not trustworthy yet**
    - The compatibility export for `AINewsApp` in the controller package is not a reliable public surface.
@@ -206,7 +206,7 @@ Quality gates become meaningful instead of aspirational noise.
    - Document the runtime role of `legacy_app.py`.
 
 2. **Package-surface cleanup slice**
-   - Continue from the lazy controller-package export change and the new real `app.services` package surface.
+   - Continue from the lazy controller-package export change, the new real `app.services` package surface, and the controller-file compatibility alias cleanup.
    - Resolve `services.py` vs `services/`.
    - Resolve `controller.py` vs `controller/`.
    - Fix or remove non-working compatibility exports.
@@ -232,9 +232,9 @@ Quality gates become meaningful instead of aspirational noise.
 
 ### Why this is next
 - The first explicit legacy-binding step is already shipped.
-- The controller package now resolves exports lazily, so one eager-import trap is removed.
+- The controller package now resolves exports lazily, and `app/controller.py` no longer creates a second `AINewsApp` subclass surface.
 - The `app.services` package is now a real importable surface instead of dead scaffolding.
-- The remaining misleading file/package splits (`services.py` vs `services/`, `controller.py` vs `controller/`) are now the clearest architecture debt still exposed at the repo surface.
+- The remaining misleading file/package splits are now mostly a question of eventual removal/deprecation rather than contradictory behavior.
 - This remains smaller and safer than jumping straight into broader typing or product-workflow tests.
 
 ## Implementation focus for the active next slice
@@ -300,7 +300,7 @@ The following files must stay aligned with this SSOT:
 
 Current sync status:
 - README and README-DEV point to this canonical SSOT
-- CHANGELOG reflects startup hardening, diagnostics shipping, readiness-contract semantics for `--check`, the first explicit legacy service-binding step, the lazy controller-package export change, and the new real `app.services` package surface
+- CHANGELOG reflects startup hardening, diagnostics shipping, readiness-contract semantics for `--check`, the first explicit legacy service-binding step, the lazy controller-package export change, the new real `app.services` package surface, and the controller-file compatibility alias cleanup
 - next sync point should happen when the remaining package-surface cleanup changes the supported import story again
 
 ## Status summary
@@ -310,7 +310,7 @@ Current sync status:
 - `--check` exists on supported front doors, avoids GUI launch, and now returns a readiness verdict with non-zero exit for failed required prerequisites
 - full local `pytest -q` is green
 - missing Tk and missing display now surface as bounded CLI-facing outcomes instead of raw startup tracebacks
-- the next highest-value slice is continuing package-surface cleanup beyond the lazy controller-package export step and the new real `app.services` package surface
+- the next highest-value slice is deciding whether the remaining parallel package/file shapes should now be deprecated or removed
 - review surfaced real package-boundary and legacy-boundary gaps, not just cosmetic cleanup ideas
 
 ### Do weryfikacji
