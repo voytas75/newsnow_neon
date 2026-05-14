@@ -62,6 +62,7 @@ python -m newsnow_neon
 - Canonical runtime entrypoints: `python -m newsnow_neon` and the installed script `newsnow-neon`.
 - Startup now uses a bounded bootstrap seam in `newsnow_neon.main` before entering `mainloop()`.
 - Use `--check` on either supported front door to inspect Python/Tk/display/settings readiness without launching the GUI.
+- `--check` now ends with a readiness verdict and returns exit `1` when required launch prerequisites are missing.
 - If startup fails with `RuntimeError: Tkinter is not available...`, fix the OS/runtime dependency first; treat that as an environment issue, not as confirmed app regression.
 - If startup fails in a headless shell with no GUI display, the CLI now prints a short terminal message instead of a raw Tk traceback.
 
@@ -74,8 +75,8 @@ python -m newsnow_neon
 
 ## Current focus
 - **Operational trust first** – startup/runtime failures should classify cleanly instead of failing with raw tracebacks.
-- **Diagnostics next** – the next planned slice is a non-GUI readiness check so operators can verify Tk/display/settings prerequisites before launch.
-- **Bounded cleanup after trust** – deeper legacy and typing work stays slice-based, not repo-wide.
+- **Readiness contract next** – `--check` now ships, but the active slice is making its verdict and exit semantics explicit for required prerequisites.
+- **Bounded cleanup after trust** – deeper legacy, package-boundary, and typing work stays slice-based, not repo-wide.
 
 ## Configuration
 | Variable | Purpose |

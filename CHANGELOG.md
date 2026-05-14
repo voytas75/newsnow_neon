@@ -20,3 +20,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), and this 
 - Added subprocess smoke coverage for no-Tk startup on both the module front door and the `__main__` entrypoint path.
 - Refreshed the canonical product SSOT so the next planned slice is a diagnostics-first runtime readiness check rather than another broad cleanup pass.
 - Implemented `--check` on the supported front doors so startup readiness can be inspected without launching the GUI.
+- Turned `--check` into a readiness contract with a final verdict and exit `1` when required launch prerequisites are missing.

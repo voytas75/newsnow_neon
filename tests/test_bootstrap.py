@@ -22,6 +22,7 @@ from newsnow_neon.main import (
     main,
     render_startup_diagnostics,
     render_startup_error,
+    run_startup_diagnostics,
 )
 
 
@@ -183,13 +184,36 @@ def test_collect_startup_diagnostics_reports_runtime_readiness(
     report = collect_startup_diagnostics()
     rendered = render_startup_diagnostics(report)
 
-    assert report["tkinter_status"] == "available"
-    assert report["display_status"] == "available"
-    assert report["settings_status"] == "writable"
-    assert "Python:" in rendered
-    assert "Tkinter: available" in rendered
-    assert "Display: available" in rendered
-    assert "Settings path: writable" in rendered
+    assert report["required_ready"] is True
+    assert report["required_failures"] == []
+    assert "Verdict: READY" in rendered
+    assert "- Tkinter available" in rendered
+    assert "- Display available" in rendered
+    assert "- Settings path writable" in rendered
+
+
+def test_run_startup_diagnostics_returns_exit_1_when_required_prereq_missing(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Diagnostics should fail the readiness contract when a required check fails."""
+    main_module = importlib.import_module("newsnow_neon.main")
+
+    monkeypatch.setattr(
+        main_module,
+        "detect_tkinter_runtime",
+        lambda: (_ for _ in ()).throw(RuntimeError(TKINTER_IMPORT_ERROR_MESSAGE)),
+    )
+    monkeypatch.setattr(main_module, "has_display_environment", lambda: False)
+    monkeypatch.setattr(
+        main_module,
+        "resolve_settings_path",
+        lambda: tmp_path / "settings.json",
+    )
+    monkeypatch.setattr(main_module, "is_settings_path_writable", lambda path: False)
+
+    with pytest.raises(SystemExit, match="1"):
+        run_startup_diagnostics()
 
 
 def test_main_prints_headless_message_and_exits(
@@ -254,18 +278,28 @@ def test_python_module_entrypoint_check_reports_diagnostics(
 ) -> None:
     """`--check` should print diagnostics and avoid launching the GUI."""
     package_main = importlib.import_module("newsnow_neon.__main__")
-    diagnostics_output = "Python: 3.10\nTkinter: available\nDisplay: available"
+    diagnostics_output = (
+        "Verdict: NOT READY\n"
+        "problem / missing prerequisite\n"
+        "- Tkinter missing"
+    )
     called: list[str] = []
 
     monkeypatch.setattr(package_main, "main", lambda: called.append("gui"))
+
+    def fake_run_startup_diagnostics() -> str:
+        print(diagnostics_output)
+        raise SystemExit(1)
+
     monkeypatch.setattr(
         package_main,
         "run_startup_diagnostics",
-        lambda: diagnostics_output,
+        fake_run_startup_diagnostics,
     )
     monkeypatch.setattr(package_main.sys, "argv", ["newsnow_neon", "--check"])
 
-    package_main._run()
+    with pytest.raises(SystemExit, match="1"):
+        package_main._run()
 
     captured = capsys.readouterr()
     assert diagnostics_output in captured.out

@@ -41,7 +41,7 @@ def _load_run_startup_diagnostics() -> Callable[[], str]:
 def _run() -> None:  # pragma: no cover – thin wrapper
     """Invoke startup diagnostics or launch the Tk app with error classification."""
     if "--check" in sys.argv[1:]:
-        print(_load_run_startup_diagnostics()())
+        _load_run_startup_diagnostics()()
         return
 
     try:

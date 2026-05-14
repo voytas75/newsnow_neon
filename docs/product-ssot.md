@@ -50,14 +50,70 @@ Confirmed from live repo/runtime checks in this cycle:
 - startup contract is now hardened across real front doors:
   - `python -m newsnow_neon` without `tkinter` prints a bounded CLI message instead of an early traceback
   - `uv run newsnow-neon` in a headless GUI-less environment prints a bounded display message instead of a raw Tk traceback
+- diagnostics path exists:
+  - `python -m newsnow_neon --check`
+  - `newsnow-neon --check`
+- diagnostics currently report:
+  - Python version
+  - app version
+  - Tkinter availability
+  - display availability
+  - settings path writability
 - subprocess smoke coverage exists for:
   - module front door without `tkinter`
   - `__main__` / console-script path without `tkinter`
+  - `--check` avoiding GUI launch
 - static-quality debt remains high at repo scope and is not yet the active primary slice
 
 Interpretation:
 - the app now has a materially more trustworthy startup/runtime contract,
-- but broader maintainability and legacy-boundary work still remain.
+- but broader maintainability and legacy-boundary work still remain,
+- and diagnostics now provide a bounded readiness contract for required launch prerequisites.
+
+## Review-driven gaps and empty areas
+
+These came out of the bounded repo review and should drive the next planning cycle.
+
+### Potwierdzone gaps
+
+1. **Diagnostics semantics beyond the current contract are incomplete**
+   - `--check` now produces a readiness verdict and non-zero exit for failed required prerequisites.
+   - What remains open is whether optional integrations (for example Redis/LLM state) should join the same contract now or later.
+   - The current v1 contract is intentionally limited to launch-critical prerequisites.
+
+2. **Legacy boundary is still implicit**
+   - `load_app_class()` imports `newsnow_neon.legacy_app`, but the app class itself comes from `newsnow_neon.application`.
+   - `legacy_app` still matters because service configuration depends on import side effects.
+   - This means the runtime boundary is real but not explicit.
+
+3. **There are false or dead package surfaces**
+   - `newsnow_neon/app/services.py` collides with `newsnow_neon/app/services/`.
+   - `newsnow_neon/app/controller.py` collides with `newsnow_neon/app/controller/`.
+   - Some files look like active architecture but are not the effective runtime path.
+
+4. **Back-compat exports are not trustworthy yet**
+   - The compatibility export for `AINewsApp` in the controller package is not a reliable public surface.
+   - This is small in scope, but it signals that some package boundaries claim more stability than they currently provide.
+
+5. **Core product behavior is still weakly covered**
+   - Current tests strongly cover startup/bootstrap/diagnostics seams.
+   - Current tests do not yet strongly cover:
+     - scraping/parsing,
+     - settings persistence,
+     - cache/history behavior,
+     - summary/provider fallback,
+     - main UI/controller workflows.
+
+6. **Version truth is not yet unified**
+   - `pyproject.toml`, runtime metadata, and per-file update annotations are not yet obviously one coherent release truth.
+
+### Do weryfikacji
+
+- whether `--check` should fail hard on missing required launch prerequisites in v1,
+- whether Redis/LLM optional state belongs in the main diagnostics output now or later,
+- how much of the package-surface collision problem is safe to remove without breaking compatibility,
+- whether the controller compatibility exports are used anywhere external,
+- how much real GUI smoke should be added once a display-capable environment is available.
 
 ## North star
 
@@ -68,164 +124,152 @@ That means:
 - runtime expectations are explicit,
 - docs match reality,
 - environment issues are separable from app regressions,
-- future quality work lands in bounded slices instead of reopening the whole legacy surface.
+- package structure does not pretend to be more modular than it really is,
+- core operator workflows are covered enough to refactor safely.
 
-## Roadmap order
+## Updated roadmap order
 
-### Priority 1 — operational trust and diagnostics-first runtime contract
-
-Goal:
-Make the app easy to verify before and during launch on a real desktop machine.
-
-This includes:
-- preserving the hardened startup contract,
-- adding an explicit non-GUI diagnostics path,
-- checking Tk/display/settings/runtime prerequisites without requiring full app launch,
-- making operator-visible failure states short and actionable,
-- keeping docs aligned with real runtime behavior.
-
-Success condition:
-A developer or operator can run one clear diagnostic path and know whether the environment is launch-ready before troubleshooting the GUI itself.
-
-### Priority 2 — bounded front-door and support-surface cleanup
+### Priority 1 — make the legacy boundary explicit
 
 Goal:
-Reduce engineering noise around entrypoints and small support modules without widening into a repo-wide cleanup.
+Stop relying on unclear import side effects to construct a valid runtime.
 
 This includes:
-- front-door cleanup in `__main__.py`, `main.py`, `utils.py`, and other small support seams,
-- bounded cleanup of small windows/helpers,
-- preserving behavior while tightening lint/type signal in touched seams.
+- documenting the exact role of `legacy_app.py`,
+- making service wiring explicit,
+- proving the supported app-construction path with focused tests,
+- reducing the risk of bypassing setup accidentally.
 
 Success condition:
-Front-door and adjacent support modules remain low-risk, readable, and cheap to modify.
+The supported app startup path is explicit, testable, and does not depend on hidden import magic.
+
+### Priority 2 — remove false package architecture surfaces
+
+Goal:
+Remove or reconcile package/file shapes that suggest architecture which is not actually active at runtime.
+
+This includes:
+- resolving `services.py` vs `services/`,
+- resolving `controller.py` vs `controller/`,
+- deleting or fixing dead scaffolds,
+- keeping compatibility only where it is real and useful.
+
+Success condition:
+The package layout reflects the actual runtime architecture and does not mislead contributors.
 
 ### Priority 3 — typed and explicit UI/controller seams
 
 Goal:
-Reduce ambiguous dynamic-Tk coupling by introducing clearer contracts where the modular UI/controller layer currently leaks state.
+Reduce ambiguous dynamic-Tk coupling by introducing clearer contracts where the modular UI/controller layer leaks state.
 
 This includes:
-- defining the intended typing boundary for app/controller/UI seams,
-- reducing repeated `Tk has no attribute ...` style debt by design,
-- keeping the solution local and minimal.
+- picking one active seam,
+- introducing the smallest useful `Protocol` or runtime contract,
+- improving mypy signal locally without pretending the repo is globally strict-clean.
 
 Success condition:
-Static analysis on active non-legacy seams becomes more meaningful and less noisy.
+One active seam becomes cleaner, typed enough to be useful, and cheaper to modify safely.
 
-### Priority 4 — legacy boundary containment
+### Priority 4 — core product behavior smoke coverage
 
 Goal:
-Treat `legacy_app.py` as a deliberate compatibility boundary instead of a constantly expanding maintenance surface.
+Extend test confidence beyond startup and into the actual operator workflow.
 
 This includes:
-- documenting its role explicitly,
-- reducing accidental coupling to new code,
-- moving future work into modular files by default,
-- deciding which checks stay strict outside the legacy boundary.
+- scraping/parsing tests with fixtures,
+- settings persistence tests,
+- cache/history tests,
+- summary/provider fallback tests,
+- bounded workflow tests around main operator flows.
 
 Success condition:
-New work can continue safely without pretending the whole monolith must be cleaned in one pass.
+The repo can protect core product behavior, not only front-door behavior.
 
-### Priority 5 — deeper UX polish after trust is restored
+### Priority 5 — broader quality recovery after boundaries are real
 
 Goal:
-Only after operational trust and maintainability improve, continue UI/feature polish.
+Only after runtime/readiness, legacy boundary, false package surfaces, and one typed seam are clarified, decide how to recover broader Ruff/Mypy signal.
 
 This includes:
-- better status/diagnostic cues,
-- smoother refresh/history/Redis operator flows,
-- clearer cache/summary surfaces,
-- bounded polish driven by observed operator friction.
+- deciding quality boundaries intentionally,
+- limiting strictness to trustworthy seams first,
+- avoiding repo-wide cleanup that outruns architecture truth.
 
 Success condition:
-Polish work sits on top of a trustworthy runtime and cleaner seams.
+Quality gates become meaningful instead of aspirational noise.
 
 ## Ordered implementation backlog
 
-1. **Diagnostics command / startup readiness check**
-   - Add a non-GUI diagnostics command such as `newsnow-neon --check`.
-   - Verify Python/Tk/display/settings-path readiness before full GUI launch.
-   - Keep output short, terminal-friendly, and explicitly split into confirmed vs failing prerequisites.
+1. **Legacy service-boundary slice**
+   - Make service wiring explicit instead of relying on `legacy_app` import side effects.
+   - Add one import-order / construction-path test.
+   - Document the runtime role of `legacy_app.py`.
 
-2. **Diagnostics docs sync**
-   - Document the check flow in `README.md` and `README-DEV.md`.
-   - Clarify how to interpret environment failures vs app regressions.
+2. **Package-surface cleanup slice**
+   - Resolve `services.py` vs `services/`.
+   - Resolve `controller.py` vs `controller/`.
+   - Fix or remove non-working compatibility exports.
 
-3. **Front-door/support cleanup continuation**
-   - Continue bounded cleanup in small non-legacy files only.
-   - Keep tests green and avoid scope expansion.
+3. **Single typed seam slice**
+   - Pick one active controller/UI seam.
+   - Add the smallest useful protocol/runtime contract.
+   - Scope mypy to that seam and supporting files.
 
-4. **UI/controller contract slice**
-   - Pick one active seam and define the smallest explicit runtime contract.
+4. **Core product smoke slice**
+   - Add tests for scraping/parsing.
+   - Add tests for settings persistence.
+   - Add tests for cache/history/summary fallback behavior.
 
-5. **Legacy containment slice**
-   - Mark and constrain `legacy_app.py` as a compatibility boundary with explicit expectations.
-
-6. **Broader quality recovery decision**
-   - Only after the above, decide how Ruff/Mypy debt should be reduced by seam/boundary.
+5. **Version-truth cleanup slice**
+   - Choose one clear source of release/version truth.
+   - Align runtime metadata, package version, changelog, and per-file update annotations.
 
 ## Current recommended next slice
 
 ### Active next slice
-**Diagnostics command / `--check`**
+**Legacy service-boundary slice**
 
 ### Why this is next
-- It builds directly on the now-hardened startup contract.
-- It improves operator trust without requiring GUI launch.
-- It gives a reusable troubleshooting path for missing Tk, missing display, and bad local runtime setup.
-- It is smaller and safer than jumping straight into legacy containment or broad typing work.
+- The readiness contract is now shipped for `--check`.
+- The biggest remaining operational risk is still implicit service wiring through `legacy_app` import side effects.
+- This slice is smaller and safer than jumping straight into package-surface cleanup or typed UI work.
+- It reduces the chance of future refactors bypassing required runtime setup.
 
-## Implementation plan for the next slice
+## Implementation focus for the active next slice
 
 ### Goal
-Add a terminal-first diagnostics path that verifies launch readiness without starting the GUI.
+Make the supported app-construction path explicit and testable.
 
 ### Scope
-The diagnostics command should report, at minimum:
-- Python version
-- package/app version
-- whether `tkinter` is importable
-- whether a GUI display looks available in the current environment
-- whether the settings path can be resolved and is writable
-- optional note when Redis/LLM-related env is absent, but without turning optional integrations into hard failures
+The next slice should:
+- identify exactly what `legacy_app.py` still provides at startup,
+- make service wiring explicit where feasible,
+- prove the supported construction/import path with focused tests,
+- keep public launch behavior unchanged.
 
 ### Non-goals
 Do not in this slice:
-- build a TUI,
-- add deep Redis live probing unless it is already trivial and low-risk,
-- redesign the startup contract,
-- widen into global refactors.
+- broadly refactor `legacy_app.py`,
+- solve all package-layout collisions,
+- widen into repo-wide cleanup,
+- redesign the UI/controller layer.
 
-### Preferred UX
-- one clear command, ideally through the existing front door / console script surface,
-- short output,
-- explicit separation between:
-  - **potwierdzone**,
-  - **problem / missing prerequisite**,
-  - **optional / not configured**.
-
-### Suggested execution order
-1. inspect current CLI/front-door seams and choose the smallest place to add `--check`
-2. write failing behavior tests for the diagnostics mode
-3. implement the minimal command path without disturbing normal GUI launch
-4. run focused tests
-5. run real CLI smoke for `--check`
-6. sync README / README-DEV / CHANGELOG if shipped behavior changes visibly
+### Preferred execution order
+1. inspect current service wiring and import side effects
+2. write a focused failing test for the supported construction path
+3. make the smallest explicit wiring change
+4. verify startup tests and real smoke still pass
+5. sync docs/changelog only if the runtime story changes visibly
 
 ### Acceptance criteria
-- `newsnow-neon --check` or equivalent supported diagnostics invocation exists
-- it does not start the GUI mainloop
-- it returns useful terminal output for:
-  - Tk missing
-  - display missing
-  - settings path readiness
-- normal launch flow still works unchanged
-- tests cover the diagnostics path
+- the supported app startup path is documented by code/tests rather than import magic alone
+- service wiring is less dependent on hidden side effects
+- startup/readiness behavior remains unchanged for users
+- focused tests cover the supported path
 
 ## What should not drive the roadmap now
 
-Do not prioritize these before the diagnostics slice:
+Do not prioritize these before the readiness-contract slice:
 - repo-wide Ruff cleanup,
 - repo-wide Mypy cleanup,
 - framework replacement,
@@ -243,6 +287,7 @@ Do not prioritize these before the diagnostics slice:
   - **do weryfikacji** — needs confirmation in another runtime or on another machine.
 - Prefer simple local fixes over new abstraction layers.
 - Sync docs when user-visible operational behavior changes.
+- Do not let package structure claim boundaries that runtime behavior does not really support.
 
 ## Documentation sync rules
 
@@ -252,19 +297,21 @@ The following files must stay aligned with this SSOT:
 - `CHANGELOG.md`
 
 Current sync status:
-- README and README-DEV already point to this canonical SSOT
-- CHANGELOG reflects the recent startup-hardening slice
-- next sync point should happen when the diagnostics command ships
+- README and README-DEV point to this canonical SSOT
+- CHANGELOG reflects startup hardening, diagnostics shipping, and readiness-contract semantics for `--check`
+- next sync point should happen when the legacy service-boundary slice changes the supported startup-construction story
 
 ## Status summary
 
 ### Potwierdzone
 - the repo has a working hardened startup contract for the main front doors
+- `--check` exists on supported front doors, avoids GUI launch, and now returns a readiness verdict with non-zero exit for failed required prerequisites
 - full local `pytest -q` is green
 - missing Tk and missing display now surface as bounded CLI-facing outcomes instead of raw startup tracebacks
-- the next highest-value slice is diagnostics-first runtime verification
+- the next highest-value slice is making the legacy service boundary explicit
+- review surfaced real package-boundary and legacy-boundary gaps, not just cosmetic cleanup ideas
 
 ### Do weryfikacji
-- final exact diagnostics invocation shape (`--check` on which front door surface)
-- whether Redis/LLM optional status belongs in v1 diagnostics output or a later follow-up
-- any GUI-specific smoke beyond current command-line/runtime checks
+- whether Redis/LLM optional reporting belongs in a future extension of the readiness contract
+- exact compatibility impact of package-surface cleanup
+- GUI-specific smoke beyond current command-line/runtime checks

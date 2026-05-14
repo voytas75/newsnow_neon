@@ -19,7 +19,7 @@ import os
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, TypedDict, cast
+from typing import Any, Literal, TypedDict, cast
 
 logger = logging.getLogger(__name__)
 
@@ -57,15 +57,23 @@ APP_METADATA = AppMetadata(
 )
 
 
+class DiagnosticCheck(TypedDict):
+    """Single readiness-check result for diagnostics mode."""
+
+    name: str
+    status: Literal["confirmed", "failed", "optional"]
+    detail: str
+    required: bool
+
+
 class StartupDiagnostics(TypedDict):
     """Structured startup-readiness report for terminal diagnostics."""
 
     python_version: str
     app_version: str
-    tkinter_status: str
-    display_status: str
-    settings_path: str
-    settings_status: str
+    checks: list[DiagnosticCheck]
+    required_ready: bool
+    required_failures: list[str]
 
 
 def load_app_class() -> type[Any]:
@@ -128,17 +136,60 @@ def is_settings_path_writable(path: Path) -> bool:
 
 def collect_startup_diagnostics() -> StartupDiagnostics:
     """Collect startup-readiness diagnostics without instantiating the GUI app."""
-    tkinter_status = "available"
+    checks: list[DiagnosticCheck] = []
+
     try:
         detect_tkinter_runtime()
+        checks.append(
+            {
+                "name": "Tkinter",
+                "status": "confirmed",
+                "detail": "available",
+                "required": True,
+            }
+        )
     except RuntimeError as exc:
-        tkinter_status = f"missing ({exc})"
+        checks.append(
+            {
+                "name": "Tkinter",
+                "status": "failed",
+                "detail": str(exc),
+                "required": True,
+            }
+        )
 
-    display_status = "available" if has_display_environment() else "missing"
-    settings_path = resolve_settings_path()
-    settings_status = (
-        "writable" if is_settings_path_writable(settings_path) else "not writable"
+    has_display = has_display_environment()
+    checks.append(
+        {
+            "name": "Display",
+            "status": "confirmed" if has_display else "failed",
+            "detail": (
+                "available" if has_display else HEADLESS_DISPLAY_ERROR_MESSAGE
+            ),
+            "required": True,
+        }
     )
+
+    settings_path = resolve_settings_path()
+    settings_writable = is_settings_path_writable(settings_path)
+    checks.append(
+        {
+            "name": "Settings path",
+            "status": "confirmed" if settings_writable else "failed",
+            "detail": (
+                f"writable ({settings_path})"
+                if settings_writable
+                else f"not writable ({settings_path})"
+            ),
+            "required": True,
+        }
+    )
+
+    required_failures = [
+        f"{check['name']}: {check['detail']}"
+        for check in checks
+        if check["required"] and check["status"] == "failed"
+    ]
 
     python_version = (
         f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
@@ -147,29 +198,52 @@ def collect_startup_diagnostics() -> StartupDiagnostics:
     return {
         "python_version": python_version,
         "app_version": APP_METADATA.version,
-        "tkinter_status": tkinter_status,
-        "display_status": display_status,
-        "settings_path": str(settings_path),
-        "settings_status": settings_status,
+        "checks": checks,
+        "required_ready": not required_failures,
+        "required_failures": required_failures,
     }
 
 
 def render_startup_diagnostics(report: StartupDiagnostics) -> str:
     """Render startup diagnostics as short terminal-friendly text."""
-    return "\n".join(
-        [
-            f"Python: {report['python_version']}",
-            f"App version: {report['app_version']}",
-            f"Tkinter: {report['tkinter_status']}",
-            f"Display: {report['display_status']}",
-            f"Settings path: {report['settings_status']} ({report['settings_path']})",
-        ]
-    )
+    confirmed = [
+        f"- {check['name']} {check['detail']}"
+        for check in report["checks"]
+        if check["status"] == "confirmed"
+    ]
+    failed = [
+        f"- {check['name']} {check['detail']}"
+        for check in report["checks"]
+        if check["status"] == "failed"
+    ]
+    optional = [
+        f"- {check['name']} {check['detail']}"
+        for check in report["checks"]
+        if check["status"] == "optional"
+    ]
+
+    lines = [
+        f"Python: {report['python_version']}",
+        f"App version: {report['app_version']}",
+        "potwierdzone",
+        *(confirmed or ["- none"]),
+        "problem / missing prerequisite",
+        *(failed or ["- none"]),
+    ]
+
+    if optional:
+        lines.extend(["optional / not configured", *optional])
+
+    verdict = "READY" if report["required_ready"] else "NOT READY"
+    lines.append(f"Verdict: {verdict}")
+    return "\n".join(lines)
 
 
 def run_startup_diagnostics() -> str:
-    """Return the rendered startup-readiness report for `--check` mode."""
-    return render_startup_diagnostics(collect_startup_diagnostics())
+    """Print the startup-readiness report and exit with readiness semantics."""
+    rendered = render_startup_diagnostics(collect_startup_diagnostics())
+    print(rendered)
+    raise SystemExit(0 if "Verdict: READY" in rendered else 1)
 
 
 def bootstrap_app(settings_path: str | None = None) -> Any:
