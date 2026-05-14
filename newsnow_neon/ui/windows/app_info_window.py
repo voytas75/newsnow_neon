@@ -7,7 +7,7 @@ from __future__ import annotations
 import logging
 import tkinter as tk
 from typing import Callable, Optional, Sequence, Tuple
-import webbrowser
+from ...browser_launcher import open_url
 
 from ...models import AppMetadata
 
@@ -131,7 +131,7 @@ class AppInfoWindow(tk.Toplevel):
             )
             value_label.pack(fill="x", padx=(8, 0))
             value_label.bind(
-                "<Button-1>", lambda _event, url=link_url: webbrowser.open_new_tab(url)
+                "<Button-1>", lambda _event, url=link_url: open_url(url)
             )
             value_label.bind(
                 "<Enter>", lambda _event, widget=value_label: widget.config(fg="#80C4FF")

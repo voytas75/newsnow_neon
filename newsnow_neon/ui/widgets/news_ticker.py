@@ -5,7 +5,7 @@ import logging
 import tkinter as tk
 from tkinter import font
 from typing import Any, Dict, List, Mapping, Optional, Sequence, Union
-import webbrowser
+from ...browser_launcher import open_url
 
 from ...config import DEFAULT_COLOR_PROFILE
 from ...highlight import compose_headline_tooltip, highlight_segments
@@ -343,7 +343,7 @@ class NewsTicker(tk.Canvas):
         if target_group:
             url = self._headline_groups.get(target_group, {}).get("url")
             if url:
-                webbrowser.open_new_tab(url)
+                open_url(url)
         self._tooltip.hide()
 
     def _set_hover(self, group_tag: str) -> None:

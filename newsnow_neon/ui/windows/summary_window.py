@@ -10,7 +10,7 @@ import tkinter as tk
 from tkinter import font
 from typing import Callable, List, Optional
 from urllib.parse import urlparse
-import webbrowser
+from ...browser_launcher import open_url
 
 from ...highlight import HIGHLIGHT_KEYWORDS
 from ...models import Headline, SummaryResolution
@@ -209,7 +209,7 @@ class SummaryWindow(tk.Toplevel):
                 start = end_index
 
     def _open_article(self) -> None:
-        webbrowser.open_new_tab(self._link_url)
+        open_url(self._link_url)
 
     def _on_title_enter(self, _event: tk.Event) -> None:
         self.title_label.config(fg=self._link_hover_color)
