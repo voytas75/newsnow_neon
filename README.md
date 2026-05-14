@@ -9,13 +9,21 @@ Canonical product SSOT: `docs/product-ssot.md`
 - Requires Python 3.10+.
 - Requires a desktop Python build with `tkinter` available.
 - On some Linux distributions this means installing the OS package separately (for example `python3-tk`).
-- Editable developer install (recommended):
+- Editable developer install (recommended, pip):
 ```bash
 pip install -e .[dev]
 ```
-- Minimal runtime install:
+- Editable developer install (recommended, uv):
+```bash
+uv sync --extra dev
+```
+- Minimal runtime install (pip):
 ```bash
 pip install .
+```
+- Minimal runtime environment (uv):
+```bash
+uv sync
 ```
 - Optional extras:
 ```bash
@@ -26,23 +34,30 @@ pip install .[dotenv]  # Auto-load .env via python-dotenv
 
 ## Quick Start
 ```bash
-# Dev installation
-pip install -e .[dev]
+# Dev installation with uv
+uv sync --extra dev
 
 # Configure environment (examples)
 export NEWS_SUMMARY_MODEL=gpt-4.1
 export NEWS_TICKER_TIMEOUT=15
-# export REDIS_URL=redis://localhost:6379/0    # optional cache backend
+# export REDIS_URL=redis://localhost:6379/0
 
-# Launch the desktop app
+# Run the desktop app
+uv run newsnow-neon
+```
+
+Alternative pip-based flow:
+```bash
+pip install -e .[dev]
 python -m newsnow_neon
 ```
-Notes:
+
 - `.env` files are auto-loaded when `python-dotenv` is installed (see `newsnow_neon/config.py`).
 - Settings persist at the platform-specific path resolved by `NEWS_APP_SETTINGS` (default shown below).
 - Canonical runtime entrypoint: `python -m newsnow_neon`.
 - Startup now uses a bounded bootstrap seam in `newsnow_neon.main` before entering `mainloop()`.
 - If startup fails with `RuntimeError: Tkinter is not available...`, fix the OS/runtime dependency first; treat that as an environment issue, not as confirmed app regression.
+- If startup fails in a headless shell with no GUI display, the CLI now prints a short terminal message instead of a raw Tk traceback.
 
 ## Features
 - **Aggregated headlines** – Scrapes multiple NewsNow sections into a scrolling ticker plus sortable list.
@@ -86,22 +101,32 @@ Notes:
 
 ## Build, Test & Development
 ```bash
-# one-liner dev setup
-pip install -e .[dev]
+# one-liner dev setup (uv)
+uv sync --extra dev
 
 # formatting & static analysis
+uv run ruff check .
+uv run mypy newsnow_neon
+
+# startup contract checks
+uv run pytest tests/test_main_metadata.py tests/test_bootstrap.py -q
+
+# run the desktop app
+uv run newsnow-neon
+
+# execute full test suite
+uv run pytest -q
+```
+
+Alternative pip-based flow:
+```bash
+pip install -e .[dev]
 black .
 ruff check .
 mypy newsnow_neon
-
-# startup contract checks
 pytest tests/test_main_metadata.py tests/test_bootstrap.py -q
-
-# run the desktop app
 python -m newsnow_neon
-
-# execute full test suite
-pytest -q          # add -vv for verbose output
+pytest -q
 ```
 
 ## Developer

@@ -9,23 +9,42 @@ Canonical product SSOT: `docs/product-ssot.md`
 2. Ensure the local Python runtime includes `tkinter`.
 3. Install the project with tooling enabled:
    ```bash
-   pip install -e .[dev]
+   uv sync --extra dev
    ```
-4. (Optional) Add extras as needed: `pip install .[redis]`, `pip install .[llm]`, `pip install .[dotenv]`.
+4. (Optional) Add runtime extras as needed:
+   ```bash
+   uv sync --extra dev --extra redis --extra llm --extra dotenv
+   ```
 5. Create a `.env` file if you need to pin provider credentials locally (the loader auto-runs when `python-dotenv` is present).
 
+Alternative pip flow:
+```bash
+pip install -e .[dev]
+pip install .[redis,llm,dotenv]  # optional
+```
+
 ## Tooling & Daily Commands
+```bash
+uv run black .
+uv run ruff check .
+uv run mypy newsnow_neon
+uv run pytest tests/test_main_metadata.py tests/test_bootstrap.py -q
+uv run pytest -q
+uv run newsnow-neon
+```
+- `pytest --cov` should remain ≥80 % statement coverage; add tests under `tests/` with `test_*` names.
+- Run `uv sync --extra dev` before daily work to keep the environment aligned.
+- The bounded startup smoke pack is `tests/test_main_metadata.py` + `tests/test_bootstrap.py`.
+
+Alternative direct tool flow in an activated venv:
 ```bash
 black .
 ruff check .
 mypy newsnow_neon
 pytest tests/test_main_metadata.py tests/test_bootstrap.py -q
-pytest -q          # add -vv for verbose output
+pytest -q
 python -m newsnow_neon
 ```
-- `pytest --cov` should remain ≥80 % statement coverage; add tests under `tests/` with `test_*` names.
-- Run `ruff` and `black` before pushing to guarantee CI parity.
-- The bounded startup smoke pack is `tests/test_main_metadata.py` + `tests/test_bootstrap.py`.
 
 ## Environment & Secrets
 - `.env` files are loaded automatically when `python-dotenv` is installed (see `newsnow_neon/config.py`).

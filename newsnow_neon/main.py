@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import importlib
 import logging
+import sys
 from typing import Any, cast
 
 from .models import AppMetadata
@@ -25,6 +26,10 @@ APP_VERSION = "0.53"
 TKINTER_IMPORT_ERROR_MESSAGE = (
     "Tkinter is not available in this Python runtime. Install a desktop Python build "
     "with Tk support (for example `python3-tk` on some Linux distributions)."
+)
+HEADLESS_DISPLAY_ERROR_MESSAGE = (
+    "NewsNowNeon cannot start the GUI in this environment because no graphical display "
+    "is available. Run it from a desktop session with DISPLAY/GUI access."
 )
 APP_METADATA = AppMetadata(
     name="NewsNow Neon",
@@ -63,19 +68,50 @@ def bootstrap_app(settings_path: str | None = None) -> Any:
     return app
 
 
+def is_headless_tk_error(error: BaseException) -> bool:
+    """Return whether the startup failure looks like a missing GUI display."""
+    error_type_name = type(error).__name__
+    if not error_type_name.endswith("TclError"):
+        return False
+
+    error_text = str(error).lower()
+    return "no display name" in error_text or "no $display" in error_text
+
+
+def render_startup_error(error: BaseException) -> str:
+    """Return a user-facing startup error for missing Tk support or GUI display."""
+    if isinstance(error, RuntimeError):
+        return str(error)
+
+    if is_headless_tk_error(error):
+        return HEADLESS_DISPLAY_ERROR_MESSAGE
+
+    return str(error)
+
+
 def main(settings_path: str | None = None) -> None:
     """Launch the NewsNow Neon Tk application."""
     logger.debug("Bootstrapping NewsNow Neon main loop")
 
-    app = bootstrap_app(settings_path=settings_path)
-    app.mainloop()
+    try:
+        app = bootstrap_app(settings_path=settings_path)
+        app.mainloop()
+    except BaseException as exc:
+        if not isinstance(exc, RuntimeError) and not is_headless_tk_error(exc):
+            raise
+        message = render_startup_error(exc)
+        print(message, file=sys.stderr)
+        raise SystemExit(1) from exc
 
 
 __all__ = [
     "APP_METADATA",
     "APP_VERSION",
+    "HEADLESS_DISPLAY_ERROR_MESSAGE",
     "TKINTER_IMPORT_ERROR_MESSAGE",
     "bootstrap_app",
+    "is_headless_tk_error",
     "load_app_class",
     "main",
+    "render_startup_error",
 ]

@@ -2,16 +2,20 @@
 
 from __future__ import annotations
 
+import importlib
 import importlib.util
 import types
 
 import pytest
 
 from newsnow_neon.main import (
+    HEADLESS_DISPLAY_ERROR_MESSAGE,
     TKINTER_IMPORT_ERROR_MESSAGE,
     bootstrap_app,
+    is_headless_tk_error,
     load_app_class,
     main,
+    render_startup_error,
 )
 
 
@@ -95,3 +99,43 @@ def test_tkinter_error_message_mentions_runtime_fix() -> None:
     """The dependency error should explain that Tk support must be installed."""
     assert "desktop Python build" in TKINTER_IMPORT_ERROR_MESSAGE
     assert "python3-tk" in TKINTER_IMPORT_ERROR_MESSAGE
+
+
+def test_render_startup_error_maps_headless_tk_error() -> None:
+    """Headless Tk failures should map to a clearer CLI-facing message."""
+
+    class FakeTclError(Exception):
+        pass
+
+    error = FakeTclError("no display name and no $DISPLAY environment variable")
+
+    assert is_headless_tk_error(error)
+    assert render_startup_error(error) == HEADLESS_DISPLAY_ERROR_MESSAGE
+
+
+def test_main_prints_headless_message_and_exits(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Headless GUI startup should print a user-facing error instead of a traceback."""
+    main_module = importlib.import_module("newsnow_neon.main")
+
+    def fake_bootstrap(*, settings_path: str | None = None) -> object:
+        class FakeTclError(Exception):
+            pass
+
+        class FakeApp:
+            def mainloop(self) -> None:
+                raise FakeTclError(
+                    "no display name and no $DISPLAY environment variable"
+                )
+
+        return FakeApp()
+
+    monkeypatch.setattr(main_module, "bootstrap_app", fake_bootstrap)
+
+    with pytest.raises(SystemExit, match="1"):
+        main()
+
+    captured = capsys.readouterr()
+    assert HEADLESS_DISPLAY_ERROR_MESSAGE in captured.err
