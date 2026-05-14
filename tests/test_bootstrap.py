@@ -17,6 +17,7 @@ from newsnow_neon.main import (
     TKINTER_IMPORT_ERROR_MESSAGE,
     bootstrap_app,
     collect_startup_diagnostics,
+    configure_legacy_runtime_services,
     is_headless_tk_error,
     load_app_class,
     main,
@@ -81,6 +82,105 @@ def test_load_app_class_wraps_missing_tkinter_dependency(
 
     with pytest.raises(RuntimeError, match="Tkinter is not available"):
         load_app_class()
+
+
+def test_load_app_class_configures_runtime_services(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Loading the app class should also wire legacy runtime services explicitly."""
+    main_module = importlib.import_module("newsnow_neon.main")
+    configured: list[object] = []
+
+    class FakeApp:
+        pass
+
+    class FakeLegacyModule:
+        AINewsApp = FakeApp
+        fetch_headlines = staticmethod(lambda *args, **kwargs: ([], False, None))
+        build_ticker_text = staticmethod(lambda headlines: "ticker")
+        resolve_article_summary = staticmethod(lambda headline: {"summary": True})
+        persist_headlines_with_ticker = staticmethod(lambda *args, **kwargs: None)
+        collect_redis_statistics = staticmethod(lambda: object())
+        clear_cached_headlines = staticmethod(lambda: (True, "ok"))
+        load_historical_snapshots = staticmethod(lambda *args, **kwargs: [])
+
+    monkeypatch.setattr(
+        main_module.importlib,
+        "import_module",
+        lambda name: FakeLegacyModule,
+    )
+    monkeypatch.setattr(
+        main_module,
+        "configure_legacy_runtime_services",
+        lambda legacy_module: configured.append(legacy_module),
+    )
+
+    assert load_app_class() is FakeApp
+    assert configured == [FakeLegacyModule]
+
+
+def test_configure_legacy_runtime_services_binds_service_proxies() -> None:
+    """Legacy startup wiring should configure app services explicitly."""
+    from newsnow_neon.app import services as service_module
+
+    calls: list[str] = []
+
+    class LegacyModule:
+        @staticmethod
+        def fetch_headlines(
+            *args: object,
+            **kwargs: object,
+        ) -> tuple[list[object], bool, str | None]:
+            calls.append("fetch")
+            return [], False, None
+
+        @staticmethod
+        def build_ticker_text(headlines: object) -> str:
+            calls.append("ticker")
+            return "ticker"
+
+        @staticmethod
+        def resolve_article_summary(headline: object) -> object:
+            calls.append("summary")
+            return {"summary": True}
+
+        @staticmethod
+        def persist_headlines_with_ticker(*args: object, **kwargs: object) -> None:
+            calls.append("persist")
+
+        @staticmethod
+        def collect_redis_statistics() -> object:
+            calls.append("redis")
+            return object()
+
+        @staticmethod
+        def clear_cached_headlines() -> tuple[bool, str]:
+            calls.append("clear")
+            return True, "ok"
+
+        @staticmethod
+        def load_historical_snapshots(*args: object, **kwargs: object) -> list[object]:
+            calls.append("history")
+            return []
+
+    configure_legacy_runtime_services(LegacyModule)
+
+    assert service_module.fetch_headlines() == ([], False, None)
+    assert service_module.build_ticker_text([]) == "ticker"
+    assert service_module.resolve_article_summary(object()) == {"summary": True}
+    service_module.persist_headlines_with_ticker()
+    assert service_module.collect_redis_statistics() is not None
+    assert service_module.clear_cached_headlines() == (True, "ok")
+    assert service_module.load_historical_snapshots() == []
+    assert calls == [
+        "fetch",
+        "ticker",
+        "summary",
+        "persist",
+        "redis",
+        "clear",
+        "history",
+    ]
 
 
 def test_bootstrap_app_returns_app_without_running_mainloop(

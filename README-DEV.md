@@ -73,6 +73,7 @@ Sensitive values (`*KEY`, `*TOKEN`, `*SECRET`, `*PASSWORD`) are masked automatic
 ## Architecture Overview
 - **Entrypoints**: `python -m newsnow_neon` executes `newsnow_neon/__main__._run()`, which delegates to `newsnow_neon/main.py::main()` (guarded by `tests/test_main_metadata.py`). The installed script is `newsnow-neon`; `uv run newsnow_neon` is not a supported invocation.
 - **Bootstrap seam**: `newsnow_neon/main.py::load_app_class()` classifies missing Tk support explicitly, and `bootstrap_app()` builds the app before `mainloop()` (guarded by `tests/test_bootstrap.py`).
+- **Legacy runtime boundary**: `load_app_class()` now also binds the legacy module's service implementations into `newsnow_neon.app.services` explicitly instead of relying only on import-time side effects.
 - **Diagnostics seam**: `--check` now renders Python/Tk/display/settings readiness through `newsnow_neon.main` without starting the GUI, and returns a readiness verdict with non-zero exit when required launch prerequisites fail.
 - **Next operational seam**: after the readiness contract lands, continue with explicit legacy boundary and package-surface cleanup before broader typing work.
 - **Application layer**: `newsnow_neon/app/` hosts service wiring (`services.py`) and controller adaptors so the UI stays thin.

@@ -81,10 +81,10 @@ These came out of the bounded repo review and should drive the next planning cyc
    - What remains open is whether optional integrations (for example Redis/LLM state) should join the same contract now or later.
    - The current v1 contract is intentionally limited to launch-critical prerequisites.
 
-2. **Legacy boundary is still implicit**
-   - `load_app_class()` imports `newsnow_neon.legacy_app`, but the app class itself comes from `newsnow_neon.application`.
-   - `legacy_app` still matters because service configuration depends on import side effects.
-   - This means the runtime boundary is real but not explicit.
+2. **Legacy boundary is still only partially explicit**
+   - `load_app_class()` now binds runtime services explicitly through `configure_legacy_runtime_services()`.
+   - The app class still comes from `newsnow_neon.application`, while the concrete implementations still live in `legacy_app.py`.
+   - This reduces one hidden dependency, but the overall runtime boundary is not fully separated yet.
 
 3. **There are false or dead package surfaces**
    - `newsnow_neon/app/services.py` collides with `newsnow_neon/app/services/`.
@@ -231,7 +231,7 @@ Quality gates become meaningful instead of aspirational noise.
 
 ### Why this is next
 - The readiness contract is now shipped for `--check`.
-- The biggest remaining operational risk is still implicit service wiring through `legacy_app` import side effects.
+- The biggest remaining operational risk is that the legacy boundary is only partially explicit: service binding is now intentional, but the startup path still crosses `legacy_app` and `application`.
 - This slice is smaller and safer than jumping straight into package-surface cleanup or typed UI work.
 - It reduces the chance of future refactors bypassing required runtime setup.
 
@@ -298,7 +298,7 @@ The following files must stay aligned with this SSOT:
 
 Current sync status:
 - README and README-DEV point to this canonical SSOT
-- CHANGELOG reflects startup hardening, diagnostics shipping, and readiness-contract semantics for `--check`
+- CHANGELOG reflects startup hardening, diagnostics shipping, readiness-contract semantics for `--check`, and the first explicit legacy service-binding step
 - next sync point should happen when the legacy service-boundary slice changes the supported startup-construction story
 
 ## Status summary
@@ -308,7 +308,7 @@ Current sync status:
 - `--check` exists on supported front doors, avoids GUI launch, and now returns a readiness verdict with non-zero exit for failed required prerequisites
 - full local `pytest -q` is green
 - missing Tk and missing display now surface as bounded CLI-facing outcomes instead of raw startup tracebacks
-- the next highest-value slice is making the legacy service boundary explicit
+- the next highest-value slice is continuing the legacy service-boundary work beyond the first explicit binding step
 - review surfaced real package-boundary and legacy-boundary gaps, not just cosmetic cleanup ideas
 
 ### Do weryfikacji

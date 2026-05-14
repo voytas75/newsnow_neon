@@ -21,3 +21,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), and this 
 - Refreshed the canonical product SSOT so the next planned slice is a diagnostics-first runtime readiness check rather than another broad cleanup pass.
 - Implemented `--check` on the supported front doors so startup readiness can be inspected without launching the GUI.
 - Turned `--check` into a readiness contract with a final verdict and exit `1` when required launch prerequisites are missing.
+- Made the startup seam bind legacy runtime services explicitly from `legacy_app` into `newsnow_neon.app.services` instead of relying only on import-time side effects.

@@ -19,7 +19,29 @@ import os
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Literal, TypedDict, cast
+from typing import Any, Literal, Protocol, TypedDict, cast
+
+
+class LegacyRuntimeServices(Protocol):
+    """Minimal callable surface the startup seam needs from the legacy module."""
+
+    def fetch_headlines(self, *args: object, **kwargs: object) -> object: ...
+
+    def build_ticker_text(self, headlines: object) -> str: ...
+
+    def resolve_article_summary(self, headline: object) -> object: ...
+
+    def persist_headlines_with_ticker(
+        self,
+        *args: object,
+        **kwargs: object,
+    ) -> None: ...
+
+    def collect_redis_statistics(self) -> object: ...
+
+    def clear_cached_headlines(self) -> tuple[bool, str]: ...
+
+    def load_historical_snapshots(self, *args: object, **kwargs: object) -> object: ...
 
 logger = logging.getLogger(__name__)
 
@@ -76,6 +98,21 @@ class StartupDiagnostics(TypedDict):
     required_failures: list[str]
 
 
+def configure_legacy_runtime_services(legacy_app: LegacyRuntimeServices) -> None:
+    """Bind runtime services explicitly from the legacy module into app proxies."""
+    from .app import services as app_services
+
+    app_services.configure_app_services(
+        fetch_headlines=legacy_app.fetch_headlines,
+        build_ticker_text=legacy_app.build_ticker_text,
+        resolve_article_summary=legacy_app.resolve_article_summary,
+        persist_headlines_with_ticker=legacy_app.persist_headlines_with_ticker,
+        collect_redis_statistics=legacy_app.collect_redis_statistics,
+        clear_cached_headlines=legacy_app.clear_cached_headlines,
+        load_historical_snapshots=legacy_app.load_historical_snapshots,
+    )
+
+
 def load_app_class() -> type[Any]:
     """Load the Tk app class while classifying missing Tk support explicitly."""
     try:
@@ -85,7 +122,13 @@ def load_app_class() -> type[Any]:
             raise RuntimeError(TKINTER_IMPORT_ERROR_MESSAGE) from exc
         raise
 
-    return cast(type[Any], legacy_app.AINewsApp)
+    try:
+        app_class = cast(type[Any], legacy_app.AINewsApp)
+    except AttributeError as exc:  # pragma: no cover - defensive guard
+        raise RuntimeError("newsnow_neon.legacy_app does not expose AINewsApp") from exc
+
+    configure_legacy_runtime_services(legacy_app)
+    return app_class
 
 
 def detect_tkinter_runtime() -> None:
@@ -302,6 +345,7 @@ __all__ = [
     "TKINTER_IMPORT_ERROR_MESSAGE",
     "StartupDiagnostics",
     "bootstrap_app",
+    "configure_legacy_runtime_services",
     "collect_startup_diagnostics",
     "detect_tkinter_runtime",
     "has_display_environment",
