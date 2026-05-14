@@ -2,9 +2,13 @@
 
 NewsNowNeon is a Tkinter desktop dashboard that surfaces curated NewsNow headlines, caches LiteLLM summaries, and exposes live controls for refresh intervals, Redis usage, and observability.
 
+Canonical product SSOT: `docs/product-ssot.md`
+
 ## Installation
 
 - Requires Python 3.10+.
+- Requires a desktop Python build with `tkinter` available.
+- On some Linux distributions this means installing the OS package separately (for example `python3-tk`).
 - Editable developer install (recommended):
 ```bash
 pip install -e .[dev]
@@ -36,6 +40,9 @@ python -m newsnow_neon
 Notes:
 - `.env` files are auto-loaded when `python-dotenv` is installed (see `newsnow_neon/config.py`).
 - Settings persist at the platform-specific path resolved by `NEWS_APP_SETTINGS` (default shown below).
+- Canonical runtime entrypoint: `python -m newsnow_neon`.
+- Startup now uses a bounded bootstrap seam in `newsnow_neon.main` before entering `mainloop()`.
+- If startup fails with `RuntimeError: Tkinter is not available...`, fix the OS/runtime dependency first; treat that as an environment issue, not as confirmed app regression.
 
 ## Features
 - **Aggregated headlines** – Scrapes multiple NewsNow sections into a scrolling ticker plus sortable list.
@@ -87,10 +94,13 @@ black .
 ruff check .
 mypy newsnow_neon
 
+# startup contract checks
+pytest tests/test_main_metadata.py tests/test_bootstrap.py -q
+
 # run the desktop app
 python -m newsnow_neon
 
-# execute test suite
+# execute full test suite
 pytest -q          # add -vv for verbose output
 ```
 

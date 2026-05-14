@@ -5,30 +5,39 @@ Validates:
 - APP_VERSION formatting
 - Availability of callable main() entrypoint (without invoking GUI)
 - Presence of __main__._run() wrapper
-- Skips gracefully if tkinter is unavailable
+- Thin delegation contract between __main__ and main module
+- Skips gracefully when tkinter-dependent metadata imports are unavailable
 """
 
 from __future__ import annotations
 
+import importlib.util
+import sys
+
 import pytest
 
-# Ensure Tkinter is present before importing modules that rely on it
-pytest.importorskip(
-    "tkinter", reason="Tkinter not available; skipping GUI-bound metadata tests."
+HAS_TKINTER = sys.modules.get("tkinter") is not None or (
+    importlib.util.find_spec("tkinter") is not None
 )
 
-from newsnow_neon.main import APP_METADATA, APP_VERSION, main
-from newsnow_neon.models import AppMetadata
-from newsnow_neon.__main__ import _run
+pytestmark = pytest.mark.skipif(
+    not HAS_TKINTER,
+    reason="Tkinter not available; skipping GUI-bound metadata tests.",
+)
 
 
 def test_app_metadata_instance_type() -> None:
     """APP_METADATA should be an AppMetadata dataclass."""
+    from newsnow_neon.main import APP_METADATA
+    from newsnow_neon.models import AppMetadata
+
     assert isinstance(APP_METADATA, AppMetadata)
 
 
 def test_app_metadata_basic_fields() -> None:
     """Validate core APP_METADATA field values."""
+    from newsnow_neon.main import APP_METADATA
+
     assert APP_METADATA.name == "NewsNow Neon"
     assert APP_METADATA.version.startswith("v")
     assert APP_METADATA.author == "https://github.com/voytas75"
@@ -38,14 +47,36 @@ def test_app_metadata_basic_fields() -> None:
 
 def test_app_version_constant() -> None:
     """APP_VERSION should be a simple semantic string without the 'v' prefix."""
+    from newsnow_neon.main import APP_VERSION
+
     assert APP_VERSION == "0.53"
 
 
 def test_main_callable_without_invocation() -> None:
     """Ensure main is importable and callable (do not invoke to avoid Tk mainloop)."""
+    from newsnow_neon.main import main
+
     assert callable(main)
 
 
 def test_run_wrapper_callable_without_invocation() -> None:
     """Ensure __main__._run exists and is callable (do not invoke)."""
+    from newsnow_neon.__main__ import _run
+
     assert callable(_run)
+
+
+def test_run_wrapper_delegates_to_module_main(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The package front door should delegate exactly once to newsnow_neon.main.main."""
+    from newsnow_neon import __main__ as package_main
+
+    calls: list[str] = []
+
+    def fake_main() -> None:
+        calls.append("called")
+
+    monkeypatch.setattr(package_main, "main", fake_main)
+
+    package_main._run()
+
+    assert calls == ["called"]

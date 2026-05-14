@@ -2,25 +2,30 @@
 
 This guide captures the engineering-facing details that complement the user-focused `README.md`. Use it to bootstrap local environments, understand the architecture, and keep workflow conventions aligned with the automation in CI.
 
+Canonical product SSOT: `docs/product-ssot.md`
+
 ## Getting Started
 1. Ensure Python 3.10+ is available and create a virtual environment.
-2. Install the project with tooling enabled:
+2. Ensure the local Python runtime includes `tkinter`.
+3. Install the project with tooling enabled:
    ```bash
    pip install -e .[dev]
    ```
-3. (Optional) Add extras as needed: `pip install .[redis]`, `pip install .[llm]`, `pip install .[dotenv]`.
-4. Create a `.env` file if you need to pin provider credentials locally (the loader auto-runs when `python-dotenv` is present).
+4. (Optional) Add extras as needed: `pip install .[redis]`, `pip install .[llm]`, `pip install .[dotenv]`.
+5. Create a `.env` file if you need to pin provider credentials locally (the loader auto-runs when `python-dotenv` is present).
 
 ## Tooling & Daily Commands
 ```bash
 black .
 ruff check .
 mypy newsnow_neon
+pytest tests/test_main_metadata.py tests/test_bootstrap.py -q
 pytest -q          # add -vv for verbose output
 python -m newsnow_neon
 ```
 - `pytest --cov` should remain ≥80 % statement coverage; add tests under `tests/` with `test_*` names.
 - Run `ruff` and `black` before pushing to guarantee CI parity.
+- The bounded startup smoke pack is `tests/test_main_metadata.py` + `tests/test_bootstrap.py`.
 
 ## Environment & Secrets
 - `.env` files are loaded automatically when `python-dotenv` is installed (see `newsnow_neon/config.py`).
@@ -45,6 +50,7 @@ Sensitive values (`*KEY`, `*TOKEN`, `*SECRET`, `*PASSWORD`) are masked automatic
 
 ## Architecture Overview
 - **Entrypoints**: `python -m newsnow_neon` executes `newsnow_neon/__main__._run()`, which delegates to `newsnow_neon/main.py::main()` (guarded by `tests/test_main_metadata.py`).
+- **Bootstrap seam**: `newsnow_neon/main.py::load_app_class()` classifies missing Tk support explicitly, and `bootstrap_app()` builds the app before `mainloop()` (guarded by `tests/test_bootstrap.py`).
 - **Application layer**: `newsnow_neon/app/` hosts service wiring (`services.py`) and controller adaptors so the UI stays thin.
 - **UI**: `newsnow_neon/ui/` plus `application.py` define Tkinter windows, dialogs, keyword heatmaps, and ticker widgets.
 - **Domain models**: Shared dataclasses and helpers live in `models.py`, `cache.py`, `summaries.py`, and `settings_store.py`.
@@ -58,6 +64,7 @@ Sensitive values (`*KEY`, `*TOKEN`, `*SECRET`, `*PASSWORD`) are masked automatic
 5. Update documentation (`README.md`, this guide, and `CHANGELOG.md`) plus docstrings for any public interface changes.
 
 ## Troubleshooting & Tips
+- **Missing `tkinter`**: install the OS/runtime package for Tk support first (for example `python3-tk` on some Linux distros). Treat missing Tk as environment setup debt, not confirmed app logic failure.
 - **Stale Redis data**: Use the UI “Redis Stats” panel or run `redis-cli keys 'news:*'` to verify snapshot churn; `clear_cached_headlines()` is wired via the Diagnostics panel.
 - **LLM rate limits**: Adjust `NEWS_SUMMARY_TIMEOUT` and `NEWS_TICKER_TIMEOUT` or switch providers via LiteLLM env vars; enable “LiteLLM Debug” to surface provider traces.
 - **Background watchers**: The Background Watch counter uses polling hooks in `application.py`; keep intervals ≥60s to avoid UI jank.
