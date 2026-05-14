@@ -228,7 +228,7 @@ Quality gates become meaningful instead of aspirational noise.
 ## Current recommended next slice
 
 ### Active next slice
-**Package-surface cleanup slice**
+**Core product behavior smoke slice**
 
 ### Why this is next
 - The first explicit legacy-binding step is already shipped.
@@ -236,39 +236,39 @@ Quality gates become meaningful instead of aspirational noise.
 - The `app.services` package is now a real importable surface instead of dead scaffolding.
 - The remaining misleading file/package splits are now mostly a question of eventual removal/deprecation rather than contradictory behavior.
 - Startup import failures now classify missing non-Tk runtime dependencies as bounded operator-facing errors instead of leaking raw `ModuleNotFoundError` from legacy bootstrap imports.
-- This remains smaller and safer than jumping straight into broader typing or product-workflow tests.
+- The highest-value remaining risk is no longer front-door instability, but weak protection of scraping/settings/cache/summary workflows.
 
 ## Implementation focus for the active next slice
 
 ### Goal
-Make the repo package layout less misleading without changing supported startup/runtime behavior.
+Extend confidence from startup/readiness seams into the real operator workflow without broadening scope into repo-wide cleanup.
 
 ### Scope
 The next slice should:
-- reconcile the `controller.py` vs `controller/` split,
-- reconcile the `services.py` vs `services/` split,
-- keep only compatibility surfaces that actually work,
+- add bounded tests for scraping/parsing behavior,
+- add bounded tests for settings persistence,
+- add bounded tests for cache/history or summary fallback behavior,
 - preserve import-safe startup and `--check` behavior.
 
 ### Non-goals
 Do not in this slice:
 - redesign the full legacy/runtime boundary,
-- broaden into typed seam work,
-- add large new product tests,
-- do repo-wide lint/type cleanup.
+- broaden into repo-wide typed-seam cleanup,
+- do repo-wide lint/type cleanup,
+- reopen startup hardening unless a new regression appears.
 
 ### Preferred execution order
-1. inspect which file/package surfaces are actually imported today
-2. write focused import-surface tests
-3. make the smallest cleanup or lazy-export changes that remove misleading surfaces
+1. pick one operator workflow seam with the smallest existing fixture/setup cost
+2. write focused product-behavior tests for that seam
+3. make the smallest implementation fix needed for green behavior
 4. verify startup/readiness behavior still passes
-5. sync docs/changelog/SSOT to the new import story
+5. sync docs/changelog/SSOT only if the shipped behavior changes materially
 
 ### Acceptance criteria
-- importing declared package surfaces does not trigger avoidable Tk-bound failures earlier than necessary
-- misleading compatibility exports are removed or made truthful
+- at least one non-startup operator workflow has focused regression coverage
+- the new tests exercise real product behavior rather than only import/bootstrap wiring
 - startup/readiness behavior remains unchanged for users
-- docs describe the package surface more truthfully
+- docs do not claim a broader test baseline than what is actually verified
 
 ## What should not drive the roadmap now
 
@@ -311,7 +311,7 @@ Current sync status:
 - `--check` exists on supported front doors, avoids GUI launch, and now returns a readiness verdict with non-zero exit for failed required prerequisites
 - full local `pytest -q` is green
 - missing Tk and missing display now surface as bounded CLI-facing outcomes instead of raw startup tracebacks
-- the next highest-value slice is deciding whether the remaining parallel package/file shapes should now be deprecated or removed
+- the next highest-value slice is extending coverage into core product behavior (scraping/settings/cache/summary seams), not more startup hardening
 - review surfaced real package-boundary and legacy-boundary gaps, not just cosmetic cleanup ideas
 
 ### Do weryfikacji
