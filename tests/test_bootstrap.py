@@ -16,9 +16,11 @@ from newsnow_neon.main import (
     HEADLESS_DISPLAY_ERROR_MESSAGE,
     TKINTER_IMPORT_ERROR_MESSAGE,
     bootstrap_app,
+    collect_startup_diagnostics,
     is_headless_tk_error,
     load_app_class,
     main,
+    render_startup_diagnostics,
     render_startup_error,
 )
 
@@ -159,6 +161,37 @@ def test_render_startup_error_maps_headless_tk_error() -> None:
     assert render_startup_error(error) == HEADLESS_DISPLAY_ERROR_MESSAGE
 
 
+def test_collect_startup_diagnostics_reports_runtime_readiness(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Diagnostics should report Python/Tk/display/settings readiness.
+
+    The check must stay GUI-free.
+    """
+    main_module = importlib.import_module("newsnow_neon.main")
+
+    monkeypatch.setattr(main_module, "detect_tkinter_runtime", lambda: None)
+    monkeypatch.setattr(main_module, "has_display_environment", lambda: True)
+    monkeypatch.setattr(
+        main_module,
+        "resolve_settings_path",
+        lambda: tmp_path / "settings.json",
+    )
+    monkeypatch.setattr(main_module, "is_settings_path_writable", lambda path: True)
+
+    report = collect_startup_diagnostics()
+    rendered = render_startup_diagnostics(report)
+
+    assert report["tkinter_status"] == "available"
+    assert report["display_status"] == "available"
+    assert report["settings_status"] == "writable"
+    assert "Python:" in rendered
+    assert "Tkinter: available" in rendered
+    assert "Display: available" in rendered
+    assert "Settings path: writable" in rendered
+
+
 def test_main_prints_headless_message_and_exits(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
@@ -213,3 +246,29 @@ def test_console_script_entrypoint_without_tkinter_shows_cli_message(
     assert result.returncode == 1
     assert "Tkinter is not available" in result.stderr
     assert "Traceback" not in result.stderr
+
+
+def test_python_module_entrypoint_check_reports_diagnostics(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """`--check` should print diagnostics and avoid launching the GUI."""
+    package_main = importlib.import_module("newsnow_neon.__main__")
+    diagnostics_output = "Python: 3.10\nTkinter: available\nDisplay: available"
+    called: list[str] = []
+
+    monkeypatch.setattr(package_main, "main", lambda: called.append("gui"))
+    monkeypatch.setattr(
+        package_main,
+        "run_startup_diagnostics",
+        lambda: diagnostics_output,
+    )
+    monkeypatch.setattr(package_main.sys, "argv", ["newsnow_neon", "--check"])
+
+    package_main._run()
+
+    captured = capsys.readouterr()
+    assert diagnostics_output in captured.out
+    assert called == []
+
+

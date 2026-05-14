@@ -45,6 +45,10 @@ export NEWS_TICKER_TIMEOUT=15
 # Run the desktop app
 uv run newsnow-neon  # installed console script
 uv run python -m newsnow_neon  # module entrypoint
+
+# Check launch readiness without starting the GUI
+uv run newsnow-neon --check
+uv run python -m newsnow_neon --check
 ```
 
 Alternative pip-based flow:
@@ -57,6 +61,7 @@ python -m newsnow_neon
 - Settings persist at the platform-specific path resolved by `NEWS_APP_SETTINGS` (default shown below).
 - Canonical runtime entrypoints: `python -m newsnow_neon` and the installed script `newsnow-neon`.
 - Startup now uses a bounded bootstrap seam in `newsnow_neon.main` before entering `mainloop()`.
+- Use `--check` on either supported front door to inspect Python/Tk/display/settings readiness without launching the GUI.
 - If startup fails with `RuntimeError: Tkinter is not available...`, fix the OS/runtime dependency first; treat that as an environment issue, not as confirmed app regression.
 - If startup fails in a headless shell with no GUI display, the CLI now prints a short terminal message instead of a raw Tk traceback.
 
@@ -66,6 +71,11 @@ python -m newsnow_neon
 - **Rich preferences** – Colour profiles, ticker speed, geometry, logging flags, and keyword highlights survive restarts.
 - **Redis insights** – Optional Redis integration exposes diagnostics, history snapshots, and cache warmers.
 - **Observability toggles** – Enable debug logging, LiteLLM verbosity, keyword heatmaps, and info dialogs without restarts.
+
+## Current focus
+- **Operational trust first** – startup/runtime failures should classify cleanly instead of failing with raw tracebacks.
+- **Diagnostics next** – the next planned slice is a non-GUI readiness check so operators can verify Tk/display/settings prerequisites before launch.
+- **Bounded cleanup after trust** – deeper legacy and typing work stays slice-based, not repo-wide.
 
 ## Configuration
 | Variable | Purpose |

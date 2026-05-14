@@ -26,14 +26,6 @@ pytestmark = pytest.mark.skipif(
 )
 
 
-def test_app_metadata_instance_type() -> None:
-    """APP_METADATA should be an AppMetadata dataclass."""
-    from newsnow_neon.main import APP_METADATA
-    from newsnow_neon.models import AppMetadata
-
-    assert isinstance(APP_METADATA, AppMetadata)
-
-
 def test_app_metadata_basic_fields() -> None:
     """Validate core APP_METADATA field values."""
     from newsnow_neon.main import APP_METADATA

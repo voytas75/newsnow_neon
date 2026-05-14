@@ -32,6 +32,8 @@ uv run pytest tests/test_main_metadata.py tests/test_bootstrap.py -q
 uv run pytest -q
 uv run newsnow-neon
 uv run python -m newsnow_neon
+uv run newsnow-neon --check
+uv run python -m newsnow_neon --check
 ```
 - `pytest --cov` should remain ≥80 % statement coverage; add tests under `tests/` with `test_*` names.
 - Run `uv sync --extra dev` before daily work to keep the environment aligned.
@@ -71,6 +73,8 @@ Sensitive values (`*KEY`, `*TOKEN`, `*SECRET`, `*PASSWORD`) are masked automatic
 ## Architecture Overview
 - **Entrypoints**: `python -m newsnow_neon` executes `newsnow_neon/__main__._run()`, which delegates to `newsnow_neon/main.py::main()` (guarded by `tests/test_main_metadata.py`). The installed script is `newsnow-neon`; `uv run newsnow_neon` is not a supported invocation.
 - **Bootstrap seam**: `newsnow_neon/main.py::load_app_class()` classifies missing Tk support explicitly, and `bootstrap_app()` builds the app before `mainloop()` (guarded by `tests/test_bootstrap.py`).
+- **Diagnostics seam**: `--check` now renders Python/Tk/display/settings readiness through `newsnow_neon.main` without starting the GUI.
+- **Next operational seam**: after diagnostics, continue bounded front-door/support cleanup before broader typing or legacy containment.
 - **Application layer**: `newsnow_neon/app/` hosts service wiring (`services.py`) and controller adaptors so the UI stays thin.
 - **UI**: `newsnow_neon/ui/` plus `application.py` define Tkinter windows, dialogs, keyword heatmaps, and ticker widgets.
 - **Domain models**: Shared dataclasses and helpers live in `models.py`, `cache.py`, `summaries.py`, and `settings_store.py`.
