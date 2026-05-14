@@ -1,4 +1,4 @@
-"""Smoke tests for startup/bootstrap seams without invoking the GUI mainloop."""
+"""Smoke tests for startup/bootstrap seams and package-surface compatibility."""
 
 from __future__ import annotations
 
@@ -67,6 +67,31 @@ builtins.__import__ = _blocked_import
         capture_output=True,
         text=True,
     )
+
+
+def test_app_controller_package_import_is_lazy() -> None:
+    """Importing the controller package should not eagerly load Tk-bound submodules."""
+    controller_pkg = importlib.import_module("newsnow_neon.app.controller")
+
+    assert controller_pkg.__name__ == "newsnow_neon.app.controller"
+    assert "HistoryController" in controller_pkg.__all__
+    assert "newsnow_neon.app.controller.history_controller" not in sys.modules
+
+
+def test_app_controller_package_exposes_lazy_ainnewsapp_export(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The package export for AINewsApp should resolve lazily via __getattr__."""
+    controller_pkg = importlib.import_module("newsnow_neon.app.controller")
+    fake_application = types.ModuleType("newsnow_neon.application")
+
+    class FakeAINewsApp:
+        pass
+
+    fake_application.AINewsApp = FakeAINewsApp
+    monkeypatch.setitem(sys.modules, "newsnow_neon.application", fake_application)
+
+    assert controller_pkg.AINewsApp is FakeAINewsApp
 
 
 def test_load_app_class_wraps_missing_tkinter_dependency(

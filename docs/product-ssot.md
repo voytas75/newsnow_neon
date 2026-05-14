@@ -86,10 +86,10 @@ These came out of the bounded repo review and should drive the next planning cyc
    - The app class still comes from `newsnow_neon.application`, while the concrete implementations still live in `legacy_app.py`.
    - This reduces one hidden dependency, but the overall runtime boundary is not fully separated yet.
 
-3. **There are false or dead package surfaces**
-   - `newsnow_neon/app/services.py` collides with `newsnow_neon/app/services/`.
-   - `newsnow_neon/app/controller.py` collides with `newsnow_neon/app/controller/`.
-   - Some files look like active architecture but are not the effective runtime path.
+3. **There are still false or dead package surfaces**
+   - `newsnow_neon/app/services.py` still collides with `newsnow_neon/app/services/`.
+   - `newsnow_neon/app/controller.py` still collides with `newsnow_neon/app/controller/`.
+   - The controller package export is now lazy, which removes one eager-import trap, but the package/file split is still misleading.
 
 4. **Back-compat exports are not trustworthy yet**
    - The compatibility export for `AINewsApp` in the controller package is not a reliable public surface.
@@ -206,6 +206,7 @@ Quality gates become meaningful instead of aspirational noise.
    - Document the runtime role of `legacy_app.py`.
 
 2. **Package-surface cleanup slice**
+   - Continue from the lazy controller-package export change.
    - Resolve `services.py` vs `services/`.
    - Resolve `controller.py` vs `controller/`.
    - Fix or remove non-working compatibility exports.
@@ -227,45 +228,45 @@ Quality gates become meaningful instead of aspirational noise.
 ## Current recommended next slice
 
 ### Active next slice
-**Legacy service-boundary slice**
+**Package-surface cleanup slice**
 
 ### Why this is next
-- The readiness contract is now shipped for `--check`.
-- The biggest remaining operational risk is that the legacy boundary is only partially explicit: service binding is now intentional, but the startup path still crosses `legacy_app` and `application`.
-- This slice is smaller and safer than jumping straight into package-surface cleanup or typed UI work.
-- It reduces the chance of future refactors bypassing required runtime setup.
+- The first explicit legacy-binding step is already shipped.
+- The controller package now resolves exports lazily, so one eager-import trap is removed.
+- The remaining misleading file/package splits (`services.py` vs `services/`, `controller.py` vs `controller/`) are now the clearest architecture debt still exposed at the repo surface.
+- This remains smaller and safer than jumping straight into broader typing or product-workflow tests.
 
 ## Implementation focus for the active next slice
 
 ### Goal
-Make the supported app-construction path explicit and testable.
+Make the repo package layout less misleading without changing supported startup/runtime behavior.
 
 ### Scope
 The next slice should:
-- identify exactly what `legacy_app.py` still provides at startup,
-- make service wiring explicit where feasible,
-- prove the supported construction/import path with focused tests,
-- keep public launch behavior unchanged.
+- reconcile the `controller.py` vs `controller/` split,
+- reconcile the `services.py` vs `services/` split,
+- keep only compatibility surfaces that actually work,
+- preserve import-safe startup and `--check` behavior.
 
 ### Non-goals
 Do not in this slice:
-- broadly refactor `legacy_app.py`,
-- solve all package-layout collisions,
-- widen into repo-wide cleanup,
-- redesign the UI/controller layer.
+- redesign the full legacy/runtime boundary,
+- broaden into typed seam work,
+- add large new product tests,
+- do repo-wide lint/type cleanup.
 
 ### Preferred execution order
-1. inspect current service wiring and import side effects
-2. write a focused failing test for the supported construction path
-3. make the smallest explicit wiring change
-4. verify startup tests and real smoke still pass
-5. sync docs/changelog only if the runtime story changes visibly
+1. inspect which file/package surfaces are actually imported today
+2. write focused import-surface tests
+3. make the smallest cleanup or lazy-export changes that remove misleading surfaces
+4. verify startup/readiness behavior still passes
+5. sync docs/changelog/SSOT to the new import story
 
 ### Acceptance criteria
-- the supported app startup path is documented by code/tests rather than import magic alone
-- service wiring is less dependent on hidden side effects
+- importing declared package surfaces does not trigger avoidable Tk-bound failures earlier than necessary
+- misleading compatibility exports are removed or made truthful
 - startup/readiness behavior remains unchanged for users
-- focused tests cover the supported path
+- docs describe the package surface more truthfully
 
 ## What should not drive the roadmap now
 
@@ -298,8 +299,8 @@ The following files must stay aligned with this SSOT:
 
 Current sync status:
 - README and README-DEV point to this canonical SSOT
-- CHANGELOG reflects startup hardening, diagnostics shipping, readiness-contract semantics for `--check`, and the first explicit legacy service-binding step
-- next sync point should happen when the legacy service-boundary slice changes the supported startup-construction story
+- CHANGELOG reflects startup hardening, diagnostics shipping, readiness-contract semantics for `--check`, the first explicit legacy service-binding step, and the lazy controller-package export change
+- next sync point should happen when the remaining package-surface cleanup changes the supported import story again
 
 ## Status summary
 
@@ -308,7 +309,7 @@ Current sync status:
 - `--check` exists on supported front doors, avoids GUI launch, and now returns a readiness verdict with non-zero exit for failed required prerequisites
 - full local `pytest -q` is green
 - missing Tk and missing display now surface as bounded CLI-facing outcomes instead of raw startup tracebacks
-- the next highest-value slice is continuing the legacy service-boundary work beyond the first explicit binding step
+- the next highest-value slice is continuing package-surface cleanup beyond the lazy controller-package export step
 - review surfaced real package-boundary and legacy-boundary gaps, not just cosmetic cleanup ideas
 
 ### Do weryfikacji
