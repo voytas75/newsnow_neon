@@ -114,13 +114,17 @@ def configure_legacy_runtime_services(legacy_app: LegacyRuntimeServices) -> None
 
 
 def load_app_class() -> type[Any]:
-    """Load the Tk app class while classifying missing Tk support explicitly."""
+    """Load the Tk app class while classifying missing GUI/runtime deps explicitly."""
     try:
         legacy_app = importlib.import_module("newsnow_neon.legacy_app")
     except ModuleNotFoundError as exc:
         if exc.name == "tkinter":
             raise RuntimeError(TKINTER_IMPORT_ERROR_MESSAGE) from exc
-        raise
+        raise RuntimeError(
+            "NewsNowNeon cannot start because required runtime dependency "
+            f"`{exc.name}` is missing. Install project dependencies before "
+            "launching the GUI."
+        ) from exc
 
     try:
         app_class = cast(type[Any], legacy_app.AINewsApp)

@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), and this 
 
 ## [Unreleased]
 
+### Fixed
+- bounded startup import errors now classify missing non-Tk runtime dependencies (for example `bs4`) instead of surfacing raw `ModuleNotFoundError` during bootstrap
+- bootstrap tests now verify the explicit runtime-dependency classification instead of relying on brittle subprocess assumptions about import order
+
 ### Added
 - Added canonical product SSOT at `docs/product-ssot.md` for NewsNowNeon operational and quality hardening direction.
 - Added explicit README / README-DEV pointers to the canonical SSOT.

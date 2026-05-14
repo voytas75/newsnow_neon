@@ -235,6 +235,7 @@ Quality gates become meaningful instead of aspirational noise.
 - The controller package now resolves exports lazily, and `app/controller.py` no longer creates a second `AINewsApp` subclass surface.
 - The `app.services` package is now a real importable surface instead of dead scaffolding.
 - The remaining misleading file/package splits are now mostly a question of eventual removal/deprecation rather than contradictory behavior.
+- Startup import failures now classify missing non-Tk runtime dependencies as bounded operator-facing errors instead of leaking raw `ModuleNotFoundError` from legacy bootstrap imports.
 - This remains smaller and safer than jumping straight into broader typing or product-workflow tests.
 
 ## Implementation focus for the active next slice
