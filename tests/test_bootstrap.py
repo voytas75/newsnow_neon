@@ -4,7 +4,11 @@ from __future__ import annotations
 
 import importlib
 import importlib.util
+import os
+import subprocess
+import sys
 import types
+from pathlib import Path
 
 import pytest
 
@@ -17,6 +21,48 @@ from newsnow_neon.main import (
     main,
     render_startup_error,
 )
+
+
+def _run_entrypoint_without_tkinter(
+    tmp_path: Path,
+    command: list[str],
+) -> subprocess.CompletedProcess[str]:
+    """Run a front door in a subprocess with ``tkinter`` import blocked."""
+    sitecustomize = tmp_path / "sitecustomize.py"
+    sitecustomize.write_text(
+        """
+import builtins
+
+_real_import = builtins.__import__
+
+
+def _blocked_import(name, globals=None, locals=None, fromlist=(), level=0):
+    if name == \"tkinter\" or name.startswith(\"tkinter.\"):
+        raise ModuleNotFoundError(\"No module named 'tkinter'\", name=\"tkinter\")
+    return _real_import(name, globals, locals, fromlist, level)
+
+
+builtins.__import__ = _blocked_import
+""".strip()
+        + "\n",
+        encoding="utf-8",
+    )
+    repo_root = Path(__file__).resolve().parents[1]
+    env = os.environ.copy()
+    existing_pythonpath = env.get("PYTHONPATH")
+    env["PYTHONPATH"] = (
+        f"{tmp_path}{os.pathsep}{existing_pythonpath}"
+        if existing_pythonpath
+        else str(tmp_path)
+    )
+
+    return subprocess.run(
+        command,
+        cwd=repo_root,
+        env=env,
+        capture_output=True,
+        text=True,
+    )
 
 
 def test_load_app_class_wraps_missing_tkinter_dependency(
@@ -139,3 +185,31 @@ def test_main_prints_headless_message_and_exits(
 
     captured = capsys.readouterr()
     assert HEADLESS_DISPLAY_ERROR_MESSAGE in captured.err
+
+
+def test_python_module_entrypoint_without_tkinter_shows_cli_message(
+    tmp_path: Path,
+) -> None:
+    """`python -m newsnow_neon` without tkinter should avoid a raw traceback."""
+    result = _run_entrypoint_without_tkinter(
+        tmp_path,
+        [sys.executable, "-m", "newsnow_neon"],
+    )
+
+    assert result.returncode == 1
+    assert "Tkinter is not available" in result.stderr
+    assert "Traceback" not in result.stderr
+
+
+def test_console_script_entrypoint_without_tkinter_shows_cli_message(
+    tmp_path: Path,
+) -> None:
+    """Installed console script should keep the same no-Tk CLI behavior."""
+    result = _run_entrypoint_without_tkinter(
+        tmp_path,
+        [sys.executable, "-c", "from newsnow_neon.__main__ import _run; _run()"],
+    )
+
+    assert result.returncode == 1
+    assert "Tkinter is not available" in result.stderr
+    assert "Traceback" not in result.stderr
