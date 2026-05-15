@@ -16,6 +16,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), and this 
 - Added documented `tkinter` runtime prerequisite and environment-failure guidance.
 - Added bounded startup smoke coverage in `tests/test_main_metadata.py` and `tests/test_bootstrap.py`.
 - Added a terminal-first `--check` diagnostics path for Python/Tk/display/settings readiness without launching the GUI.
+- Added `docs/options-audit.md` to map the operator control surface and recommend a bounded options-clarity slice.
+- Added operator-facing wording updates for the controls/options UI so monitoring, refresh, and control-surface labels are clearer without changing behavior.
+- Added bounded settings-behavior coverage in `tests/test_settings_behavior.py` for operator-control persistence and normalization paths (visibility state, refresh threshold clamping, exclusions, highlight keywords).
+- Added `docs/manual-gui-smoke-checklist.md` so the operator-control wording slice has an explicit GUI verification script for desktop/manual review.
 
 ### Changed
 - Aligned repo documentation around operational polish first: runtime contract, bounded quality cleanup, typed UI/controller seams, and legacy-boundary containment.

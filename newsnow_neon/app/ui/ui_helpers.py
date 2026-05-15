@@ -1,6 +1,7 @@
 """UI helper functions for AINewsApp.
 
 Updates: v0.52 - 2025-11-18 - Extracted UI helpers (logging, status, filters, timezone, themes) to reduce application.py size.
+Updates: v0.53.1 - 2026-05-15 - Renamed option visibility strings to operator-control wording.
 """
 from __future__ import annotations
 
@@ -73,10 +74,10 @@ def set_options_visibility(app: tk.Tk, visible: bool, *, persist: bool = True) -
     if visible:
         if not app.options_container.winfo_ismapped():
             app.options_container.pack(fill="x", padx=10, pady=(0, 10))
-        app.options_toggle_btn.config(text="Hide Options")
+        app.options_toggle_btn.config(text="Hide Controls")
     else:
         app.options_container.pack_forget()
-        app.options_toggle_btn.config(text="Show Options")
+        app.options_toggle_btn.config(text="Show Controls")
     if persist:
         app.settings["options_visible"] = app._options_visible
         app._save_settings()
@@ -111,7 +112,7 @@ def update_status_summary(app: tk.Tk) -> None:
         parts.append(app.next_refresh_var.get())
     text = " | ".join(part for part in parts if part)
     if not text:
-        text = "Options hidden"
+        text = "Controls hidden"
     app.status_summary_var.set(text)
     if not app.status_summary_label.winfo_ismapped():
         app.status_summary_label.pack(side="right", padx=(10, 0))

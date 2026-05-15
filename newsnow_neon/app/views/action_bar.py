@@ -1,6 +1,7 @@
 """Action bar builder for AINewsApp.
 
 Updates: v0.52 - 2025-11-18 - Extracted action bar controls into a view module.
+Updates: v0.53.1 - 2026-05-15 - Renamed the operator toggle to reflect the control surface.
 """
 from __future__ import annotations
 
@@ -15,7 +16,7 @@ def build_action_bar(app: tk.Tk) -> tk.Frame:
 
     app.options_toggle_btn = tk.Button(
         action_bar,
-        text="Show Options",
+        text="Show Controls",
         command=getattr(app, "_toggle_options_panel"),
     )
     app.options_toggle_btn.pack(side="left")

@@ -57,6 +57,24 @@ python -m newsnow_neon
   - Linux: `~/.config/NewsNowNeon/ainews_settings.json`
 - Override the settings location with `NEWS_APP_SETTINGS`; `LOCALAPPDATA` and `XDG_CONFIG_HOME` are honoured if set.
 
+## Operator control surface
+- The app now treats options as an operator control surface rather than a loose settings bucket.
+- Current product-facing control groups are best understood as:
+  - **Monitoring** — auto refresh timer, refresh cadence, next/last refresh feedback,
+  - **Background Watch** — unseen-headline polling and threshold-triggered refresh,
+  - **History & Time** — 24h history retention and display timezone,
+  - **Debug & Logs** — debug logging, LiteLLM debug, log visibility,
+  - **Appearance & Readability** — theme/profile, custom colors, ticker speed.
+- Adjacent triage controls remain outside the main options group but are part of the same effective operator workflow:
+  - search,
+  - section filter,
+  - exclude terms,
+  - highlight keywords,
+  - mute source / mute keyword actions.
+- Canonical audit for this surface: `docs/options-audit.md`.
+- Current bounded test coverage for this surface lives in `tests/test_settings_behavior.py` and covers persistence/clamping for visibility, refresh thresholds, exclusions, and highlight keyword controls.
+- Manual visual verification checklist for this slice: `docs/manual-gui-smoke-checklist.md`.
+
 ### Frequently Tuned Variables
 | Variable | Context |
 | --- | --- |

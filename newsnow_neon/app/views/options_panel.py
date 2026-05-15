@@ -1,6 +1,7 @@
-"""Options panel builder for AINewsApp (appearance and behavior sections).
+"""Options panel builder for AINewsApp operator-facing settings groups.
 
 Updates: v0.52 - 2025-11-18 - Extracted settings UI into a view module.
+Updates: v0.53.1 - 2026-05-15 - Reframed option groups around operator workflows and clarified monitoring wording.
 """
 from __future__ import annotations
 
@@ -30,7 +31,7 @@ def build_options_panel(app: tk.Tk) -> tk.Frame:
 
     appearance_header = tk.Label(
         appearance_section,
-        text="Ticker Appearance",
+        text="Appearance & Readability",
         bg="black",
         fg="lightgray",
         font=("Segoe UI", 10, "bold"),
@@ -42,7 +43,7 @@ def build_options_panel(app: tk.Tk) -> tk.Frame:
 
     profile_names = _profile_name_options()
     app.color_profile_var = tk.StringVar(value=DEFAULT_COLOR_PROFILE_NAME)
-    profile_label = tk.Label(profile_row, text="Profile:", bg="black", fg="lightgray")
+    profile_label = tk.Label(profile_row, text="Theme:", bg="black", fg="lightgray")
     profile_label.pack(side="left")
     profile_menu = tk.OptionMenu(
         profile_row,
@@ -81,13 +82,13 @@ def build_options_panel(app: tk.Tk) -> tk.Frame:
     )
     bg_button = tk.Button(
         color_row,
-        text="Background Color…",
+        text="Background…",
         command=lambda: getattr(app, "_choose_color")("background"),
     )
     bg_button.pack(side="left")
     fg_button = tk.Button(
         color_row,
-        text="Text Color…",
+        text="Text…",
         command=lambda: getattr(app, "_choose_color")("text"),
     )
     fg_button.pack(side="left", padx=6)
@@ -99,7 +100,7 @@ def build_options_panel(app: tk.Tk) -> tk.Frame:
 
     behavior_header = tk.Label(
         behavior_section,
-        text="Behavior & Timing",
+        text="Monitoring & Runtime",
         bg="black",
         fg="lightgray",
         font=("Segoe UI", 10, "bold"),
@@ -155,7 +156,7 @@ def build_options_panel(app: tk.Tk) -> tk.Frame:
     auto_row.pack(fill="x", pady=(6, 0))
     app.auto_refresh_check = tk.Checkbutton(
         auto_row,
-        text="Auto Refresh",
+        text="Auto Refresh Timer",
         variable=getattr(app, "auto_refresh_var"),
         command=getattr(app, "_toggle_auto_refresh"),
         bg="black",
@@ -166,7 +167,7 @@ def build_options_panel(app: tk.Tk) -> tk.Frame:
         highlightthickness=0,
     )
     app.auto_refresh_check.pack(side="left")
-    refresh_label = tk.Label(auto_row, text="Interval (min):", bg="black", fg="lightgray")
+    refresh_label = tk.Label(auto_row, text="Every (min):", bg="black", fg="lightgray")
     refresh_label.pack(side="left", padx=(10, 2))
     app.auto_refresh_spin = tk.Spinbox(
         auto_row,
@@ -218,7 +219,7 @@ def build_options_panel(app: tk.Tk) -> tk.Frame:
         highlightthickness=0,
     )
     app.background_watch_check.pack(side="left")
-    threshold_label = tk.Label(watch_row, text="Auto-refresh at:", bg="black", fg="lightgray")
+    threshold_label = tk.Label(watch_row, text="Trigger refresh at:", bg="black", fg="lightgray")
     threshold_label.pack(side="left", padx=(10, 2))
     app.background_watch_threshold_spin = tk.Spinbox(
         watch_row,
@@ -244,7 +245,7 @@ def build_options_panel(app: tk.Tk) -> tk.Frame:
 
     timezone_row = tk.Frame(behavior_section, bg="black")
     timezone_row.pack(fill="x", pady=(6, 0))
-    timezone_label = tk.Label(timezone_row, text="Time Zone:", bg="black", fg="lightgray")
+    timezone_label = tk.Label(timezone_row, text="Display Time Zone:", bg="black", fg="lightgray")
     timezone_label.pack(side="left")
     app.timezone_var = tk.StringVar(value=getattr(app, "_timezone_name"))
     app.timezone_menu = tk.OptionMenu(

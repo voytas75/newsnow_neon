@@ -1,6 +1,7 @@
 """Controls panel builder for AINewsApp.
 
 Updates: v0.52 - 2025-11-18 - Extracted common control buttons and meters.
+Updates: v0.53.1 - 2026-05-15 - Clarified operator-facing control labels without changing behavior.
 """
 from __future__ import annotations
 
@@ -16,12 +17,12 @@ def build_controls_panel(app: tk.Tk) -> tk.Frame:
 
     refresh_btn = tk.Button(
         controls,
-        text="Refresh Headlines",
+        text="Refresh Now",
         command=lambda: getattr(app, "refresh_headlines")(force_refresh=True),
     )
     refresh_btn.pack(side="left")
 
-    app.clear_cache_btn = tk.Button(controls, text="Clear Cache", command=getattr(app, "clear_cache"))
+    app.clear_cache_btn = tk.Button(controls, text="Clear Headline Cache", command=getattr(app, "clear_cache"))
     app.clear_cache_btn.pack(side="left", padx=10)
 
     app.redis_stats_btn = tk.Button(
