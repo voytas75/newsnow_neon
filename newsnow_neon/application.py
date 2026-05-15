@@ -492,7 +492,7 @@ class AINewsApp(tk.Tk):
                 persist_headlines_with_ticker(headlines, ticker_text)
         except Exception as exc:
             logger.exception("Failed to update headlines:")
-            self.after(0, lambda: self._handle_fetch_error(exc))
+            self.after(0, lambda error=exc: self._handle_fetch_error(error))
             return
 
         self.after(
