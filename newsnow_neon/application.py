@@ -62,16 +62,9 @@ logger = logging.getLogger(__name__)
 
 
 
-from .app.services import (
-    configure_app_services,
-    fetch_headlines,
-    build_ticker_text,
-    resolve_article_summary,
-    persist_headlines_with_ticker,
-    collect_redis_statistics,
-    clear_cached_headlines,
-    load_historical_snapshots,
-)
+from .app import services as app_services
+
+configure_app_services = app_services.configure_app_services
 
 # Controllers
 from .app.controller.refresh_controller import RefreshController
@@ -447,7 +440,7 @@ class AINewsApp(tk.Tk):
         threading.Thread(target=self._clear_cache_worker, daemon=True).start()
 
     def _clear_cache_worker(self) -> None:
-        success, message = clear_cached_headlines()
+        success, message = app_services.clear_cached_headlines()
         level = logging.INFO if success else logging.WARNING
         self.after(0, lambda: self._handle_cache_clear_result(message, level))
 
@@ -479,17 +472,17 @@ class AINewsApp(tk.Tk):
         logger.info("Refreshing headlines (force_refresh=%s)", force_refresh)
         try:
             fetched_at = datetime.now()
-            headlines, from_cache, cached_ticker = fetch_headlines(
+            headlines, from_cache, cached_ticker = app_services.fetch_headlines(
                 force_refresh=force_refresh
             )
             if from_cache:
-                ticker_text = cached_ticker or build_ticker_text(headlines)
+                ticker_text = cached_ticker or app_services.build_ticker_text(headlines)
                 should_update_cache = bool(headlines) and not cached_ticker
             else:
-                ticker_text = build_ticker_text(headlines)
+                ticker_text = app_services.build_ticker_text(headlines)
                 should_update_cache = bool(headlines)
             if should_update_cache:
-                persist_headlines_with_ticker(headlines, ticker_text)
+                app_services.persist_headlines_with_ticker(headlines, ticker_text)
         except Exception as exc:
             logger.exception("Failed to update headlines:")
             self.after(0, lambda error=exc: self._handle_fetch_error(error))
@@ -643,7 +636,7 @@ class AINewsApp(tk.Tk):
         self.headlines = filtered
 
         if filtered:
-            ticker_text = build_ticker_text(filtered)
+            ticker_text = app_services.build_ticker_text(filtered)
         elif self._raw_total_headlines and excluded == self._raw_total_headlines:
             ticker_text = "All headlines filtered by exclusion terms."
         else:
@@ -997,7 +990,7 @@ class AINewsApp(tk.Tk):
     def _history_loader_worker(self) -> None:
         error: Optional[str] = None
         try:
-            snapshots = load_historical_snapshots()
+            snapshots = app_services.load_historical_snapshots()
         except Exception as exc:  # pragma: no cover - defensive guard
             logger.exception("Failed to load historical snapshots.")
             snapshots = []
