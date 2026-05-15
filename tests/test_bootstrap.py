@@ -245,6 +245,127 @@ def test_configure_legacy_runtime_services_binds_service_proxies() -> None:
     ]
 
 
+def test_configure_legacy_runtime_services_rebinds_application_runtime_aliases(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Application runtime should read services through the live registry after rebinding."""
+    fake_application = types.ModuleType("newsnow_neon.application")
+
+    class FakeAINewsApp:
+        def _refresh_worker(self, force_refresh: bool) -> None:
+            import newsnow_neon.app.services as app_services
+            from datetime import datetime
+
+            try:
+                fetched_at = datetime.now()
+                headlines, from_cache, cached_ticker = app_services.fetch_headlines(
+                    force_refresh=force_refresh
+                )
+                if from_cache:
+                    ticker_text = cached_ticker or app_services.build_ticker_text(headlines)
+                    should_update_cache = bool(headlines) and not cached_ticker
+                else:
+                    ticker_text = app_services.build_ticker_text(headlines)
+                    should_update_cache = bool(headlines)
+                if should_update_cache:
+                    app_services.persist_headlines_with_ticker(headlines, ticker_text)
+            except Exception as exc:  # pragma: no cover - should stay green here
+                self.after(0, lambda error=exc: self._handle_fetch_error(error))
+                return
+
+            self.after(
+                0,
+                lambda: self._handle_refresh_result(
+                    headlines=headlines,
+                    ticker_text=ticker_text,
+                    from_cache=from_cache,
+                    fetched_at=fetched_at,
+                ),
+            )
+
+    fake_application.AINewsApp = FakeAINewsApp
+    fake_application.configure_app_services = lambda *args, **kwargs: None
+    monkeypatch.setitem(sys.modules, "newsnow_neon.application", fake_application)
+
+    application_module = importlib.import_module("newsnow_neon.application")
+
+    calls: list[str] = []
+
+    class LegacyModule:
+        @staticmethod
+        def fetch_headlines(
+            *args: object,
+            **kwargs: object,
+        ) -> tuple[list[object], bool, str | None]:
+            calls.append("fetch")
+            return ["headline"], False, None
+
+        @staticmethod
+        def build_ticker_text(headlines: object) -> str:
+            calls.append("ticker")
+            return "ticker-from-legacy"
+
+        @staticmethod
+        def resolve_article_summary(headline: object) -> object:
+            return {"summary": True}
+
+        @staticmethod
+        def persist_headlines_with_ticker(*args: object, **kwargs: object) -> None:
+            calls.append("persist")
+
+        @staticmethod
+        def collect_redis_statistics() -> object:
+            return object()
+
+        @staticmethod
+        def clear_cached_headlines() -> tuple[bool, str]:
+            return True, "ok"
+
+        @staticmethod
+        def load_historical_snapshots(*args: object, **kwargs: object) -> list[object]:
+            return []
+
+    configure_legacy_runtime_services(LegacyModule)
+
+    scheduled: list[tuple[int, object]] = []
+    handled: list[dict[str, object]] = []
+
+    class RefreshWorkerApp:
+        def after(self, delay: int, callback) -> None:
+            scheduled.append((delay, callback))
+            callback()
+
+        def _handle_refresh_result(
+            self,
+            *,
+            headlines,
+            ticker_text: str,
+            from_cache: bool,
+            fetched_at,
+        ) -> None:
+            handled.append(
+                {
+                    "headlines": headlines,
+                    "ticker_text": ticker_text,
+                    "from_cache": from_cache,
+                    "fetched_at": fetched_at,
+                }
+            )
+
+        def _handle_fetch_error(self, error: Exception) -> None:
+            raise AssertionError(f"unexpected fetch error: {error}")
+
+    app = RefreshWorkerApp()
+
+    application_module.AINewsApp._refresh_worker(app, force_refresh=False)
+
+    assert len(scheduled) == 1
+    assert handled[0]["headlines"] == ["headline"]
+    assert handled[0]["ticker_text"] == "ticker-from-legacy"
+    assert handled[0]["from_cache"] is False
+    assert calls == ["fetch", "ticker", "persist"]
+
+
 def test_bootstrap_app_returns_app_without_running_mainloop(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
