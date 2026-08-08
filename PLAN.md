@@ -66,10 +66,13 @@ and diagnostics.
 - **Stage 4E — news-service seam:** reduced the
   `app/services/news_service.py` Ruff baseline from 7 diagnostics to 0 and
   added focused unconfigured-provider coverage.
+- **Stage 4F — cache-service seam:** reduced the
+  `app/services/cache_service.py` Ruff baseline from 2 diagnostics to 0 and
+  added focused unconfigured-provider coverage.
 
 ## Next ordered work
 
-1. **Stage 4F — next bounded static-debt seam:** select one proven seam and
+1. **Stage 4G — next bounded static-debt seam:** select one proven seam and
    reduce only its directly owned Ruff/Pyright debt; never start with repo-wide
    cleanup.
 2. **Compatibility maintenance:** preserve the controller and services

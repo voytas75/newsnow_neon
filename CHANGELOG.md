@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), and this 
 ## [Unreleased]
 
 ### Fixed
+- Reduced the `newsnow_neon/app/services/cache_service.py` Ruff baseline to zero
+  diagnostics without changing the unconfigured-provider failure contract.
 - Reduced the `newsnow_neon/app/services/news_service.py` Ruff baseline to zero
   diagnostics without changing the unconfigured-provider failure contract.
 - Reduced the `newsnow_neon/app/helpers/env_helpers.py` Ruff baseline to zero
@@ -25,6 +27,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), and this 
 - bootstrap tests now verify the explicit runtime-dependency classification instead of relying on brittle subprocess assumptions about import order
 
 ### Added
+- Added focused regression coverage for the unconfigured cache-service provider
+  in `tests/test_cache_service.py`.
 - Added focused regression coverage for unconfigured news-service provider stubs
   in `tests/test_news_service.py`.
 - Added focused regression coverage for environment-value masking and truncation

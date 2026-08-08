@@ -76,7 +76,7 @@ python -m newsnow_neon
 ## Current focus
 - **Operational trust first** – startup/runtime failures should classify cleanly instead of failing with raw tracebacks.
 - **Supported compatibility surfaces** – `controller.py` and `services.py` remain supported externally; explicit `services.py` file-path loads now use the canonical package proxies.
-- **Bounded static recovery** – Stage 4A–4E cleaned small pure seams; deeper legacy and typing work stays seam-based, not repo-wide.
+- **Bounded static recovery** – Stage 4A–4F cleaned small pure seams; deeper legacy and typing work stays seam-based, not repo-wide.
 
 ## Configuration
 | Variable | Purpose |
