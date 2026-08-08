@@ -3,6 +3,7 @@
 Updates: v0.52 - 2025-11-18 - Minimal wrappers around application methods.
 Updates: v0.52.1 - 2025-11-18 - Added cancel_pending_jobs to decouple from app.
 """
+
 from __future__ import annotations
 
 
@@ -10,6 +11,7 @@ class AutoRefreshController:
     """Delegates auto-refresh scheduling and cancellation."""
 
     def __init__(self, app) -> None:
+        """Bind the application owning scheduled refresh job identifiers."""
         self.app = app
 
     def schedule(self) -> None:
