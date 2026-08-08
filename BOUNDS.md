@@ -84,7 +84,7 @@ remains. Never hide debt through blanket ignores or broad `type: ignore`.
 
 ## Current immediate boundary
 
-Stage 4D is complete for `newsnow_neon/app/helpers/env_helpers.py`. The next
+Stage 4E is complete for `newsnow_neon/app/services/news_service.py`. The next
 Stage 4 slice must choose one new proven, behavior-owned seam and reduce only its
 directly owned Ruff/Pyright debt with focused regression coverage. Do not start
 repo-wide cleanup or alter the supported controller/services compatibility

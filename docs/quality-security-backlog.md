@@ -21,11 +21,11 @@ and the full pytest suite passed locally.
 
 ## Static-quality baseline
 
-Current measured baseline, after P1 service compatibility and Stage 4A–4D:
+Current measured baseline, after P1 service compatibility and Stage 4A–4E:
 
 | Tool | Result | Scope |
 |---|---:|---|
-| Ruff | 1,103 diagnostics | repository-wide |
+| Ruff | 1,096 diagnostics | repository-wide |
 | Pyright | 641 errors, 15 warnings, 68 files | repository-wide |
 
 Largest current hotspots are intentionally not treated as a single cleanup:
@@ -46,5 +46,5 @@ Largest current hotspots are intentionally not treated as a single cleanup:
 - Treat the first future static-debt slice as a single behavior-owned seam with
   its own test and scoped quality target, not as a whole-repository campaign.
 - Security remote verification is complete. Stage 3C, the P0 policy decision,
-  P1 service compatibility, and Stage 4A–4D are complete locally; the next
+  P1 service compatibility, and Stage 4A–4E are complete locally; the next
   item is another bounded Stage 4 seam.

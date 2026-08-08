@@ -384,6 +384,24 @@ global Pyright remains intentionally non-blocking.
 
 **Next:** select one new behavior-owned seam for Stage 4E.
 
+## Stage 4E — news-service static seam
+
+**Status:** completed locally at `6690d33`.
+
+**Scope:** `newsnow_neon/app/services/news_service.py` and its focused
+regression module `tests/test_news_service.py`.
+
+**Changed:** migrated legacy provider annotations to modern collection and
+optional forms, with no runtime behavior change. Added one focused contract test
+that every unconfigured stub raises the existing actionable configuration error.
+
+**Measured result:** scoped Ruff diagnostics `7 → 0`; scoped Pyright remained
+`0 errors, 0 warnings`. The full pytest suite passed. The fresh repository-wide
+baseline is Ruff `1,096` diagnostics and Pyright `641` errors plus `15` warnings;
+global Pyright remains intentionally non-blocking.
+
+**Next:** select one new behavior-owned seam for Stage 4F.
+
 ## Security lock refresh
 
 **Status:** completed and verified remotely by CI run [#31278999184](https://github.com/voytas75/newsnow_neon/actions/runs/31278999184).
@@ -410,6 +428,6 @@ and Dependabot reports zero open alerts; all 16 prior alerts are fixed.
 
 ## Current recommended next execution slice
 
-**Begin Stage 4E as a bounded static-debt reduction slice.** Select one new
+**Begin Stage 4F as a bounded static-debt reduction slice.** Select one new
 behavior-owned seam, establish its quality baseline, and reduce only directly
 owned Ruff/Pyright debt with focused regression coverage.
