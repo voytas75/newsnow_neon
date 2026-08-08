@@ -1,6 +1,6 @@
 # Quality and Security Backlog
 
-**Status:** measured locally; security lock refresh awaits remote verification
+**Status:** security refresh verified remotely; static baseline measured locally
 **Updated:** 2026-08-08
 
 ## Security — current bounded slice
@@ -17,9 +17,7 @@ The lock refresh changed only those package versions; no package was added or
 removed. `uv lock --check`, a frozen install including `dev` and `llm` extras,
 and the full pytest suite passed locally.
 
-**Remote closure condition:** push the lock refresh, confirm GitHub CI for its
-SHA, then re-query Dependabot. The expected result is closure of all 16 alerts;
-that remains **to verify** until GitHub processes the new lockfile.
+**Remote result:** CI run [#31278999184](https://github.com/voytas75/newsnow_neon/actions/runs/31278999184) passed. GitHub's Dependency Graph submitted the refreshed `uv.lock`, and all 16 alerts were recorded as fixed at 2026-08-08T21:19:36–37Z. GitHub now returns zero open Dependabot alerts.
 
 ## Static-quality baseline
 
@@ -47,5 +45,5 @@ Largest current hotspots are intentionally not treated as a single cleanup:
   or repo-wide autofixes.
 - Treat the first future static-debt slice as a single behavior-owned seam with
   its own test and scoped quality target, not as a whole-repository campaign.
-- Do not start Stage 3C package-boundary work before remote verification of the
-  security lock refresh unless the user explicitly chooses to continue locally.
+- Security remote verification is complete; Stage 3C may now begin as the next
+  read-only package-boundary inventory.

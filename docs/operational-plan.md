@@ -282,7 +282,7 @@ Ruff, scoped Pyright, and Python compilation all passed. Evidence is in
 
 ## Security lock refresh
 
-**Status:** completed locally; remote CI and Dependabot verification pending.
+**Status:** completed and verified remotely by CI run [#31278999184](https://github.com/voytas75/newsnow_neon/actions/runs/31278999184).
 
 **Changed:** refreshed only `aiohttp` (3.13.5 → 3.14.3) and `soupsieve`
 (2.8.3 → 2.9.2) in `uv.lock`, addressing the two transitive package paths
@@ -290,8 +290,11 @@ behind all 16 open alerts.
 
 **Validation:** `uv lock --check`, frozen sync with `dev` and `llm` extras,
 version imports, and the full pytest suite passed. The measured static baseline
-and security closure condition are in
+and security closure result are in
 [`quality-security-backlog.md`](quality-security-backlog.md).
+
+**Remote result:** GitHub's Dependency Graph submitted the refreshed versions,
+and Dependabot reports zero open alerts; all 16 prior alerts are fixed.
 
 ## Current doubts / to verify
 
@@ -303,7 +306,6 @@ and security closure condition are in
 
 ## Current recommended next execution slice
 
-**Push the verified security lock refresh only when directed, then verify its
-GitHub CI and re-query Dependabot.** Do not call the 16 alerts closed based on
-local lockfile evidence alone; begin Stage 3C only after the remote result is
-recorded.
+**Begin Stage 3C as a read-only controller-surface inventory.** Map imports and
+runtime bindings of `app/controller.py` and `app/controller/`; stop before any
+rename, deletion, compatibility change, or public-import change.

@@ -240,28 +240,29 @@ Quality gates become meaningful instead of aspirational noise.
 ## Current recommended next slice
 
 ### Active next slice
-**Remote verification of the security lock refresh**
+**Stage 3C — read-only controller-surface inventory**
 
 ### Why this is next
-- Local lock refresh replaced the only two vulnerable transitive package versions:
-  `aiohttp` and `soupsieve`.
-- Full frozen pytest passed, including an environment with the `llm` extra.
-- Dependabot remains an external source of truth: its 16 alerts cannot be
-  considered closed until GitHub processes the pushed lockfile.
+- CI run [#31278999184](https://github.com/voytas75/newsnow_neon/actions/runs/31278999184) passed for the security lock refresh.
+- GitHub's Dependency Graph submitted `aiohttp 3.14.3` and `soupsieve 2.9.2`,
+  and all 16 prior Dependabot alerts are now fixed.
+- The next parallel structural ambiguity is the coexistence of
+  `app/controller.py` and `app/controller/`.
 
 ## Implementation focus for the active next slice
 
 ### Goal
-Obtain remote proof that the two-package lock refresh closes the current
-Dependabot alert set without weakening the frozen pytest contract.
+Establish evidence for the active controller surface before changing package
+boundaries or compatibility behavior.
 
 ### Scope
 The next slice should:
-- push the current local commits only with explicit user direction;
-- verify CI for the resulting SHA;
-- query open Dependabot alerts again and compare the result with the recorded
-  16-alert baseline;
-- begin Stage 3C only after the security result is recorded.
+- inventory imports, dynamic imports, runtime bindings, and tests involving
+  `newsnow_neon/app/controller.py` and `newsnow_neon/app/controller/`;
+- identify which path is imported at runtime and which compatibility consumers
+  must be preserved;
+- produce an evidence-backed keep/replace/deprecate recommendation;
+- remain read-only: do not rename, delete, or change public imports.
 
 ### Non-goals
 Do not in this slice:
@@ -271,17 +272,17 @@ Do not in this slice:
 - reopen startup hardening unless a new regression appears.
 
 ### Preferred execution order
-1. fetch and push the verified local security lock refresh when directed
-2. wait for CI on the pushed SHA
-3. re-query Dependabot and record its remaining alert count by severity
-4. treat any nonzero remainder as a new evidence-backed security slice
-5. resume read-only controller inventory only after the result is recorded
+1. enumerate both controller surfaces and their public exports
+2. search repository imports, dynamic import strings, and runtime binding calls
+3. inspect tests and entrypoints that select or rebind controllers
+4. record evidence in a compact inventory without changing source
+5. propose the smallest compatibility decision as a separate approval gate
 
 ### Acceptance criteria
-- CI for the pushed SHA is successful
-- Dependabot open-alert count is re-queried after the lock refresh
-- any remaining alert has an explicit package path and bounded next action
-- no unrelated package upgrade or global static cleanup is introduced
+- inventory names the actual module/package exports and all repository consumers
+- runtime selection/binding evidence is distinguished from static imports
+- unresolved external compatibility assumptions are marked explicitly
+- no source, public-import, or package-boundary change is made
 
 ## What should not drive the roadmap now
 

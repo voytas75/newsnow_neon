@@ -24,8 +24,7 @@ and diagnostics.
 - Frozen dependency setup is canonical: `uv sync --extra dev --frozen`.
 - Stage 1 operational baseline, Stage 2 product-confidence slices, and the
   Node 24 Actions refresh are pushed and verified by GitHub CI run [#31274048561](https://github.com/voytas75/newsnow_neon/actions/runs/31274048561).
-- The security lock refresh is verified locally; GitHub Dependabot closure remains
-  pending remote verification (see `docs/quality-security-backlog.md`).
+- The security lock refresh is pushed and verified by CI run [#31278999184](https://github.com/voytas75/newsnow_neon/actions/runs/31278999184); GitHub now reports zero open Dependabot alerts.
 
 ## Completed delivery slices
 
@@ -49,12 +48,10 @@ and diagnostics.
 
 ## Next ordered work
 
-1. **Security lock remote verification:** push the refreshed lockfile, verify
-   GitHub CI, and re-query Dependabot before treating the 16 alerts as closed.
-2. **Stage 3C — controller-surface decision:** map consumers of
+1. **Stage 3C — controller-surface decision:** map consumers of
    `app/controller.py` and `app/controller/`, then propose a compatibility
    decision backed by tests/search evidence.
-3. **Stage 4 — bounded static-debt reduction:** work only in a proven seam;
+2. **Stage 4 — bounded static-debt reduction:** work only in a proven seam;
    never start with repo-wide Ruff or Pyright cleanup.
 
 ## Explicitly deferred
