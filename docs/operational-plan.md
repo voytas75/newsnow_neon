@@ -366,6 +366,24 @@ global Pyright remains intentionally non-blocking.
 
 **Next:** select one new behavior-owned seam for Stage 4D.
 
+## Stage 4D — environment logging static seam
+
+**Status:** completed locally at `f125cfb`.
+
+**Scope:** `newsnow_neon/app/helpers/env_helpers.py` and its focused regression
+module `tests/test_env_helpers.py`.
+
+**Changed:** migrated a legacy optional annotation and completed the Returns
+docstring spacing, with no runtime behavior change. Added three tests covering
+sensitive-value masking, ordinary/long value handling, and empty-value omission.
+
+**Measured result:** scoped Ruff diagnostics `3 → 0`; scoped Pyright remained
+`0 errors, 0 warnings`. The full pytest suite passed. The fresh repository-wide
+baseline is Ruff `1,103` diagnostics and Pyright `641` errors plus `15` warnings;
+global Pyright remains intentionally non-blocking.
+
+**Next:** select one new behavior-owned seam for Stage 4E.
+
 ## Security lock refresh
 
 **Status:** completed and verified remotely by CI run [#31278999184](https://github.com/voytas75/newsnow_neon/actions/runs/31278999184).
@@ -392,6 +410,6 @@ and Dependabot reports zero open alerts; all 16 prior alerts are fixed.
 
 ## Current recommended next execution slice
 
-**Begin Stage 4D as a bounded static-debt reduction slice.** Select one new
+**Begin Stage 4E as a bounded static-debt reduction slice.** Select one new
 behavior-owned seam, establish its quality baseline, and reduce only directly
 owned Ruff/Pyright debt with focused regression coverage.

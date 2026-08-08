@@ -60,10 +60,13 @@ and diagnostics.
   from 12 diagnostics to 0 and added focused exclusion/filtering coverage.
 - **Stage 4C — rendering seam:** reduced the `app/rendering.py` Ruff baseline
   from 16 diagnostics to 0 and added focused age-bucket/metadata coverage.
+- **Stage 4D — environment logging seam:** reduced the
+  `app/helpers/env_helpers.py` Ruff baseline from 3 diagnostics to 0 and added
+  focused secret-masking coverage.
 
 ## Next ordered work
 
-1. **Stage 4D — next bounded static-debt seam:** select one proven seam and
+1. **Stage 4E — next bounded static-debt seam:** select one proven seam and
    reduce only its directly owned Ruff/Pyright debt; never start with repo-wide
    cleanup.
 2. **Compatibility maintenance:** preserve the controller and services

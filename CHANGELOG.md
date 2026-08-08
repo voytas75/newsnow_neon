@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), and this 
 ## [Unreleased]
 
 ### Fixed
+- Reduced the `newsnow_neon/app/helpers/env_helpers.py` Ruff baseline to zero
+  diagnostics without changing secret masking or diagnostic truncation behavior.
 - Reduced the `newsnow_neon/app/rendering.py` Ruff baseline to zero diagnostics
   without changing age-bucket or metadata rendering behavior.
 - Reduced the `newsnow_neon/app/filtering.py` Ruff baseline to zero diagnostics
@@ -21,6 +23,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), and this 
 - bootstrap tests now verify the explicit runtime-dependency classification instead of relying on brittle subprocess assumptions about import order
 
 ### Added
+- Added focused regression coverage for environment-value masking and truncation
+  in `tests/test_env_helpers.py`.
 - Added focused regression coverage for headline age grouping, relative-age
   labels, and metadata fallbacks in `tests/test_rendering.py`.
 - Added focused regression coverage for headline filtering and exclusion-term

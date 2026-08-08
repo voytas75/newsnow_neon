@@ -115,7 +115,7 @@ These came out of the bounded repo review and should drive the next planning cyc
      behavior, Redis deployment compatibility, or main GUI/controller workflows.
 
 6. **Static quality debt is measured, not hidden**
-   - Ruff baseline: 1,106 diagnostics on the current repository-wide scope.
+   - Ruff baseline: 1,103 diagnostics on the current repository-wide scope.
    - Pyright baseline: 641 errors and 15 warnings on the current repository-wide scope.
    - These are not blocking CI until reduced through bounded slices.
 
@@ -337,7 +337,9 @@ Current sync status:
   added focused filtering regression coverage
 - Stage 4C reduced the `app/rendering.py` Ruff seam from 16 diagnostics to 0 and
   added focused rendering regression coverage
-- the next bounded task is Stage 4D static-debt reduction in one new proven seam
+- Stage 4D reduced the `app/helpers/env_helpers.py` Ruff seam from 3 diagnostics
+  to 0 and added focused environment-logging regression coverage
+- the next bounded task is Stage 4E static-debt reduction in one new proven seam
 
 ### Do weryfikacji
 - whether Redis/LLM optional reporting belongs in a future extension of the readiness contract
