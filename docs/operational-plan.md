@@ -106,8 +106,8 @@ LiteLLM, or live NewsNow access.
 
 ### Slice 2B — settings/cache/fallback contracts
 
-**Status:** settings sub-slice completed locally; cache/history and summary
-fallback remain pending.
+**Status:** settings and cache/history sub-slices completed locally; summary
+fallback remains pending.
 
 #### Slice 2B.1 — settings load normalization
 
@@ -126,8 +126,29 @@ uv run --extra dev --frozen pyright tests/test_settings_store.py newsnow_neon/se
 uv run --extra dev --frozen pytest -q
 ```
 
-**Next:** add offline cache/history payload tests, then summary/provider fallback
-tests in separate bounded steps.
+#### Slice 2B.2 — offline cache/history payload contracts
+
+**Changed:**
+- added `tests/test_cache_history.py` using an in-memory Redis subset;
+- covered zero-limit behavior, horizon filtering, newest-first limit handling,
+  invalid historical keys, malformed JSON, and primary-cache metadata retention;
+- made `load_historical_snapshots(limit=0)` return immediately without scanning
+  or reading Redis.
+
+**Validation:**
+```bash
+uv run --extra dev --frozen pytest tests/test_cache_history.py -q
+uv run --extra dev --frozen ruff check tests/test_cache_history.py
+uv run --extra dev --frozen pyright tests/test_cache_history.py newsnow_neon/cache.py
+uv run --extra dev --frozen pytest -q
+```
+
+**Known baseline:** `newsnow_neon/cache.py` has 59 pre-existing repository-style
+Ruff diagnostics. They are outside this behavior slice; the new test module is
+Ruff-clean and the cache seam is Pyright-clean.
+
+**Next:** execute the summary/provider fallback test seam in a separate bounded
+step.
 
 ## Stage 3 — package-boundary cleanup
 
@@ -199,6 +220,6 @@ uv run newsnow-neon --check
 
 ## Current recommended next execution slice
 
-**Execute the next 2B sub-slice: offline cache/history payload contracts.**
-Keep Redis fake/in-memory, avoid live services, and preserve the green parser
-and settings tests.
+**Execute the final 2B sub-slice: summary/provider fallback contracts.** Keep
+provider calls mocked; cover article-fetch and empty-summary failure paths while
+preserving parser, settings, and cache/history tests.

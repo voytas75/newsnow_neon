@@ -237,25 +237,27 @@ Quality gates become meaningful instead of aspirational noise.
 ## Current recommended next slice
 
 ### Active next slice
-**Offline cache/history payload contract smoke slice**
+**Summary/provider fallback contract smoke slice**
 
 ### Why this is next
-- Settings round-trip, unknown-key filtering, persisted interval normalization,
-  and malformed JSON fallback are now covered.
-- Cache/history behavior remains the next unprotected operator workflow seam.
-- The slice can stay offline with fake Redis responses and payload fixtures.
+- Settings normalization and malformed-file fallback are covered.
+- Cache/history payload behavior is covered offline with an in-memory Redis
+  subset, including zero-limit, horizon, limit, and malformed-data boundaries.
+- The remaining unprotected operator workflow seam is article/provider summary
+  fallback.
 
 ## Implementation focus for the active next slice
 
 ### Goal
-Extend confidence from settings into cache/history payload behavior without
-requiring Redis or live providers.
+Extend confidence from cache/history into summary resolution without calling a
+live article source or AI provider.
 
 ### Scope
 The next slice should:
-- test cache payload round-trip and malformed payload handling,
-- test historical key parsing and horizon/limit boundaries with fake Redis,
-- preserve parser, settings, and import-safe startup behavior.
+- test article-fetch failure fallback,
+- test empty/failed provider response fallback,
+- test cache-hit behavior where applicable,
+- preserve parser, settings, and cache/history behavior.
 
 ### Non-goals
 Do not in this slice:

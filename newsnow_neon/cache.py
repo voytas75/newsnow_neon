@@ -108,6 +108,8 @@ def load_historical_snapshots(
 ) -> List[HistoricalSnapshot]:
     """Return recent historical cache snapshots for read-only inspection."""
 
+    if limit is not None and limit <= 0:
+        return []
     if not is_historical_cache_enabled():
         return []
     client = get_redis_client()
