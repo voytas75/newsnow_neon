@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), and this 
 - bootstrap tests now verify the explicit runtime-dependency classification instead of relying on brittle subprocess assumptions about import order
 
 ### Added
+- Added root `PLAN.md`, `BOUNDS.md`, and a concise `AGENTS.md` contract for bounded, evidence-backed repository work.
 - Added canonical product SSOT at `docs/product-ssot.md` for NewsNowNeon operational and quality hardening direction.
 - Added `tests/test_newsnow_parsing.py` and a representative HTML fixture to protect section parsing, metadata extraction, deduplication, cutoff handling, limits, and malformed-input behavior.
 - Added `tests/test_summary_fallback.py` for cached summaries plus article-fetch and provider fallback contracts.

@@ -1,6 +1,6 @@
 # NewsNow Neon — Operational Plan
 
-**Status:** active
+**Status:** active — Stage 1 and Stage 2 verified remotely; governance controls refreshed in this slice.
 **Updated:** 2026-08-08
 **Canonical product direction:** [`product-ssot.md`](product-ssot.md)
 
@@ -37,7 +37,7 @@ boundary.
 
 ### Slice 1A — toolchain and lockfile
 
-**Status:** implemented locally; verification pending.
+**Status:** implemented and verified remotely by CI run [#31273084062](https://github.com/voytas75/newsnow_neon/actions/runs/31273084062).
 
 **Changed:**
 - `pyproject.toml` retains `pytest`, Ruff, and pinned `pyright` in `dev`.
@@ -60,7 +60,7 @@ recorded, not silently presented as CI regressions.
 
 ### Slice 1B — minimal GitHub CI
 
-**Status:** implemented locally; remote verification pending.
+**Status:** implemented and verified remotely by CI run [#31273084062](https://github.com/voytas75/newsnow_neon/actions/runs/31273084062).
 
 **Changed:**
 - `.github/workflows/ci.yml`
@@ -84,7 +84,7 @@ uv run --extra dev --frozen pytest -q
 
 ### Slice 2A — NewsNow parsing fixture
 
-**Status:** completed locally; remote CI verification pending.
+**Status:** completed and verified remotely by CI run [#31273084062](https://github.com/voytas75/newsnow_neon/actions/runs/31273084062).
 
 **Changed:**
 - added `tests/fixtures/newsnow_section.html` with representative legacy and
@@ -106,7 +106,7 @@ LiteLLM, or live NewsNow access.
 
 ### Slice 2B — settings/cache/fallback contracts
 
-**Status:** completed locally; remote CI verification pending.
+**Status:** completed and verified remotely by CI run [#31273084062](https://github.com/voytas75/newsnow_neon/actions/runs/31273084062).
 
 #### Slice 2B.1 — settings load normalization
 
@@ -230,16 +230,17 @@ uv run newsnow-neon --check
 
 ## Current doubts / to verify
 
-- Whether GitHub Actions accepts the pinned action SHAs and the selected uv
-  version without a platform-side failure.
+- Which pinned Action revisions provide the supported Node 24 runtime while
+  preserving the current frozen pytest workflow contract.
 - Whether Python 3.11 is the right single CI runtime versus adding a later
   compatibility matrix.
-- Which parser seam can be tested with the smallest fixture and no live calls.
+- How the 16 open Dependabot alerts should be prioritized after CI runtime
+  maintenance (3 high, 9 moderate, 4 low).
 - Whether external users depend on the compatibility module/package aliases.
 
 ## Current recommended next execution slice
 
-**Push and verify the cumulative Stage 2 slices before starting package-boundary
-cleanup.** Confirm GitHub CI for the parser, settings, cache/history, and
-summary-fallback commits; then begin Stage 3A with a read-only import-consumer
-inventory for the service surface.
+**After committing the governance-contract refresh, update and verify the pinned
+GitHub Actions revisions for their Node 24 runtime.** Preserve the workflow's
+permissions, Python 3.11, frozen `uv` setup, and pytest-only gate; then confirm
+the resulting remote CI run before Stage 3A inventory.

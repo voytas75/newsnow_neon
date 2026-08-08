@@ -2,7 +2,7 @@
 
 Status: active  
 Canonical file: `docs/product-ssot.md`  
-Updated: 2026-05-14
+Updated: 2026-08-08
 
 ## Purpose
 
@@ -99,14 +99,14 @@ These came out of the bounded repo review and should drive the next planning cyc
    - The compatibility export for `AINewsApp` in the controller package is not a reliable public surface.
    - This is small in scope, but it signals that some package boundaries claim more stability than they currently provide.
 
-5. **Core product behavior is still weakly covered**
-   - Current tests strongly cover startup/bootstrap/diagnostics seams.
-   - Current tests do not yet strongly cover:
-     - scraping/parsing,
-     - settings persistence,
-     - cache/history behavior,
-     - summary/provider fallback,
-     - main UI/controller workflows.
+5. **Core product behavior has bounded offline coverage; end-to-end coverage remains incomplete**
+   - Current tests cover startup/bootstrap/diagnostics plus fixture or mock-based:
+     - NewsNow parsing,
+     - settings persistence normalization,
+     - cache/history payload behavior,
+     - summary/provider fallback.
+   - Current tests do not yet prove live NewsNow availability, live provider
+     behavior, Redis deployment compatibility, or main GUI/controller workflows.
 
 6. **Static quality debt is measured, not hidden**
    - Ruff baseline: 1,174 diagnostics on the current repository-wide scope.
@@ -179,20 +179,22 @@ This includes:
 Success condition:
 One active seam becomes cleaner, typed enough to be useful, and cheaper to modify safely.
 
-### Priority 4 — core product behavior smoke coverage
+### Priority 4 — preserve bounded product-behavior coverage
 
 Goal:
-Extend test confidence beyond startup and into the actual operator workflow.
+Keep the completed fixture/mock coverage trustworthy while adding a live or GUI
+acceptance check only when its environment and provider scope are explicitly
+approved.
 
 This includes:
-- scraping/parsing tests with fixtures,
-- settings persistence tests,
-- cache/history tests,
-- summary/provider fallback tests,
-- bounded workflow tests around main operator flows.
+- preserving parsing, settings, cache/history, and summary-fallback regression tests,
+- adding one bounded GUI/controller or live integration check only with an
+  explicit acceptance contract,
+- keeping offline behavior tests separate from claims about deployed services.
 
 Success condition:
-The repo can protect core product behavior, not only front-door behavior.
+Core behavior remains protected locally, and any live acceptance evidence is
+clearly scoped and reproducible.
 
 ### Priority 5 — broader quality recovery after boundaries are real
 
@@ -225,10 +227,11 @@ Quality gates become meaningful instead of aspirational noise.
    - Add the smallest useful protocol/runtime contract.
    - Scope Pyright to that seam and supporting files.
 
-4. **Core product smoke slice**
-   - Add tests for scraping/parsing.
-   - Add tests for settings persistence.
-   - Add tests for cache/history/summary fallback behavior.
+4. **Core product regression-maintenance slice**
+   - Preserve fixture/mock coverage for parsing, settings, cache/history, and
+     summary fallback.
+   - Add a GUI/controller or live integration case only through an explicit,
+     separately approved acceptance scope.
 
 5. **Version-truth cleanup slice**
    - Choose one clear source of release/version truth.
@@ -237,29 +240,30 @@ Quality gates become meaningful instead of aspirational noise.
 ## Current recommended next slice
 
 ### Active next slice
-**Cumulative Stage 2 CI verification, then service-surface inventory**
+**GitHub Actions Node-runtime maintenance, then service-surface inventory**
 
 ### Why this is next
-- Parser, settings, cache/history, and summary/provider fallback seams now have
-  offline regression coverage.
-- The next unresolved risk is external verification: the latest local commits
-  have not yet exercised the GitHub pytest gate.
-- Package-boundary cleanup should start only after that cumulative baseline is
-  remotely confirmed.
+- Stages 1 and 2 are pushed and GitHub CI run [#31273084062](https://github.com/voytas75/newsnow_neon/actions/runs/31273084062) passed.
+- GitHub warned that the pinned Actions target deprecated Node 20 and were forced
+  to Node 24 during that successful run.
+- Package-boundary cleanup should follow only after the CI runtime update is
+  verified remotely.
 
 ## Implementation focus for the active next slice
 
 ### Goal
-Confirm the cumulative Stage 2 behavior on GitHub before changing package
-boundaries; then establish a read-only inventory of service-surface consumers.
+Refresh the pinned GitHub Actions to supported Node 24-compatible revisions
+without changing the CI contract; then inventory service-surface consumers.
 
 ### Scope
 The next slice should:
-- push only with explicit user direction and verify the resulting GitHub pytest
-  run for the cumulative local HEAD;
-- inventory imports and runtime bindings for `app/services.py` and
-  `app/services/` without deleting either surface;
-- preserve all Stage 2 regression tests and import-safe startup behavior.
+- update only the pinned revisions used by `.github/workflows/ci.yml` after
+  verifying upstream release references;
+- preserve `contents: read`, Python 3.11, frozen `uv` setup, and pytest as the
+  only blocking job;
+- push only with explicit user direction and verify the resulting GitHub run;
+- then inventory imports and runtime bindings for `app/services.py` and
+  `app/services/` without deleting either surface.
 
 ### Non-goals
 Do not in this slice:
@@ -269,17 +273,19 @@ Do not in this slice:
 - reopen startup hardening unless a new regression appears.
 
 ### Preferred execution order
-1. pick one operator workflow seam with the smallest existing fixture/setup cost
-2. write focused product-behavior tests for that seam
-3. make the smallest implementation fix needed for green behavior
-4. verify startup/readiness behavior still passes
-5. sync docs/changelog/SSOT only if the shipped behavior changes materially
+1. verify the maintained upstream SHA for each action used by the CI workflow
+2. patch only `.github/workflows/ci.yml` and preserve the workflow contract
+3. validate YAML plus frozen local pytest
+4. make a scoped local commit
+5. push only when directed and verify the GitHub run
+6. begin the read-only service-surface inventory after CI is green
 
 ### Acceptance criteria
-- at least one non-startup operator workflow has focused regression coverage
-- the new tests exercise real product behavior rather than only import/bootstrap wiring
-- startup/readiness behavior remains unchanged for users
-- docs do not claim a broader test baseline than what is actually verified
+- only verified Action revisions change in the CI workflow
+- workflow permissions, Python version, frozen dependency setup, and pytest-only
+  gate remain unchanged
+- the resulting GitHub Actions run is successful
+- no package-boundary edit starts before the remote CI verification
 
 ## What should not drive the roadmap now
 
@@ -306,14 +312,18 @@ Do not prioritize these before the readiness-contract slice:
 ## Documentation sync rules
 
 The following files must stay aligned with this SSOT:
+- `PLAN.md`
+- `BOUNDS.md`
+- `AGENTS.md`
 - `README.md`
 - `README-DEV.md`
 - `CHANGELOG.md`
 
 Current sync status:
-- README and README-DEV point to this canonical SSOT
-- CHANGELOG reflects startup hardening, diagnostics shipping, readiness-contract semantics for `--check`, the first explicit legacy service-binding step, the lazy controller-package export change, the new real `app.services` package surface, and the controller-file compatibility alias cleanup
-- next sync point should happen when the remaining package-surface cleanup changes the supported import story again
+- root `PLAN.md`, `BOUNDS.md`, and `AGENTS.md` define the current delivery,
+  execution, and agent contracts
+- README links the root contracts and this canonical SSOT
+- CHANGELOG records the operational contract refresh
 
 ## Status summary
 
@@ -322,8 +332,8 @@ Current sync status:
 - `--check` exists on supported front doors, avoids GUI launch, and now returns a readiness verdict with non-zero exit for failed required prerequisites
 - full local `pytest -q` is green
 - missing Tk and missing display now surface as bounded CLI-facing outcomes instead of raw startup tracebacks
-- the next highest-value slice is extending coverage into core product behavior (scraping/settings/cache/summary seams), not more startup hardening
-- review surfaced real package-boundary and legacy-boundary gaps, not just cosmetic cleanup ideas
+- fixture/mock coverage now protects parsing, settings, cache/history, and summary-provider fallback seams
+- the next bounded task is Node-runtime maintenance for GitHub Actions, followed by package-surface inventory
 
 ### Do weryfikacji
 - whether Redis/LLM optional reporting belongs in a future extension of the readiness contract
