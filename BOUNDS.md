@@ -84,7 +84,7 @@ remains. Never hide debt through blanket ignores or broad `type: ignore`.
 
 ## Current immediate boundary
 
-Stage 3C is a read-only controller-surface inventory for `app/controller.py`
-and `app/controller/`. Map imports, runtime bindings, and compatibility
-consumers; make no rename, deletion, public-import, or behavioral change until
-an explicit compatibility decision is approved.
+The current boundary is remote verification of the security lock refresh. Push
+only when directed, confirm CI for that SHA, then re-query Dependabot before
+starting further package-boundary work. The relevant local evidence and static
+debt baseline are recorded in `docs/quality-security-backlog.md`.

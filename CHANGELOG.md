@@ -36,6 +36,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), and this 
 - Added `docs/manual-gui-smoke-checklist.md` so the operator-control wording slice has an explicit GUI verification script for desktop/manual review.
 
 ### Changed
+- Refreshed vulnerable transitive lockfile dependencies: `aiohttp` to 3.14.3 and `soupsieve` to 2.9.2.
 - Upgraded pinned GitHub Actions to Node 24-compatible revisions; CI run #31274048561 passed without the deprecated Node 20 annotation.
 - Established a minimal operational quality policy: pytest remains the blocking CI gate; Ruff and Pyright remain local baselines for bounded cleanup slices.
 - Switched developer and CI installation guidance to frozen `uv.lock` workflows.

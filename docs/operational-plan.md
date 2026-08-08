@@ -280,6 +280,19 @@ Ruff, scoped Pyright, and Python compilation all passed. Evidence is in
 
 **Next:** Stage 3C is a read-only controller-surface inventory.
 
+## Security lock refresh
+
+**Status:** completed locally; remote CI and Dependabot verification pending.
+
+**Changed:** refreshed only `aiohttp` (3.13.5 → 3.14.3) and `soupsieve`
+(2.8.3 → 2.9.2) in `uv.lock`, addressing the two transitive package paths
+behind all 16 open alerts.
+
+**Validation:** `uv lock --check`, frozen sync with `dev` and `llm` extras,
+version imports, and the full pytest suite passed. The measured static baseline
+and security closure condition are in
+[`quality-security-backlog.md`](quality-security-backlog.md).
+
 ## Current doubts / to verify
 
 - Whether Python 3.11 is the right single CI runtime versus adding a later
@@ -290,6 +303,7 @@ Ruff, scoped Pyright, and Python compilation all passed. Evidence is in
 
 ## Current recommended next execution slice
 
-**Begin Stage 3C as a read-only controller-surface inventory.** Map imports and
-runtime bindings of `app/controller.py` and `app/controller/`; stop before any
-rename, deletion, compatibility change, or public-import change.
+**Push the verified security lock refresh only when directed, then verify its
+GitHub CI and re-query Dependabot.** Do not call the 16 alerts closed based on
+local lockfile evidence alone; begin Stage 3C only after the remote result is
+recorded.
