@@ -42,16 +42,15 @@ and diagnostics.
 - **Stage 3A — service-surface inventory:** confirmed that `services/` is the
   active internal import surface and found a stale direct-import binding defect
   documented in `docs/service-surface-inventory.md`.
+- **Stage 3B — stable service proxies:** fixed stale direct-import bindings with
+  stable package proxies and offline regression coverage.
 
 ## Next ordered work
 
-1. **Stage 3B — stable service proxies:** preserve package exports while making
-   direct imports captured before configuration dispatch to the configured
-   implementation.
-2. **Stage 3C — controller-surface decision:** map consumers of
+1. **Stage 3C — controller-surface decision:** map consumers of
    `app/controller.py` and `app/controller/`, then propose a compatibility
    decision backed by tests/search evidence.
-3. **Stage 4 — bounded static-debt reduction:** work only in a proven seam;
+2. **Stage 4 — bounded static-debt reduction:** work only in a proven seam;
    never start with repo-wide Ruff or Pyright cleanup.
 
 ## Explicitly deferred

@@ -84,7 +84,7 @@ remains. Never hide debt through blanket ignores or broad `type: ignore`.
 
 ## Current immediate boundary
 
-Stage 3A is a read-only service-surface inventory for `app/services.py` and
-`app/services/`. Map imports, runtime bindings, and compatibility consumers;
-make no rename, deletion, public-import, or behavioral change until an explicit
-compatibility decision is approved.
+Stage 3C is a read-only controller-surface inventory for `app/controller.py`
+and `app/controller/`. Map imports, runtime bindings, and compatibility
+consumers; make no rename, deletion, public-import, or behavioral change until
+an explicit compatibility decision is approved.

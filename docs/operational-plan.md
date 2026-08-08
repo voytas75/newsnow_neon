@@ -263,8 +263,22 @@ Direct imports in controllers/UI capture package placeholders before legacy
 startup configures the package, and a clean-process probe confirmed that the
 stale callable raises `NotImplementedError` after rebinding.
 
-**Next:** Stage 3B will replace rebinding exports with stable package proxies,
-with no removal or rename of either compatibility surface.
+**Outcome:** Stage 3B completed the stable-proxy fix locally without removing or
+renaming either compatibility surface.
+
+## Stage 3B — stable service-proxy binding
+
+**Status:** completed locally; remote CI verification pending.
+
+**Changed:** `app/services/__init__.py` now retains stable public proxies and
+updates private implementation slots during configuration. Direct imports taken
+before startup configuration therefore dispatch correctly afterward.
+
+**Validation:** focused bootstrap/service tests, full frozen pytest, scoped
+Ruff, scoped Pyright, and Python compilation all passed. Evidence is in
+[`service-proxy-binding.md`](service-proxy-binding.md).
+
+**Next:** Stage 3C is a read-only controller-surface inventory.
 
 ## Current doubts / to verify
 
@@ -276,6 +290,6 @@ with no removal or rename of either compatibility surface.
 
 ## Current recommended next execution slice
 
-**Execute Stage 3B with stable package-level proxies.** Add a focused direct
-pre-binding import regression, preserve all exports, and make no module/package
-removal decision in this behavior slice.
+**Begin Stage 3C as a read-only controller-surface inventory.** Map imports and
+runtime bindings of `app/controller.py` and `app/controller/`; stop before any
+rename, deletion, compatibility change, or public-import change.

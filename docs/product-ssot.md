@@ -240,32 +240,30 @@ Quality gates become meaningful instead of aspirational noise.
 ## Current recommended next slice
 
 ### Active next slice
-**Stage 3B — stable service-proxy binding**
+**Stage 3C — read-only controller-surface inventory**
 
 ### Why this is next
-- Stage 3A confirmed that normal imports resolve to `app/services/`, not the
-  parallel `app/services.py` module.
-- Controllers and UI helpers capture package exports before startup configures
-  concrete implementations; those imports retain placeholder callables.
-- A clean-process probe confirmed the stale callable raises `NotImplementedError`
-  after package rebinding. The evidence is recorded in
-  `docs/service-surface-inventory.md`.
+- Stage 3B replaced service-export rebinding with stable package proxies and
+  added a direct-import regression.
+- Focused bootstrap/service tests, full frozen pytest, scoped Ruff, and scoped
+  Pyright pass locally; remote CI verification is pending a user-directed push.
+- The next parallel structural ambiguity is the coexistence of
+  `app/controller.py` and `app/controller/`.
 
 ## Implementation focus for the active next slice
 
 ### Goal
-Make `newsnow_neon.app.services` safe for both direct imports captured
-before startup binding and dynamic package access after binding, without changing
-its public export names or package/module boundaries.
+Establish evidence for the active controller surface before changing package
+boundaries or compatibility behavior.
 
 ### Scope
 The next slice should:
-- add stable package-level dispatch proxies backed by configured implementation
-  slots;
-- add one regression that captures a direct import before configuration and
-  invokes it after configuration;
-- preserve every existing public export and leave `services.py` in place;
-- run focused bootstrap/service tests and the frozen full pytest suite.
+- inventory imports, dynamic imports, runtime bindings, and tests involving
+  `newsnow_neon/app/controller.py` and `newsnow_neon/app/controller/`;
+- identify which path is imported at runtime and which compatibility consumers
+  must be preserved;
+- produce an evidence-backed keep/replace/deprecate recommendation;
+- remain read-only: do not rename, delete, or change public imports.
 
 ### Non-goals
 Do not in this slice:
@@ -275,18 +273,17 @@ Do not in this slice:
 - reopen startup hardening unless a new regression appears.
 
 ### Preferred execution order
-1. capture a direct package import before configuring implementations
-2. make the regression fail against the current stale placeholder binding
-3. replace rebinding exports with stable dispatch proxies
-4. verify direct and dynamic access through the same configured implementation
-5. keep module/package deletion as a separate compatibility decision
+1. enumerate both controller surfaces and their public exports
+2. search repository imports, dynamic import strings, and runtime binding calls
+3. inspect tests and entrypoints that select or rebind controllers
+4. record evidence in a compact inventory without changing source
+5. propose the smallest compatibility decision as a separate approval gate
 
 ### Acceptance criteria
-- a direct import taken before configuration dispatches to the configured
-  implementation after configuration
-- dynamic package access remains configured correctly
-- no public export, module, or package is removed or renamed
-- focused and full frozen pytest suites pass
+- inventory names the actual module/package exports and all repository consumers
+- runtime selection/binding evidence is distinguished from static imports
+- unresolved external compatibility assumptions are marked explicitly
+- no source, public-import, or package-boundary change is made
 
 ## What should not drive the roadmap now
 

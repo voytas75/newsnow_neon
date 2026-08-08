@@ -53,17 +53,11 @@ Existing `tests/test_bootstrap.py` proves package rebinding through dynamic
 package access, but it does not prove that direct imports taken before binding
 remain live.
 
-## Decision for the next bounded slice
+## Stage 3B outcome
 
-Keep `newsnow_neon.app.services` as the canonical package surface. Replace its
-reassigned public callables with stable proxy functions that dispatch through
-configured implementation slots. This preserves all public names and lets both
-pre-binding direct imports and later dynamic package access observe the same
-configured implementation.
-
-Do not rename or remove `services.py` in that slice. Add a focused regression
-for a direct import captured before configuration, then verify the existing
-bootstrap tests and the frozen full pytest suite.
+The stable-proxy fix is implemented locally and documented in
+[`service-proxy-binding.md`](service-proxy-binding.md). The package remains the
+canonical internal surface; no module/package removal decision was made.
 
 ## To verify later
 

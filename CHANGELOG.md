@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), and this 
 ## [Unreleased]
 
 ### Fixed
+- Kept direct `newsnow_neon.app.services` imports live after runtime configuration by replacing rebinding exports with stable dispatch proxies.
 - bounded startup import errors now classify missing non-Tk runtime dependencies (for example `bs4`) instead of surfacing raw `ModuleNotFoundError` during bootstrap
 - bootstrap tests now verify the explicit runtime-dependency classification instead of relying on brittle subprocess assumptions about import order
 
