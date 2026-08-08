@@ -39,13 +39,16 @@ and diagnostics.
   coverage.
 - **Stage 2B.3 — summaries:** cache, fetch failure, empty output, and provider
   failure fallback coverage.
+- **Stage 3A — service-surface inventory:** confirmed that `services/` is the
+  active internal import surface and found a stale direct-import binding defect
+  documented in `docs/service-surface-inventory.md`.
 
 ## Next ordered work
 
-1. **Stage 3A — service-surface inventory:** map imports and runtime bindings of
-   `newsnow_neon/app/services.py` and `newsnow_neon/app/services/`; make no
-   deletion or rename in the inventory slice.
-2. **Stage 3B — controller-surface decision:** map consumers of
+1. **Stage 3B — stable service proxies:** preserve package exports while making
+   direct imports captured before configuration dispatch to the configured
+   implementation.
+2. **Stage 3C — controller-surface decision:** map consumers of
    `app/controller.py` and `app/controller/`, then propose a compatibility
    decision backed by tests/search evidence.
 3. **Stage 4 — bounded static-debt reduction:** work only in a proven seam;

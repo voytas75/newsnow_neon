@@ -252,6 +252,20 @@ uv run newsnow-neon --check
 - Do not make Ruff/Pyright blocking until their selected scope is green and
   reproducible under frozen CI installation.
 
+## Stage 3A — service-surface inventory
+
+**Status:** completed read-only; evidence is recorded in
+[`service-surface-inventory.md`](service-surface-inventory.md).
+
+**Confirmed:** normal imports resolve to `app/services/__init__.py`; the
+parallel `app/services.py` registry is not selected by internal normal imports.
+Direct imports in controllers/UI capture package placeholders before legacy
+startup configures the package, and a clean-process probe confirmed that the
+stale callable raises `NotImplementedError` after rebinding.
+
+**Next:** Stage 3B will replace rebinding exports with stable package proxies,
+with no removal or rename of either compatibility surface.
+
 ## Current doubts / to verify
 
 - Whether Python 3.11 is the right single CI runtime versus adding a later
@@ -262,6 +276,6 @@ uv run newsnow-neon --check
 
 ## Current recommended next execution slice
 
-**Begin Stage 3A as a read-only service-surface inventory.** Map imports and
-runtime bindings of `app/services.py` and `app/services/`; stop before any
-rename, deletion, compatibility change, or public-import change.
+**Execute Stage 3B with stable package-level proxies.** Add a focused direct
+pre-binding import regression, preserve all exports, and make no module/package
+removal decision in this behavior slice.

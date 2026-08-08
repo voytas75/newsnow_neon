@@ -84,7 +84,7 @@ remains. Never hide debt through blanket ignores or broad `type: ignore`.
 
 ## Current immediate boundary
 
-The next CI/tooling task is a narrowly scoped refresh of pinned GitHub Actions
-to Node 24-compatible revisions. It must preserve `contents: read`, Python 3.11,
-frozen `uv` setup, and pytest as the only blocking CI job. Verify the resulting
-remote run before any package-boundary work begins.
+Stage 3A is a read-only service-surface inventory for `app/services.py` and
+`app/services/`. Map imports, runtime bindings, and compatibility consumers;
+make no rename, deletion, public-import, or behavioral change until an explicit
+compatibility decision is approved.
