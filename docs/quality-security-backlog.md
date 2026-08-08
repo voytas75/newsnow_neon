@@ -1,7 +1,7 @@
 # Quality and Security Backlog
 
 **Status:** security refresh verified remotely; static baseline measured locally
-**Updated:** 2026-08-08
+**Updated:** 2026-08-09
 
 ## Security — current bounded slice
 
@@ -21,11 +21,11 @@ and the full pytest suite passed locally.
 
 ## Static-quality baseline
 
-Current measured baseline, after the Stage 3B service-binding fix:
+Current measured baseline, after P1 service compatibility and Stage 4A:
 
 | Tool | Result | Scope |
 |---|---:|---|
-| Ruff | 1,165 diagnostics | repository-wide |
+| Ruff | 1,134 diagnostics | repository-wide |
 | Pyright | 641 errors, 15 warnings, 68 files | repository-wide |
 
 Largest current hotspots are intentionally not treated as a single cleanup:
@@ -46,5 +46,5 @@ Largest current hotspots are intentionally not treated as a single cleanup:
 - Treat the first future static-debt slice as a single behavior-owned seam with
   its own test and scoped quality target, not as a whole-repository campaign.
 - Security remote verification is complete. Stage 3C, the P0 policy decision,
-  and P1 service compatibility are complete locally; the next item is Stage 4
-  static-debt reduction in one behavior-owned seam.
+  P1 service compatibility, and Stage 4A are complete locally; the next item
+  is another bounded Stage 4 seam.

@@ -2,7 +2,7 @@
 
 Status: active  
 Canonical file: `docs/product-ssot.md`  
-Updated: 2026-08-08
+Updated: 2026-08-09
 
 ## Purpose
 
@@ -91,7 +91,7 @@ These came out of the bounded repo review and should drive the next planning cyc
    - This reduces one hidden dependency, but the overall runtime boundary is not fully separated yet.
 
 3. **There are still false or dead package surfaces**
-   - `newsnow_neon/app/services.py` still collides with `newsnow_neon/app/services/`, but the package is now at least a real importable surface via `app/services/__init__.py`.
+   - `newsnow_neon/app/services.py` still collides with `newsnow_neon/app/services/`, but explicit file-path loads now re-export the canonical stable package proxies.
    - `newsnow_neon/app/controller.py` still exists beside `newsnow_neon/app/controller/`, but it is now only a compatibility alias instead of a second class surface.
    - The remaining cleanup question is whether these parallel shapes should keep existing at all.
 
@@ -115,8 +115,8 @@ These came out of the bounded repo review and should drive the next planning cyc
      behavior, Redis deployment compatibility, or main GUI/controller workflows.
 
 6. **Static quality debt is measured, not hidden**
-   - Ruff baseline: 1,174 diagnostics on the current repository-wide scope.
-   - Pyright baseline: 638 errors and 15 warnings on the current repository-wide scope.
+   - Ruff baseline: 1,134 diagnostics on the current repository-wide scope.
+   - Pyright baseline: 641 errors and 15 warnings on the current repository-wide scope.
    - These are not blocking CI until reduced through bounded slices.
 
 7. **Version truth is not yet unified**
@@ -331,7 +331,9 @@ Current sync status:
 - full local `pytest -q` is green
 - missing Tk and missing display now surface as bounded CLI-facing outcomes instead of raw startup tracebacks
 - fixture/mock coverage now protects parsing, settings, cache/history, and summary-provider fallback seams
-- the next bounded task is Stage 4 static-debt reduction in one proven seam
+- Stage 4A reduced the `app/actions.py` Ruff seam from 3 diagnostics to 0 and
+  added focused mute-action regression coverage
+- the next bounded task is Stage 4B static-debt reduction in one new proven seam
 
 ### Do weryfikacji
 - whether Redis/LLM optional reporting belongs in a future extension of the readiness contract

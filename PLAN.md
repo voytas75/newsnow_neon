@@ -50,16 +50,16 @@ and diagnostics.
   compatibility file with no internal normal-import consumer. Evidence is in
   `docs/controller-surface-inventory.md`.
 - **P0 — controller/service compatibility policy:** external compatibility
-  surfaces are retained as supported; the `services.py` file-path contract now
-  needs a focused implementation/acceptance slice before it is claimed fully
-  equivalent to the active package.
+  surfaces are retained as supported.
 - **P1 — service compatibility contract:** made explicit `services.py`
   file-path loads re-export the canonical stable package proxies; focused
   regression coverage proves dispatch after package configuration.
+- **Stage 4A — mute-action seam:** reduced the `app/actions.py` Ruff baseline
+  from 3 diagnostics to 0 and added focused helper regression coverage.
 
 ## Next ordered work
 
-1. **Stage 4 — bounded static-debt reduction:** select one proven seam and
+1. **Stage 4B — next bounded static-debt seam:** select one proven seam and
    reduce only its directly owned Ruff/Pyright debt; never start with repo-wide
    cleanup.
 2. **Compatibility maintenance:** preserve the controller and services

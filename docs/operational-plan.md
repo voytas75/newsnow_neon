@@ -278,8 +278,8 @@ before startup configuration therefore dispatch correctly afterward.
 Ruff, scoped Pyright, and Python compilation all passed. Evidence is in
 [`service-proxy-binding.md`](service-proxy-binding.md).
 
-**Next:** P1 is a bounded service-compatibility contract slice following the
-completed Stage 3C inventory and P0 policy decision.
+**Next:** Stage 4A is the first bounded static-debt reduction seam following
+the completed Stage 3C inventory and P0/P1 compatibility decisions.
 
 ## Stage 3C — controller-surface inventory
 
@@ -311,6 +311,24 @@ scoped Pyright, bytecode compilation, and the full frozen pytest suite passed.
 
 **Next:** Stage 4 must select one behavior-owned static-debt seam.
 
+## Stage 4A — mute-action static seam
+
+**Status:** completed locally at `2af3de2`.
+
+**Scope:** `newsnow_neon/app/actions.py` and its focused regression module
+`tests/test_actions.py`.
+
+**Changed:** replaced two legacy `Optional[str]` annotations with `str | None`,
+removed one redundant blank line, and added four tests covering mute-keyword
+and source-term behavior. No runtime behavior changed.
+
+**Measured result:** scoped Ruff diagnostics `3 → 0`; scoped Pyright remained
+`0 errors, 0 warnings`. The full pytest suite passed. The fresh repository-wide
+baseline is Ruff `1,134` diagnostics and Pyright `641` errors plus `15` warnings;
+global Pyright remains intentionally non-blocking.
+
+**Next:** select one new behavior-owned seam for Stage 4B.
+
 ## Security lock refresh
 
 **Status:** completed and verified remotely by CI run [#31278999184](https://github.com/voytas75/newsnow_neon/actions/runs/31278999184).
@@ -337,6 +355,6 @@ and Dependabot reports zero open alerts; all 16 prior alerts are fixed.
 
 ## Current recommended next execution slice
 
-**Begin Stage 4 as a bounded static-debt reduction slice.** Select one
+**Begin Stage 4B as a bounded static-debt reduction slice.** Select one new
 behavior-owned seam, establish its quality baseline, and reduce only directly
 owned Ruff/Pyright debt with focused regression coverage.

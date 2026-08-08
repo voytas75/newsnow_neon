@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), and this 
 ## [Unreleased]
 
 ### Fixed
+- Reduced the `newsnow_neon/app/actions.py` Ruff baseline to zero diagnostics
+  without changing mute-keyword or source-term behavior.
 - Made explicit file-path loads of `newsnow_neon/app/services.py` re-export the
   canonical stable package proxies, preserving configured dispatch without
   changing public service names.
@@ -15,6 +17,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), and this 
 - bootstrap tests now verify the explicit runtime-dependency classification instead of relying on brittle subprocess assumptions about import order
 
 ### Added
+- Added focused regression coverage for headline mute-keyword and source-term
+  helpers in `tests/test_actions.py`.
 - Added root `PLAN.md`, `BOUNDS.md`, and a concise `AGENTS.md` contract for bounded, evidence-backed repository work.
 - Added canonical product SSOT at `docs/product-ssot.md` for NewsNowNeon operational and quality hardening direction.
 - Added `tests/test_newsnow_parsing.py` and a representative HTML fixture to protect section parsing, metadata extraction, deduplication, cutoff handling, limits, and malformed-input behavior.
