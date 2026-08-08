@@ -348,6 +348,24 @@ global Pyright remains intentionally non-blocking.
 
 **Next:** select one new behavior-owned seam for Stage 4C.
 
+## Stage 4C — rendering static seam
+
+**Status:** completed locally at `cc59984`.
+
+**Scope:** `newsnow_neon/app/rendering.py` and its focused regression module
+`tests/test_rendering.py`.
+
+**Changed:** migrated legacy collection/optional annotations to modern forms,
+with no runtime behavior change. Added three tests covering deterministic age
+bucket ordering, relative-age boundaries, and metadata fallbacks.
+
+**Measured result:** scoped Ruff diagnostics `16 → 0`; scoped Pyright remained
+`0 errors, 0 warnings`. The full pytest suite passed. The fresh repository-wide
+baseline is Ruff `1,106` diagnostics and Pyright `641` errors plus `15` warnings;
+global Pyright remains intentionally non-blocking.
+
+**Next:** select one new behavior-owned seam for Stage 4D.
+
 ## Security lock refresh
 
 **Status:** completed and verified remotely by CI run [#31278999184](https://github.com/voytas75/newsnow_neon/actions/runs/31278999184).
@@ -374,6 +392,6 @@ and Dependabot reports zero open alerts; all 16 prior alerts are fixed.
 
 ## Current recommended next execution slice
 
-**Begin Stage 4C as a bounded static-debt reduction slice.** Select one new
+**Begin Stage 4D as a bounded static-debt reduction slice.** Select one new
 behavior-owned seam, establish its quality baseline, and reduce only directly
 owned Ruff/Pyright debt with focused regression coverage.
