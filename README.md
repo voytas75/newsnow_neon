@@ -75,7 +75,7 @@ python -m newsnow_neon
 
 ## Current focus
 - **Operational trust first** – startup/runtime failures should classify cleanly instead of failing with raw tracebacks.
-- **Controller compatibility decision next** – Stage 3C confirmed that the controller package is the active internal surface; file-path compatibility remains an explicit decision gate before any removal.
+- **Supported compatibility surfaces** – Stage 3C confirmed that the controller package is active internally while `controller.py` and `services.py` remain supported externally; the next bounded slice verifies the `services.py` file-path contract.
 - **Bounded cleanup after trust** – deeper legacy, package-boundary, and typing work stays slice-based, not repo-wide.
 
 ## Configuration

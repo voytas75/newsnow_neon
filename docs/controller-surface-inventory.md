@@ -63,20 +63,19 @@ git diff --check                                                                
 The import probe confirmed both package origins and `AINewsApp` identity at the
 revision above.
 
-## Recommendation and decision gate
+## Decision and next acceptance seam
 
 **Canonical internal surfaces:** `newsnow_neon.app.controller` package and
 `newsnow_neon.app.services` package.
 
-Retain `controller.py` and `services.py` as compatibility-only files until an
-explicit decision answers one question:
+**P0 owner decision (2026-08-08):** retain `controller.py` and `services.py` as
+supported external compatibility surfaces, including file-path and historical
+direct-submodule use.
 
-> Are file-path imports/execution and historical direct submodule imports
-> supported external interfaces?
+This is fully evidenced for `controller.py`: its explicit file load exposes the
+same `AINewsApp` object as the package export. The separate `services.py` file
+maintains its own registry, however, so the selected supported contract needs a
+focused P1 acceptance test and any minimal proxy/delegation correction required
+to make file-path behavior match the canonical package after configuration.
 
-- **If yes:** retain and document the compatibility files, keeping focused
-  identity/binding tests.
-- **If no:** a separate, approved behavior slice may deprecate or remove them;
-  external adoption remains unobservable from repository search alone.
-
-No broad controller extraction or service rewrite is justified by this evidence.
+No broad controller extraction or service rewrite is justified by this decision.

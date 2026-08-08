@@ -84,8 +84,8 @@ remains. Never hide debt through blanket ignores or broad `type: ignore`.
 
 ## Current immediate boundary
 
-P0 is a controller compatibility decision following the completed Stage 3C
-inventory in `docs/controller-surface-inventory.md`. Decide whether file-path
-imports/execution and historical direct submodule imports are supported
-external interfaces. Make no rename, deletion, public-import, or behavioral
-change until that explicit decision is approved.
+P1 is a bounded service-compatibility contract slice. External compatibility
+surfaces are retained as supported; prove whether an explicit `services.py`
+file-path load dispatches through the canonical package proxies and make the
+smallest tested correction if it does not. Preserve public names and make no
+rename, deletion, or public-import change.

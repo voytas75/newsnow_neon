@@ -95,13 +95,15 @@ These came out of the bounded repo review and should drive the next planning cyc
    - `newsnow_neon/app/controller.py` still exists beside `newsnow_neon/app/controller/`, but it is now only a compatibility alias instead of a second class surface.
    - The remaining cleanup question is whether these parallel shapes should keep existing at all.
 
-4. **Back-compat contract needs an explicit decision**
+4. **Back-compat contract is retained, with one service seam to prove**
    - Stage 3C confirmed that normal imports resolve to the controller package,
      while `app/controller.py` is an identity-preserving compatibility file with
      no internal normal-import consumer.
-   - External file-path and historical direct-submodule consumers remain
-     unobservable from this repository; retain compatibility files until an
-     explicit decision records whether those interfaces are supported.
+   - The P0 owner decision retains file-path and historical direct-submodule
+     compatibility as supported external interfaces.
+   - `controller.py` already has an identity regression test; P1 must prove and
+     if needed align `services.py` file-path behavior with canonical package
+     proxies before that service contract is claimed fully equivalent.
 
 5. **Core product behavior has bounded offline coverage; end-to-end coverage remains incomplete**
    - Current tests cover startup/bootstrap/diagnostics plus fixture or mock-based:
@@ -244,28 +246,27 @@ Quality gates become meaningful instead of aspirational noise.
 ## Current recommended next slice
 
 ### Active next slice
-**P0 — controller compatibility decision**
+**P1 — service compatibility contract**
 
 ### Why this is next
 - CI run [#31278999184](https://github.com/voytas75/newsnow_neon/actions/runs/31278999184) passed for the security lock refresh.
 - GitHub's Dependency Graph submitted `aiohttp 3.14.3` and `soupsieve 2.9.2`,
   and all 16 prior Dependabot alerts are now fixed.
 - Stage 3C established that the package is the active internal controller
-  surface and recorded the remaining external-compatibility unknown in
-  `controller-surface-inventory.md`.
+  surface. The P0 owner decision retains compatibility files as supported, so
+  the separate `services.py` file-path behavior is now the next acceptance seam.
 
 ## Implementation focus for the active next slice
 
 ### Goal
-Decide whether file-path imports/execution and historical direct submodule
-imports are supported external interfaces before changing compatibility files.
+Prove that an explicit `services.py` file-path load dispatches through the
+canonical package proxies, then make the smallest correction if it does not.
 
 ### Scope
 The next slice should:
-- record the owner decision against the Stage 3C evidence;
-- state whether compatibility files remain supported, deprecated, or eligible
-  for a separately approved removal slice;
-- remain decision-only: do not rename, delete, or change public imports.
+- add a focused file-path compatibility regression test for `services.py`;
+- compare its pre/post-configuration dispatch with the canonical package;
+- make only the smallest fix required to preserve the supported public names.
 
 ### Non-goals
 Do not in this slice:
@@ -275,16 +276,16 @@ Do not in this slice:
 - do repo-wide lint/type cleanup.
 
 ### Preferred execution order
-1. review `controller-surface-inventory.md`
-2. choose the external compatibility policy
-3. record the decision in the SSOT and bounds
-4. propose any behavior change as a separate approved slice
+1. establish a RED file-path compatibility test for `services.py`
+2. make the smallest proxy/delegation correction
+3. verify focused and full pytest plus scoped quality checks
+4. record only factual acceptance evidence
 
 ### Acceptance criteria
-- the supported external compatibility contract is explicit
-- unresolved external adoption is either accepted as a retained compatibility
-  boundary or deliberately excluded by owner decision
-- no source, public-import, or package-boundary change is made
+- `services.py` file-path behavior is proven equivalent to the supported
+  canonical package contract after runtime configuration
+- public names remain unchanged
+- no rename, deletion, or public-import change is made
 
 ## What should not drive the roadmap now
 
@@ -332,8 +333,8 @@ Current sync status:
 - full local `pytest -q` is green
 - missing Tk and missing display now surface as bounded CLI-facing outcomes instead of raw startup tracebacks
 - fixture/mock coverage now protects parsing, settings, cache/history, and summary-provider fallback seams
-- the next bounded task is the P0 controller compatibility decision, based on
-  the completed package-surface inventory
+- the next bounded task is P1 service-compatibility acceptance, based on the
+  completed Stage 3C inventory and P0 policy decision
 
 ### Do weryfikacji
 - whether Redis/LLM optional reporting belongs in a future extension of the readiness contract

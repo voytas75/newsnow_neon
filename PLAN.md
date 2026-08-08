@@ -49,12 +49,16 @@ and diagnostics.
   select `app/controller/`, while `app/controller.py` is an identity-preserving
   compatibility file with no internal normal-import consumer. Evidence is in
   `docs/controller-surface-inventory.md`.
+- **P0 — controller/service compatibility policy:** external compatibility
+  surfaces are retained as supported; the `services.py` file-path contract now
+  needs a focused implementation/acceptance slice before it is claimed fully
+  equivalent to the active package.
 
 ## Next ordered work
 
-1. **P0 — controller compatibility decision:** decide whether file-path
-   imports/execution and historical direct submodule imports are supported
-   external interfaces before deprecating or removing compatibility files.
+1. **P1 — service compatibility contract:** prove and, if needed, make an
+   explicit `services.py` file-path load dispatch through the canonical package
+   proxies; add focused regression coverage without changing public names.
 2. **Stage 4 — bounded static-debt reduction:** work only in a proven seam;
    never start with repo-wide Ruff or Pyright cleanup.
 

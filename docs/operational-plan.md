@@ -278,8 +278,8 @@ before startup configuration therefore dispatch correctly afterward.
 Ruff, scoped Pyright, and Python compilation all passed. Evidence is in
 [`service-proxy-binding.md`](service-proxy-binding.md).
 
-**Next:** P0 is a controller compatibility decision based on the completed
-Stage 3C inventory.
+**Next:** P1 is a bounded service-compatibility contract slice following the
+completed Stage 3C inventory and P0 policy decision.
 
 ## Stage 3C — controller-surface inventory
 
@@ -291,9 +291,10 @@ parallel `app/controller.py` is an identity-preserving compatibility file with
 no internal normal-import consumer. `application.py` imports and instantiates
 the concrete controller submodules directly.
 
-**Outcome:** retain `controller.py` and `services.py` unchanged pending a P0
-owner decision on whether file-path imports/execution and historical direct
-submodule imports are supported external interfaces.
+**P0 decision:** retain `controller.py` and `services.py` as supported external
+compatibility surfaces. `controller.py` already has a focused identity test;
+P1 must prove and, if required, align the separate `services.py` file-path
+registry with canonical package-proxy behavior.
 
 ## Security lock refresh
 
@@ -321,7 +322,7 @@ and Dependabot reports zero open alerts; all 16 prior alerts are fixed.
 
 ## Current recommended next execution slice
 
-**Begin P0 as a controller compatibility decision.** Use the completed Stage
-3C inventory to state whether file-path imports/execution and historical direct
-submodule imports are supported external interfaces; stop before any rename,
-deletion, compatibility change, or public-import change.
+**Begin P1 as a service-compatibility contract slice.** Prove whether an
+explicit `services.py` file-path load dispatches through canonical package
+proxies; add the smallest focused correction and regression test if it does
+not. Preserve public names and stop before any rename or deletion.
