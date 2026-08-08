@@ -5,22 +5,22 @@ Updates: v0.52 - 2025-11-18 - Extracted UI-agnostic rendering helpers.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from datetime import datetime, timezone
-from typing import List, Optional, Sequence, Tuple
 
 from ..models import Headline
 from ..utils import parse_iso8601_utc
 
 
 def group_headlines_by_age(
-    entries: Sequence[tuple[int, Headline]]
-) -> List[tuple[str, List[tuple[int, Headline, Optional[float]]]]]:
+    entries: Sequence[tuple[int, Headline]],
+) -> list[tuple[str, list[tuple[int, Headline, float | None]]]]:
     """Group entries into age buckets for UI display.
 
     Mirrors controller behavior in
     [application._group_headlines_by_age()](newsnow_neon/application.py:1284).
     """
-    buckets: dict[str, list[tuple[int, Headline, Optional[float]]]] = {
+    buckets: dict[str, list[tuple[int, Headline, float | None]]] = {
         "Last 5 minutes": [],
         "Last 10 minutes": [],
         "Last 30 minutes": [],
@@ -43,7 +43,7 @@ def group_headlines_by_age(
     ]
 
 
-def headline_age_minutes(headline: Headline, now_utc: datetime) -> Optional[float]:
+def headline_age_minutes(headline: Headline, now_utc: datetime) -> float | None:
     """Compute age in minutes from headline published_at.
 
     Mirrors
@@ -57,7 +57,7 @@ def headline_age_minutes(headline: Headline, now_utc: datetime) -> Optional[floa
     return 0.0 if minutes < 0 else minutes
 
 
-def resolve_age_bucket(age_minutes: Optional[float]) -> str:
+def resolve_age_bucket(age_minutes: float | None) -> str:
     """Resolve age bucket label safely for None or >60 minutes.
 
     Mirrors
@@ -74,7 +74,7 @@ def resolve_age_bucket(age_minutes: Optional[float]) -> str:
     return "Older than 1 h"
 
 
-def format_relative_age(age_minutes: Optional[float]) -> Optional[str]:
+def format_relative_age(age_minutes: float | None) -> str | None:
     """Produce a concise relative age label for UI metadata.
 
     Mirrors
@@ -94,13 +94,16 @@ def format_relative_age(age_minutes: Optional[float]) -> Optional[str]:
     return f"{days}d {remaining}h ago" if remaining else f"{days}d ago"
 
 
-def compose_metadata_parts(localized: Headline, relative_label: Optional[str]) -> List[str]:
+def compose_metadata_parts(
+    localized: Headline,
+    relative_label: str | None,
+) -> list[str]:
     """Compose source/time/relative labels; fallback to section or 'Unknown source'.
 
     Mirrors
     [application._compose_metadata_parts()](newsnow_neon/application.py:1353).
     """
-    parts: List[str] = []
+    parts: list[str] = []
     if isinstance(localized.source, str) and localized.source.strip():
         parts.append(localized.source.strip())
     if isinstance(localized.published_time, str) and localized.published_time.strip():
