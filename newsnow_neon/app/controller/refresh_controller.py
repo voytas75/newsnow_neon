@@ -2,16 +2,17 @@
 
 Updates: v0.52 - 2025-11-18 - Added minimal delegation to preserve behavior.
 """
+
 from __future__ import annotations
 
 import threading
-from typing import Optional
 
 
 class RefreshController:
     """Encapsulates refresh trigger and background worker wiring."""
 
     def __init__(self, app) -> None:
+        """Bind the application owning refresh state and worker methods."""
         self.app = app
 
     def refresh(self, *, force_refresh: bool = False) -> None:
