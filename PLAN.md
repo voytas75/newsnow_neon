@@ -56,10 +56,12 @@ and diagnostics.
   regression coverage proves dispatch after package configuration.
 - **Stage 4A — mute-action seam:** reduced the `app/actions.py` Ruff baseline
   from 3 diagnostics to 0 and added focused helper regression coverage.
+- **Stage 4B — filtering seam:** reduced the `app/filtering.py` Ruff baseline
+  from 12 diagnostics to 0 and added focused exclusion/filtering coverage.
 
 ## Next ordered work
 
-1. **Stage 4B — next bounded static-debt seam:** select one proven seam and
+1. **Stage 4C — next bounded static-debt seam:** select one proven seam and
    reduce only its directly owned Ruff/Pyright debt; never start with repo-wide
    cleanup.
 2. **Compatibility maintenance:** preserve the controller and services

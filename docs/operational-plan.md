@@ -329,6 +329,25 @@ global Pyright remains intentionally non-blocking.
 
 **Next:** select one new behavior-owned seam for Stage 4B.
 
+## Stage 4B — filtering static seam
+
+**Status:** completed locally at `f7b6fa8`.
+
+**Scope:** `newsnow_neon/app/filtering.py` and its focused regression module
+`tests/test_filtering.py`.
+
+**Changed:** migrated legacy `typing` collection annotations to modern built-in
+and `collections.abc` forms, with no runtime behavior change. Added three tests
+covering case-insensitive filtering, ordered exclusion normalization, and
+unsupported persisted values.
+
+**Measured result:** scoped Ruff diagnostics `12 → 0`; scoped Pyright remained
+`0 errors, 0 warnings`. The full pytest suite passed. The fresh repository-wide
+baseline is Ruff `1,122` diagnostics and Pyright `641` errors plus `15` warnings;
+global Pyright remains intentionally non-blocking.
+
+**Next:** select one new behavior-owned seam for Stage 4C.
+
 ## Security lock refresh
 
 **Status:** completed and verified remotely by CI run [#31278999184](https://github.com/voytas75/newsnow_neon/actions/runs/31278999184).
@@ -355,6 +374,6 @@ and Dependabot reports zero open alerts; all 16 prior alerts are fixed.
 
 ## Current recommended next execution slice
 
-**Begin Stage 4B as a bounded static-debt reduction slice.** Select one new
+**Begin Stage 4C as a bounded static-debt reduction slice.** Select one new
 behavior-owned seam, establish its quality baseline, and reduce only directly
 owned Ruff/Pyright debt with focused regression coverage.
