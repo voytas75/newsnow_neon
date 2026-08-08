@@ -15,7 +15,7 @@ pip install -e .[dev]
 ```
 - Editable developer install (recommended, uv):
 ```bash
-uv sync --extra dev
+uv sync --extra dev --frozen
 ```
 - Minimal runtime install (pip):
 ```bash
@@ -35,7 +35,7 @@ pip install .[dotenv]  # Auto-load .env via python-dotenv
 ## Quick Start
 ```bash
 # Dev installation with uv
-uv sync --extra dev
+uv sync --extra dev --frozen
 
 # Configure environment (examples)
 export NEWS_SUMMARY_MODEL=gpt-4.1
@@ -113,37 +113,33 @@ python -m newsnow_neon
 
 ## Build, Test & Development
 ```bash
-# one-liner dev setup (uv)
-uv sync --extra dev
+# Reproducible developer and CI setup
+uv sync --extra dev --frozen
 
-# formatting & static analysis
-uv run ruff check .
-uv run mypy newsnow_neon
+# Required CI gate
+uv run --extra dev --frozen pytest -q
 
-# startup contract checks
-uv run pytest tests/test_main_metadata.py tests/test_bootstrap.py -q
-
-# run the desktop app
-uv run newsnow-neon
-uv run python -m newsnow_neon
-
-# execute full test suite
-uv run pytest -q
+# Retained local quality baselines
+uv run --extra dev --frozen ruff check .
+uv run --extra dev --frozen pyright
 ```
 
 Alternative pip-based flow:
 ```bash
 pip install -e .[dev]
-black .
 ruff check .
-mypy newsnow_neon
-pytest tests/test_main_metadata.py tests/test_bootstrap.py -q
-python -m newsnow_neon
+pyright
 pytest -q
 ```
 
+GitHub Actions requires the full pytest suite on pushes and pull requests to
+`main`. Ruff and Pyright remain local quality tools while their existing
+repo-wide diagnostic debt is reduced through bounded slices.
+
 ## Developer
 - Deep dive: [README-DEV.md](README-DEV.md)
+- Operational execution plan: [docs/operational-plan.md](docs/operational-plan.md)
+- Product direction SSOT: [docs/product-ssot.md](docs/product-ssot.md)
 - Release history: [CHANGELOG.md](CHANGELOG.md)
 
 ## License

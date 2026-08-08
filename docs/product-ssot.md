@@ -63,7 +63,11 @@ Confirmed from live repo/runtime checks in this cycle:
   - module front door without `tkinter`
   - `__main__` / console-script path without `tkinter`
   - `--check` avoiding GUI launch
-- static-quality debt remains high at repo scope and is not yet the active primary slice
+- **Current quality contract:** `pytest`, Ruff, and Pyright are retained.
+- `pytest` is the current blocking CI gate.
+- Ruff and Pyright remain measured local baselines until bounded cleanup slices
+  make selected scopes green.
+- Black and Mypy are no longer declared project dev tools.
 
 Interpretation:
 - the app now has a materially more trustworthy startup/runtime contract,
@@ -104,7 +108,12 @@ These came out of the bounded repo review and should drive the next planning cyc
      - summary/provider fallback,
      - main UI/controller workflows.
 
-6. **Version truth is not yet unified**
+6. **Static quality debt is measured, not hidden**
+   - Ruff baseline: 1,174 diagnostics on the current repository-wide scope.
+   - Pyright baseline: 638 errors and 15 warnings on the current repository-wide scope.
+   - These are not blocking CI until reduced through bounded slices.
+
+7. **Version truth is not yet unified**
    - `pyproject.toml`, runtime metadata, and per-file update annotations are not yet obviously one coherent release truth.
 
 ### Do weryfikacji
@@ -165,7 +174,7 @@ Reduce ambiguous dynamic-Tk coupling by introducing clearer contracts where the 
 This includes:
 - picking one active seam,
 - introducing the smallest useful `Protocol` or runtime contract,
-- improving mypy signal locally without pretending the repo is globally strict-clean.
+- improving Pyright signal locally without pretending the repo is globally strict-clean.
 
 Success condition:
 One active seam becomes cleaner, typed enough to be useful, and cheaper to modify safely.
@@ -214,7 +223,7 @@ Quality gates become meaningful instead of aspirational noise.
 3. **Single typed seam slice**
    - Pick one active controller/UI seam.
    - Add the smallest useful protocol/runtime contract.
-   - Scope mypy to that seam and supporting files.
+   - Scope Pyright to that seam and supporting files.
 
 4. **Core product smoke slice**
    - Add tests for scraping/parsing.

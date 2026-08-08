@@ -12,6 +12,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), and this 
 
 ### Added
 - Added canonical product SSOT at `docs/product-ssot.md` for NewsNowNeon operational and quality hardening direction.
+- Added active execution plan at `docs/operational-plan.md` for bounded operational cleanup, CI, and follow-up slices.
+- Added minimal GitHub Actions workflow for the frozen pytest gate.
+- Added tracked `uv.lock` for reproducible development and CI installs.
+- Added pinned Pyright to the retained local quality toolchain.
 - Added explicit README / README-DEV pointers to the canonical SSOT.
 - Added documented `tkinter` runtime prerequisite and environment-failure guidance.
 - Added bounded startup smoke coverage in `tests/test_main_metadata.py` and `tests/test_bootstrap.py`.
@@ -22,7 +26,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), and this 
 - Added `docs/manual-gui-smoke-checklist.md` so the operator-control wording slice has an explicit GUI verification script for desktop/manual review.
 
 ### Changed
-- Aligned repo documentation around operational polish first: runtime contract, bounded quality cleanup, typed UI/controller seams, and legacy-boundary containment.
+- Established a minimal operational quality policy: pytest remains the blocking CI gate; Ruff and Pyright remain local baselines for bounded cleanup slices.
+- Switched developer and CI installation guidance to frozen `uv.lock` workflows.
+- Removed obsolete Black/Mypy configuration and developer-tool references from the active project contract.
+- Aligned README, developer guidance, and product SSOT with the current CI/tooling decision.
 - Split startup flow in `newsnow_neon.main` into `load_app_class()`, `bootstrap_app()`, and `main()` so dependency failures and bootstrap behavior can be verified without running the full GUI loop.
 - Hardened the package front door so `python -m newsnow_neon` and the `__main__` console-script path emit a bounded CLI message when `tkinter` is unavailable, instead of failing with an early import traceback.
 - Added subprocess smoke coverage for no-Tk startup on both the module front door and the `__main__` entrypoint path.

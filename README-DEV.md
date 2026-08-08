@@ -9,7 +9,7 @@ Canonical product SSOT: `docs/product-ssot.md`
 2. Ensure the local Python runtime includes `tkinter`.
 3. Install the project with tooling enabled:
    ```bash
-   uv sync --extra dev
+   uv sync --extra dev --frozen
    ```
 4. (Optional) Add runtime extras as needed:
    ```bash
@@ -25,26 +25,31 @@ pip install .[redis,llm,dotenv]  # optional
 
 ## Tooling & Daily Commands
 ```bash
-uv run black .
-uv run ruff check .
-uv run mypy newsnow_neon
-uv run pytest tests/test_main_metadata.py tests/test_bootstrap.py -q
-uv run pytest -q
+uv sync --extra dev --frozen
+
+# Required CI contract
+uv run --extra dev --frozen pytest -q
+
+# Staged local quality tools
+uv run --extra dev --frozen ruff check .
+uv run --extra dev --frozen pyright
+
 uv run newsnow-neon
 uv run python -m newsnow_neon
 uv run newsnow-neon --check
 uv run python -m newsnow_neon --check
 ```
-- `pytest --cov` should remain ≥80 % statement coverage; add tests under `tests/` with `test_*` names.
-- Run `uv sync --extra dev` before daily work to keep the environment aligned.
+- CI currently requires the full `pytest -q` suite. It does not claim a
+  coverage threshold because `pytest-cov` is not part of the configured toolchain.
+- Ruff and Pyright are retained local baselines. Do not add them as blocking CI
+  checks until a bounded cleanup slice makes their selected scope green.
+- Run `uv sync --extra dev --frozen` before daily work to keep the environment aligned.
 - The bounded startup smoke pack is `tests/test_main_metadata.py` + `tests/test_bootstrap.py`.
 
 Alternative direct tool flow in an activated venv:
 ```bash
-black .
 ruff check .
-mypy newsnow_neon
-pytest tests/test_main_metadata.py tests/test_bootstrap.py -q
+pyright
 pytest -q
 python -m newsnow_neon
 ```
@@ -101,10 +106,10 @@ Sensitive values (`*KEY`, `*TOKEN`, `*SECRET`, `*PASSWORD`) are masked automatic
 - **Legacy wrapper**: `legacy_app.py` retains the pre-modularized implementation; keep its embedded change log synchronized when behaviour shifts.
 
 ## Development Workflow
-1. Branch from `main` and sync dependencies (`pip install -e .[dev]`).
+1. Branch from `main` and sync dependencies (`uv sync --extra dev --frozen`).
 2. Implement changes inside `newsnow_neon/` modules, keeping utility code in dedicated modules (KISS/DRY).
 3. Add/adjust tests under `tests/`; favour unit tests and keep integration suites under `tests/integration/`.
-4. Run `black`, `ruff`, `mypy`, and `pytest -q` before committing. CI runs the same matrix.
+4. Run `pytest -q` before committing; inspect Ruff and Pyright for the bounded scope you changed. CI currently enforces the same full pytest suite only.
 5. Update documentation (`README.md`, this guide, and `CHANGELOG.md`) plus docstrings for any public interface changes.
 
 ## Troubleshooting & Tips

@@ -22,10 +22,9 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-  "black>=24.0.0",
-  "ruff>=0.4.0",
-  "mypy>=1.8",
   "pytest>=8.0",
+  "pyright==1.1.411",
+  "ruff>=0.4.0",
 ]
 redis = [
   "redis>=5.0",
@@ -40,10 +39,6 @@ dotenv = [
 [project.scripts]
 newsnow-neon = "newsnow_neon.__main__:_run"
 
-[tool.black]
-line-length = 88
-target-version = ["py310"]
-
 [tool.uv]
 default-groups = []
 
@@ -54,10 +49,6 @@ newsnow-neon = { workspace = true }
 line-length = 88
 target-version = "py310"
 lint.select = ["E", "F", "I", "B", "UP", "D", "N", "C90"]
-
-[tool.mypy]
-python_version = "3.10"
-strict = true
 
 [tool.setuptools.packages.find]
 where = ["."]
