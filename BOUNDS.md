@@ -84,8 +84,9 @@ remains. Never hide debt through blanket ignores or broad `type: ignore`.
 
 ## Current immediate boundary
 
-Stage 4F is complete for `newsnow_neon/app/services/cache_service.py`. The next
-Stage 4 slice must choose one new proven, behavior-owned seam and reduce only its
-directly owned Ruff/Pyright debt with focused regression coverage. Do not start
+Stage 4G is complete for `newsnow_neon/app/controller/refresh_controller.py`.
+The next Stage 4 slice must choose one new proven, behavior-owned seam and
+reduce only its directly owned Ruff/Pyright debt with focused regression coverage.
+Do not start
 repo-wide cleanup or alter the supported controller/services compatibility
 surfaces incidentally.
