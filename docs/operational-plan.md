@@ -106,11 +106,28 @@ LiteLLM, or live NewsNow access.
 
 ### Slice 2B — settings/cache/fallback contracts
 
-**Scope:** add focused tests for settings round-trip, cache payload handling,
-history snapshot boundaries, and summary fallback when article/provider calls
-fail.
+**Status:** settings sub-slice completed locally; cache/history and summary
+fallback remain pending.
 
-**Done condition:** one operator workflow has non-startup regression coverage.
+#### Slice 2B.1 — settings load normalization
+
+**Changed:**
+- `newsnow_neon/settings_store.py` now normalizes persisted
+  `auto_refresh_minutes` to an integer in `1..180`;
+- malformed, boolean, non-numeric, and out-of-range values fall back safely;
+- added `tests/test_settings_store.py` for normalization and malformed JSON;
+- existing settings round-trip coverage continues to verify known-key filtering.
+
+**Validation:**
+```bash
+uv run --extra dev --frozen pytest tests/test_settings_store.py -q
+uv run --extra dev --frozen ruff check tests/test_settings_store.py newsnow_neon/settings_store.py
+uv run --extra dev --frozen pyright tests/test_settings_store.py newsnow_neon/settings_store.py
+uv run --extra dev --frozen pytest -q
+```
+
+**Next:** add offline cache/history payload tests, then summary/provider fallback
+tests in separate bounded steps.
 
 ## Stage 3 — package-boundary cleanup
 
@@ -182,6 +199,6 @@ uv run newsnow-neon --check
 
 ## Current recommended next execution slice
 
-**Execute Slice 2B: settings/cache/fallback contracts.** Start with the
-smallest seam among settings round-trip, cache payload handling, and summary
-fallback. Keep the slice offline and preserve the green parser tests.
+**Execute the next 2B sub-slice: offline cache/history payload contracts.**
+Keep Redis fake/in-memory, avoid live services, and preserve the green parser
+and settings tests.

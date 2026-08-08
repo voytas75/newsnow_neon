@@ -237,28 +237,25 @@ Quality gates become meaningful instead of aspirational noise.
 ## Current recommended next slice
 
 ### Active next slice
-**Settings/cache/fallback contract smoke slice**
+**Offline cache/history payload contract smoke slice**
 
 ### Why this is next
-- Fixture-based parsing coverage is now implemented locally for metadata,
-  deduplication, cutoff handling, limits, and malformed markup.
-- The parser slice remains offline and does not depend on GUI, Redis, LiteLLM, or
-  live NewsNow access.
-- The highest-value remaining product-confidence gap is settings persistence,
-  cache/history behavior, and summary/provider fallback.
+- Settings round-trip, unknown-key filtering, persisted interval normalization,
+  and malformed JSON fallback are now covered.
+- Cache/history behavior remains the next unprotected operator workflow seam.
+- The slice can stay offline with fake Redis responses and payload fixtures.
 
 ## Implementation focus for the active next slice
 
 ### Goal
-Extend confidence from parsing into the remaining operator workflow seams
-without broadening scope into repo-wide cleanup.
+Extend confidence from settings into cache/history payload behavior without
+requiring Redis or live providers.
 
 ### Scope
 The next slice should:
-- add bounded tests for settings persistence,
-- add bounded tests for cache/history behavior,
-- add bounded tests for summary/provider fallback,
-- preserve the new parser fixtures and import-safe startup behavior.
+- test cache payload round-trip and malformed payload handling,
+- test historical key parsing and horizon/limit boundaries with fake Redis,
+- preserve parser, settings, and import-safe startup behavior.
 
 ### Non-goals
 Do not in this slice:
