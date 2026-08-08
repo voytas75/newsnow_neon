@@ -438,6 +438,24 @@ global Pyright remains intentionally non-blocking.
 
 **Next:** select one new behavior-owned seam for Stage 4H.
 
+## Stage 4H — auto-refresh-controller static seam
+
+**Status:** completed locally at `623bac6`.
+
+**Scope:** `newsnow_neon/app/controller/auto_refresh_controller.py` and its
+focused regression module `tests/test_auto_refresh_controller.py`.
+
+**Changed:** documented the controller initialization, with no runtime behavior
+change. Added two focused tests covering successful cancellation of both pending
+jobs and safe identifier clearing when Tk cancellation reports an expired job.
+
+**Measured result:** scoped Ruff diagnostics `1 → 0`; scoped Pyright remained
+`0 errors, 0 warnings`. The full pytest suite passed. The fresh repository-wide
+baseline is Ruff `1,091` diagnostics and Pyright `641` errors plus `15` warnings;
+global Pyright remains intentionally non-blocking.
+
+**Next:** select one new behavior-owned seam for Stage 4I.
+
 ## Security lock refresh
 
 **Status:** completed and verified remotely by CI run [#31278999184](https://github.com/voytas75/newsnow_neon/actions/runs/31278999184).
@@ -464,6 +482,6 @@ and Dependabot reports zero open alerts; all 16 prior alerts are fixed.
 
 ## Current recommended next execution slice
 
-**Begin Stage 4H as a bounded static-debt reduction slice.** Select one new
+**Begin Stage 4I as a bounded static-debt reduction slice.** Select one new
 behavior-owned seam, establish its quality baseline, and reduce only directly
 owned Ruff/Pyright debt with focused regression coverage.

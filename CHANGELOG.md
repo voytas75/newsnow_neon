@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), and this 
 ## [Unreleased]
 
 ### Fixed
+- Reduced the `newsnow_neon/app/controller/auto_refresh_controller.py` Ruff
+  baseline to zero diagnostics without changing auto-refresh scheduling behavior.
 - Reduced the `newsnow_neon/app/controller/refresh_controller.py` Ruff baseline
   to zero diagnostics without changing refresh orchestration behavior.
 - Reduced the `newsnow_neon/app/services/cache_service.py` Ruff baseline to zero
@@ -29,6 +31,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), and this 
 - bootstrap tests now verify the explicit runtime-dependency classification instead of relying on brittle subprocess assumptions about import order
 
 ### Added
+- Added focused regression coverage for auto-refresh pending-job cancellation
+  and stale-job error handling in `tests/test_auto_refresh_controller.py`.
 - Added focused regression coverage for manual refresh history/status/worker
   orchestration in `tests/test_refresh_controller.py`.
 - Added focused regression coverage for the unconfigured cache-service provider

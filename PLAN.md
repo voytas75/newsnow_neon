@@ -72,10 +72,13 @@ and diagnostics.
 - **Stage 4G — refresh-controller seam:** reduced the
   `app/controller/refresh_controller.py` Ruff baseline from 2 diagnostics to 0
   and added focused manual-refresh orchestration coverage.
+- **Stage 4H — auto-refresh-controller seam:** reduced the
+  `app/controller/auto_refresh_controller.py` Ruff baseline from 1 diagnostic
+  to 0 and added focused pending-job cancellation coverage.
 
 ## Next ordered work
 
-1. **Stage 4H — next bounded static-debt seam:** select one proven seam and
+1. **Stage 4I — next bounded static-debt seam:** select one proven seam and
    reduce only its directly owned Ruff/Pyright debt; never start with repo-wide
    cleanup.
 2. **Compatibility maintenance:** preserve the controller and services
