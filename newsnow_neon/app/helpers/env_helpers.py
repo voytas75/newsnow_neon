@@ -7,14 +7,13 @@ into a dedicated module to slim down the main application controller.
 from __future__ import annotations
 
 import re
-from typing import Optional
 
 _SENSITIVE_ENV_PATTERN = re.compile(
     r"(KEY|TOKEN|SECRET|PASSWORD|API_KEY)$", re.IGNORECASE
 )
 
 
-def sanitize_env_value(name: str, value: Optional[str]) -> Optional[str]:
+def sanitize_env_value(name: str, value: str | None) -> str | None:
     """Mask sensitive environment variable values for safe logging.
 
     Returns:
@@ -22,6 +21,7 @@ def sanitize_env_value(name: str, value: Optional[str]) -> Optional[str]:
         - None for empty values
         - Truncated long values (> 80 chars)
         - Original value otherwise
+
     """
     if value is None:
         return None
