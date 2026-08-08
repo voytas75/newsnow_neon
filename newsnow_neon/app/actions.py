@@ -6,7 +6,6 @@ Updates: v0.52 - 2025-11-18 - Extracted mute helpers from controller.
 from __future__ import annotations
 
 import re
-from typing import Optional
 from urllib.parse import urlparse
 
 from ..models import Headline
@@ -39,7 +38,7 @@ _MUTE_STOPWORDS: set[str] = {
 }
 
 
-def extract_keyword_for_mute(title: str) -> Optional[str]:
+def extract_keyword_for_mute(title: str) -> str | None:
     """Extract a simple, useful keyword from a headline title.
 
     Mirrors controller behavior in
@@ -60,7 +59,7 @@ def extract_keyword_for_mute(title: str) -> Optional[str]:
     return None
 
 
-def derive_source_term(headline: Headline) -> Optional[str]:
+def derive_source_term(headline: Headline) -> str | None:
     """Derive a source term from the final article domain.
 
     Resolves redirects (HEAD, GET + meta refresh) to prefer the destination
@@ -69,7 +68,6 @@ def derive_source_term(headline: Headline) -> Optional[str]:
     fall back to the headline's source label. As a last resort, use the
     original URL's domain if it is not a NewsNow domain.
     """
-
     url_val = headline.url if isinstance(headline.url, str) else ""
     src_val = headline.source if isinstance(headline.source, str) else ""
     label = src_val.strip() or None
