@@ -6,14 +6,15 @@ Updates: v0.52 - 2025-11-18 - Extracted pure filtering helpers from controller.
 from __future__ import annotations
 
 import re
-from typing import Any, List, Sequence, Set
+from collections.abc import Sequence
+from typing import Any
 
 from ..models import Headline
 
 
 def filter_headlines(
-    headlines: Sequence[Headline], exclusion_terms: Set[str]
-) -> List[Headline]:
+    headlines: Sequence[Headline], exclusion_terms: set[str]
+) -> list[Headline]:
     """Return headlines that do not match any exclusion term.
 
     Mirrors controller behavior in
@@ -24,7 +25,7 @@ def filter_headlines(
     if not exclusion_terms:
         return list(headlines)
 
-    filtered: List[Headline] = []
+    filtered: list[Headline] = []
     for item in headlines:
         haystack_parts = [
             item.title,
@@ -45,13 +46,13 @@ def filter_headlines(
     return filtered
 
 
-def normalise_exclusion_terms(source: Any) -> tuple[List[str], Set[str]]:
+def normalise_exclusion_terms(source: Any) -> tuple[list[str], set[str]]:
     """Normalize free-form exclusions into ordered list and set for matching.
 
     Equivalent to
     [application._normalise_exclusion_terms()](newsnow_neon/application.py:1816).
     """
-    candidates: List[str] = []
+    candidates: list[str] = []
     if isinstance(source, str):
         candidates.extend(split_exclusion_string(source))
     elif isinstance(source, Sequence) and not isinstance(source, (str, bytes)):
@@ -59,8 +60,8 @@ def normalise_exclusion_terms(source: Any) -> tuple[List[str], Set[str]]:
             if isinstance(item, str):
                 candidates.extend(split_exclusion_string(item))
 
-    unique_terms: List[str] = []
-    seen: Set[str] = set()
+    unique_terms: list[str] = []
+    seen: set[str] = set()
     for candidate in candidates:
         cleaned = candidate.strip()
         if not cleaned:
@@ -74,7 +75,7 @@ def normalise_exclusion_terms(source: Any) -> tuple[List[str], Set[str]]:
     return unique_terms, seen
 
 
-def split_exclusion_string(text: str) -> List[str]:
+def split_exclusion_string(text: str) -> list[str]:
     """Split exclusions by commas, semicolons or whitespace to normalized tokens.
 
     Matches
