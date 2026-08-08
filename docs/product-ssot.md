@@ -95,15 +95,15 @@ These came out of the bounded repo review and should drive the next planning cyc
    - `newsnow_neon/app/controller.py` still exists beside `newsnow_neon/app/controller/`, but it is now only a compatibility alias instead of a second class surface.
    - The remaining cleanup question is whether these parallel shapes should keep existing at all.
 
-4. **Back-compat contract is retained, with one service seam to prove**
+4. **Back-compat contract is retained and service dispatch is proven**
    - Stage 3C confirmed that normal imports resolve to the controller package,
      while `app/controller.py` is an identity-preserving compatibility file with
      no internal normal-import consumer.
    - The P0 owner decision retains file-path and historical direct-submodule
      compatibility as supported external interfaces.
-   - `controller.py` already has an identity regression test; P1 must prove and
-     if needed align `services.py` file-path behavior with canonical package
-     proxies before that service contract is claimed fully equivalent.
+   - `controller.py` has an identity regression test; P1 made `services.py`
+     re-export canonical package proxies and added a file-path dispatch
+     regression test after configuration.
 
 5. **Core product behavior has bounded offline coverage; end-to-end coverage remains incomplete**
    - Current tests cover startup/bootstrap/diagnostics plus fixture or mock-based:
@@ -246,27 +246,26 @@ Quality gates become meaningful instead of aspirational noise.
 ## Current recommended next slice
 
 ### Active next slice
-**P1 — service compatibility contract**
+**Stage 4 — bounded static-debt reduction**
 
 ### Why this is next
 - CI run [#31278999184](https://github.com/voytas75/newsnow_neon/actions/runs/31278999184) passed for the security lock refresh.
 - GitHub's Dependency Graph submitted `aiohttp 3.14.3` and `soupsieve 2.9.2`,
   and all 16 prior Dependabot alerts are now fixed.
-- Stage 3C established that the package is the active internal controller
-  surface. The P0 owner decision retains compatibility files as supported, so
-  the separate `services.py` file-path behavior is now the next acceptance seam.
+- Stage 3C and P0 established supported compatibility surfaces, and P1 proved
+  that `services.py` file-path dispatch uses the canonical package proxies.
 
 ## Implementation focus for the active next slice
 
 ### Goal
-Prove that an explicit `services.py` file-path load dispatches through the
-canonical package proxies, then make the smallest correction if it does not.
+Reduce directly owned Ruff/Pyright debt in one behavior-owned seam without
+turning the known repository-wide baseline into an unbounded cleanup campaign.
 
 ### Scope
 The next slice should:
-- add a focused file-path compatibility regression test for `services.py`;
-- compare its pre/post-configuration dispatch with the canonical package;
-- make only the smallest fix required to preserve the supported public names.
+- establish a scoped Ruff/Pyright baseline for one selected seam;
+- add or preserve focused regression coverage for that seam;
+- reduce only diagnostics directly owned by the chosen behavior boundary.
 
 ### Non-goals
 Do not in this slice:
@@ -276,15 +275,14 @@ Do not in this slice:
 - do repo-wide lint/type cleanup.
 
 ### Preferred execution order
-1. establish a RED file-path compatibility test for `services.py`
-2. make the smallest proxy/delegation correction
-3. verify focused and full pytest plus scoped quality checks
-4. record only factual acceptance evidence
+1. select a seam with a small, measurable static baseline
+2. preserve or add a regression test for its behavior
+3. reduce only the seam's direct diagnostics
+4. verify focused and full pytest plus scoped quality checks
 
 ### Acceptance criteria
-- `services.py` file-path behavior is proven equivalent to the supported
-  canonical package contract after runtime configuration
-- public names remain unchanged
+- the selected seam's diagnostics are reduced without broad ignores
+- focused behavior and the full pytest suite remain green
 - no rename, deletion, or public-import change is made
 
 ## What should not drive the roadmap now
@@ -333,8 +331,7 @@ Current sync status:
 - full local `pytest -q` is green
 - missing Tk and missing display now surface as bounded CLI-facing outcomes instead of raw startup tracebacks
 - fixture/mock coverage now protects parsing, settings, cache/history, and summary-provider fallback seams
-- the next bounded task is P1 service-compatibility acceptance, based on the
-  completed Stage 3C inventory and P0 policy decision
+- the next bounded task is Stage 4 static-debt reduction in one proven seam
 
 ### Do weryfikacji
 - whether Redis/LLM optional reporting belongs in a future extension of the readiness contract

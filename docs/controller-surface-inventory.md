@@ -73,9 +73,9 @@ supported external compatibility surfaces, including file-path and historical
 direct-submodule use.
 
 This is fully evidenced for `controller.py`: its explicit file load exposes the
-same `AINewsApp` object as the package export. The separate `services.py` file
-maintains its own registry, however, so the selected supported contract needs a
-focused P1 acceptance test and any minimal proxy/delegation correction required
-to make file-path behavior match the canonical package after configuration.
+same `AINewsApp` object as the package export. P1 completed the corresponding
+service acceptance seam at `5ea9da3`: `services.py` now re-exports canonical
+stable package proxies, and `tests/test_service_bindings.py` proves that a
+file-path-captured `fetch_headlines` dispatches after package configuration.
 
 No broad controller extraction or service rewrite is justified by this decision.

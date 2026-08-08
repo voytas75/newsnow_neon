@@ -53,14 +53,17 @@ and diagnostics.
   surfaces are retained as supported; the `services.py` file-path contract now
   needs a focused implementation/acceptance slice before it is claimed fully
   equivalent to the active package.
+- **P1 — service compatibility contract:** made explicit `services.py`
+  file-path loads re-export the canonical stable package proxies; focused
+  regression coverage proves dispatch after package configuration.
 
 ## Next ordered work
 
-1. **P1 — service compatibility contract:** prove and, if needed, make an
-   explicit `services.py` file-path load dispatch through the canonical package
-   proxies; add focused regression coverage without changing public names.
-2. **Stage 4 — bounded static-debt reduction:** work only in a proven seam;
-   never start with repo-wide Ruff or Pyright cleanup.
+1. **Stage 4 — bounded static-debt reduction:** select one proven seam and
+   reduce only its directly owned Ruff/Pyright debt; never start with repo-wide
+   cleanup.
+2. **Compatibility maintenance:** preserve the controller and services
+   compatibility tests when later seams touch package loading or startup.
 
 ## Explicitly deferred
 

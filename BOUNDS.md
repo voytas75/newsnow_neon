@@ -84,8 +84,7 @@ remains. Never hide debt through blanket ignores or broad `type: ignore`.
 
 ## Current immediate boundary
 
-P1 is a bounded service-compatibility contract slice. External compatibility
-surfaces are retained as supported; prove whether an explicit `services.py`
-file-path load dispatches through the canonical package proxies and make the
-smallest tested correction if it does not. Preserve public names and make no
-rename, deletion, or public-import change.
+Stage 4 is a bounded static-debt reduction slice. Choose one proven,
+behavior-owned seam and reduce only its directly owned Ruff/Pyright debt with
+focused regression coverage. Do not start repo-wide cleanup or alter the
+supported controller/services compatibility surfaces incidentally.

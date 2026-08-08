@@ -292,9 +292,24 @@ no internal normal-import consumer. `application.py` imports and instantiates
 the concrete controller submodules directly.
 
 **P0 decision:** retain `controller.py` and `services.py` as supported external
-compatibility surfaces. `controller.py` already has a focused identity test;
-P1 must prove and, if required, align the separate `services.py` file-path
-registry with canonical package-proxy behavior.
+compatibility surfaces. `controller.py` already has a focused identity test; P1
+subsequently aligned the separate `services.py` file-path registry with
+canonical package-proxy behavior.
+
+## P1 — service compatibility contract
+
+**Status:** completed locally at `5ea9da3`.
+
+**Changed:** replaced the separate `services.py` registry with a compatibility
+re-export of the canonical stable package proxies, without changing public
+service names.
+
+**Validation:** `tests/test_service_bindings.py` establishes RED for an
+explicit file-path module load, then proves its captured `fetch_headlines`
+dispatches after canonical package configuration. Focused pytest, scoped Ruff,
+scoped Pyright, bytecode compilation, and the full frozen pytest suite passed.
+
+**Next:** Stage 4 must select one behavior-owned static-debt seam.
 
 ## Security lock refresh
 
@@ -322,7 +337,6 @@ and Dependabot reports zero open alerts; all 16 prior alerts are fixed.
 
 ## Current recommended next execution slice
 
-**Begin P1 as a service-compatibility contract slice.** Prove whether an
-explicit `services.py` file-path load dispatches through canonical package
-proxies; add the smallest focused correction and regression test if it does
-not. Preserve public names and stop before any rename or deletion.
+**Begin Stage 4 as a bounded static-debt reduction slice.** Select one
+behavior-owned seam, establish its quality baseline, and reduce only directly
+owned Ruff/Pyright debt with focused regression coverage.

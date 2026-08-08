@@ -45,6 +45,6 @@ Largest current hotspots are intentionally not treated as a single cleanup:
   or repo-wide autofixes.
 - Treat the first future static-debt slice as a single behavior-owned seam with
   its own test and scoped quality target, not as a whole-repository campaign.
-- Security remote verification is complete. Stage 3C and the P0 policy decision
-  are complete locally; the next item is a bounded P1 service-compatibility
-  contract slice before broader static-debt work.
+- Security remote verification is complete. Stage 3C, the P0 policy decision,
+  and P1 service compatibility are complete locally; the next item is Stage 4
+  static-debt reduction in one behavior-owned seam.
