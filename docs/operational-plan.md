@@ -278,7 +278,22 @@ before startup configuration therefore dispatch correctly afterward.
 Ruff, scoped Pyright, and Python compilation all passed. Evidence is in
 [`service-proxy-binding.md`](service-proxy-binding.md).
 
-**Next:** Stage 3C is a read-only controller-surface inventory.
+**Next:** P0 is a controller compatibility decision based on the completed
+Stage 3C inventory.
+
+## Stage 3C — controller-surface inventory
+
+**Status:** completed read-only at `7c607df`; evidence is recorded in
+[`controller-surface-inventory.md`](controller-surface-inventory.md).
+
+**Confirmed:** normal dotted imports select `app/controller/__init__.py`; the
+parallel `app/controller.py` is an identity-preserving compatibility file with
+no internal normal-import consumer. `application.py` imports and instantiates
+the concrete controller submodules directly.
+
+**Outcome:** retain `controller.py` and `services.py` unchanged pending a P0
+owner decision on whether file-path imports/execution and historical direct
+submodule imports are supported external interfaces.
 
 ## Security lock refresh
 
@@ -306,6 +321,7 @@ and Dependabot reports zero open alerts; all 16 prior alerts are fixed.
 
 ## Current recommended next execution slice
 
-**Begin Stage 3C as a read-only controller-surface inventory.** Map imports and
-runtime bindings of `app/controller.py` and `app/controller/`; stop before any
-rename, deletion, compatibility change, or public-import change.
+**Begin P0 as a controller compatibility decision.** Use the completed Stage
+3C inventory to state whether file-path imports/execution and historical direct
+submodule imports are supported external interfaces; stop before any rename,
+deletion, compatibility change, or public-import change.

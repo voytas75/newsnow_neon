@@ -84,7 +84,8 @@ remains. Never hide debt through blanket ignores or broad `type: ignore`.
 
 ## Current immediate boundary
 
-Stage 3C is a read-only controller-surface inventory for `app/controller.py`
-and `app/controller/`. Map imports, runtime bindings, and compatibility
-consumers; make no rename, deletion, public-import, or behavioral change until
-an explicit compatibility decision is approved.
+P0 is a controller compatibility decision following the completed Stage 3C
+inventory in `docs/controller-surface-inventory.md`. Decide whether file-path
+imports/execution and historical direct submodule imports are supported
+external interfaces. Make no rename, deletion, public-import, or behavioral
+change until that explicit decision is approved.

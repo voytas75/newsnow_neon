@@ -45,5 +45,6 @@ Largest current hotspots are intentionally not treated as a single cleanup:
   or repo-wide autofixes.
 - Treat the first future static-debt slice as a single behavior-owned seam with
   its own test and scoped quality target, not as a whole-repository campaign.
-- Security remote verification is complete; Stage 3C may now begin as the next
-  read-only package-boundary inventory.
+- Security remote verification is complete. Stage 3C is now complete locally;
+  the next item is a P0 controller compatibility decision before any
+  package-boundary change.

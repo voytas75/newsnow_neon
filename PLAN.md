@@ -45,12 +45,16 @@ and diagnostics.
   documented in `docs/service-surface-inventory.md`.
 - **Stage 3B — stable service proxies:** fixed stale direct-import bindings with
   stable package proxies and offline regression coverage.
+- **Stage 3C — controller-surface inventory:** confirmed that normal imports
+  select `app/controller/`, while `app/controller.py` is an identity-preserving
+  compatibility file with no internal normal-import consumer. Evidence is in
+  `docs/controller-surface-inventory.md`.
 
 ## Next ordered work
 
-1. **Stage 3C — controller-surface decision:** map consumers of
-   `app/controller.py` and `app/controller/`, then propose a compatibility
-   decision backed by tests/search evidence.
+1. **P0 — controller compatibility decision:** decide whether file-path
+   imports/execution and historical direct submodule imports are supported
+   external interfaces before deprecating or removing compatibility files.
 2. **Stage 4 — bounded static-debt reduction:** work only in a proven seam;
    never start with repo-wide Ruff or Pyright cleanup.
 

@@ -75,7 +75,7 @@ python -m newsnow_neon
 
 ## Current focus
 - **Operational trust first** – startup/runtime failures should classify cleanly instead of failing with raw tracebacks.
-- **Readiness contract next** – `--check` now ships, but the active slice is making its verdict and exit semantics explicit for required prerequisites.
+- **Controller compatibility decision next** – Stage 3C confirmed that the controller package is the active internal surface; file-path compatibility remains an explicit decision gate before any removal.
 - **Bounded cleanup after trust** – deeper legacy, package-boundary, and typing work stays slice-based, not repo-wide.
 
 ## Configuration

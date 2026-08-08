@@ -95,9 +95,13 @@ These came out of the bounded repo review and should drive the next planning cyc
    - `newsnow_neon/app/controller.py` still exists beside `newsnow_neon/app/controller/`, but it is now only a compatibility alias instead of a second class surface.
    - The remaining cleanup question is whether these parallel shapes should keep existing at all.
 
-4. **Back-compat exports are not trustworthy yet**
-   - The compatibility export for `AINewsApp` in the controller package is not a reliable public surface.
-   - This is small in scope, but it signals that some package boundaries claim more stability than they currently provide.
+4. **Back-compat contract needs an explicit decision**
+   - Stage 3C confirmed that normal imports resolve to the controller package,
+     while `app/controller.py` is an identity-preserving compatibility file with
+     no internal normal-import consumer.
+   - External file-path and historical direct-submodule consumers remain
+     unobservable from this repository; retain compatibility files until an
+     explicit decision records whether those interfaces are supported.
 
 5. **Core product behavior has bounded offline coverage; end-to-end coverage remains incomplete**
    - Current tests cover startup/bootstrap/diagnostics plus fixture or mock-based:
@@ -240,48 +244,46 @@ Quality gates become meaningful instead of aspirational noise.
 ## Current recommended next slice
 
 ### Active next slice
-**Stage 3C — read-only controller-surface inventory**
+**P0 — controller compatibility decision**
 
 ### Why this is next
 - CI run [#31278999184](https://github.com/voytas75/newsnow_neon/actions/runs/31278999184) passed for the security lock refresh.
 - GitHub's Dependency Graph submitted `aiohttp 3.14.3` and `soupsieve 2.9.2`,
   and all 16 prior Dependabot alerts are now fixed.
-- The next parallel structural ambiguity is the coexistence of
-  `app/controller.py` and `app/controller/`.
+- Stage 3C established that the package is the active internal controller
+  surface and recorded the remaining external-compatibility unknown in
+  `controller-surface-inventory.md`.
 
 ## Implementation focus for the active next slice
 
 ### Goal
-Establish evidence for the active controller surface before changing package
-boundaries or compatibility behavior.
+Decide whether file-path imports/execution and historical direct submodule
+imports are supported external interfaces before changing compatibility files.
 
 ### Scope
 The next slice should:
-- inventory imports, dynamic imports, runtime bindings, and tests involving
-  `newsnow_neon/app/controller.py` and `newsnow_neon/app/controller/`;
-- identify which path is imported at runtime and which compatibility consumers
-  must be preserved;
-- produce an evidence-backed keep/replace/deprecate recommendation;
-- remain read-only: do not rename, delete, or change public imports.
+- record the owner decision against the Stage 3C evidence;
+- state whether compatibility files remain supported, deprecated, or eligible
+  for a separately approved removal slice;
+- remain decision-only: do not rename, delete, or change public imports.
 
 ### Non-goals
 Do not in this slice:
+- perform a rename, deletion, or public-import change,
 - redesign the full legacy/runtime boundary,
 - broaden into repo-wide typed-seam cleanup,
-- do repo-wide lint/type cleanup,
-- reopen startup hardening unless a new regression appears.
+- do repo-wide lint/type cleanup.
 
 ### Preferred execution order
-1. enumerate both controller surfaces and their public exports
-2. search repository imports, dynamic import strings, and runtime binding calls
-3. inspect tests and entrypoints that select or rebind controllers
-4. record evidence in a compact inventory without changing source
-5. propose the smallest compatibility decision as a separate approval gate
+1. review `controller-surface-inventory.md`
+2. choose the external compatibility policy
+3. record the decision in the SSOT and bounds
+4. propose any behavior change as a separate approved slice
 
 ### Acceptance criteria
-- inventory names the actual module/package exports and all repository consumers
-- runtime selection/binding evidence is distinguished from static imports
-- unresolved external compatibility assumptions are marked explicitly
+- the supported external compatibility contract is explicit
+- unresolved external adoption is either accepted as a retained compatibility
+  boundary or deliberately excluded by owner decision
 - no source, public-import, or package-boundary change is made
 
 ## What should not drive the roadmap now
@@ -330,7 +332,8 @@ Current sync status:
 - full local `pytest -q` is green
 - missing Tk and missing display now surface as bounded CLI-facing outcomes instead of raw startup tracebacks
 - fixture/mock coverage now protects parsing, settings, cache/history, and summary-provider fallback seams
-- the next bounded task is Node-runtime maintenance for GitHub Actions, followed by package-surface inventory
+- the next bounded task is the P0 controller compatibility decision, based on
+  the completed package-surface inventory
 
 ### Do weryfikacji
 - whether Redis/LLM optional reporting belongs in a future extension of the readiness contract
