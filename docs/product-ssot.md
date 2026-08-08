@@ -237,27 +237,29 @@ Quality gates become meaningful instead of aspirational noise.
 ## Current recommended next slice
 
 ### Active next slice
-**Summary/provider fallback contract smoke slice**
+**Cumulative Stage 2 CI verification, then service-surface inventory**
 
 ### Why this is next
-- Settings normalization and malformed-file fallback are covered.
-- Cache/history payload behavior is covered offline with an in-memory Redis
-  subset, including zero-limit, horizon, limit, and malformed-data boundaries.
-- The remaining unprotected operator workflow seam is article/provider summary
-  fallback.
+- Parser, settings, cache/history, and summary/provider fallback seams now have
+  offline regression coverage.
+- The next unresolved risk is external verification: the latest local commits
+  have not yet exercised the GitHub pytest gate.
+- Package-boundary cleanup should start only after that cumulative baseline is
+  remotely confirmed.
 
 ## Implementation focus for the active next slice
 
 ### Goal
-Extend confidence from cache/history into summary resolution without calling a
-live article source or AI provider.
+Confirm the cumulative Stage 2 behavior on GitHub before changing package
+boundaries; then establish a read-only inventory of service-surface consumers.
 
 ### Scope
 The next slice should:
-- test article-fetch failure fallback,
-- test empty/failed provider response fallback,
-- test cache-hit behavior where applicable,
-- preserve parser, settings, and cache/history behavior.
+- push only with explicit user direction and verify the resulting GitHub pytest
+  run for the cumulative local HEAD;
+- inventory imports and runtime bindings for `app/services.py` and
+  `app/services/` without deleting either surface;
+- preserve all Stage 2 regression tests and import-safe startup behavior.
 
 ### Non-goals
 Do not in this slice:

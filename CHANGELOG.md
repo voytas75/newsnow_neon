@@ -13,6 +13,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), and this 
 ### Added
 - Added canonical product SSOT at `docs/product-ssot.md` for NewsNowNeon operational and quality hardening direction.
 - Added `tests/test_newsnow_parsing.py` and a representative HTML fixture to protect section parsing, metadata extraction, deduplication, cutoff handling, limits, and malformed-input behavior.
+- Added `tests/test_summary_fallback.py` for cached summaries plus article-fetch and provider fallback contracts.
+- Hardened summary resolution against non-string provider output and unexpected provider exceptions.
 - Added `tests/test_cache_history.py` with fake-Redis coverage for cache payloads and historical snapshot boundaries.
 - Made `load_historical_snapshots(limit=0)` return without scanning or reading Redis.
 - Added `tests/test_settings_store.py` for persisted refresh-interval normalization and malformed JSON fallback.

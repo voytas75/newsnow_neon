@@ -106,8 +106,7 @@ LiteLLM, or live NewsNow access.
 
 ### Slice 2B — settings/cache/fallback contracts
 
-**Status:** settings and cache/history sub-slices completed locally; summary
-fallback remains pending.
+**Status:** completed locally; remote CI verification pending.
 
 #### Slice 2B.1 — settings load normalization
 
@@ -147,8 +146,28 @@ uv run --extra dev --frozen pytest -q
 Ruff diagnostics. They are outside this behavior slice; the new test module is
 Ruff-clean and the cache seam is Pyright-clean.
 
-**Next:** execute the summary/provider fallback test seam in a separate bounded
-step.
+#### Slice 2B.3 — summary/provider fallback contracts
+
+**Changed:**
+- added `tests/test_summary_fallback.py` with fully mocked cache, article-fetch,
+  and provider seams;
+- covered primary-URL cache hit, article-fetch failure, missing provider output,
+  and unexpected provider exceptions;
+- hardened `resolve_article_summary` so a non-string/empty provider result and an
+  unexpected provider exception return a usable fallback instead of raising into
+  the operator UI.
+
+**Validation:**
+```bash
+uv run --extra dev --frozen pytest tests/test_summary_fallback.py -q
+uv run --extra dev --frozen ruff check tests/test_summary_fallback.py
+uv run --extra dev --frozen pyright tests/test_summary_fallback.py
+uv run --extra dev --frozen pytest -q
+```
+
+**Known baseline:** `newsnow_neon/legacy_app.py` remains a large legacy module
+with repository-wide static debt. The new test module is Ruff- and Pyright-clean;
+this behavior slice did not undertake monolith cleanup.
 
 ## Stage 3 — package-boundary cleanup
 
@@ -220,6 +239,7 @@ uv run newsnow-neon --check
 
 ## Current recommended next execution slice
 
-**Execute the final 2B sub-slice: summary/provider fallback contracts.** Keep
-provider calls mocked; cover article-fetch and empty-summary failure paths while
-preserving parser, settings, and cache/history tests.
+**Push and verify the cumulative Stage 2 slices before starting package-boundary
+cleanup.** Confirm GitHub CI for the parser, settings, cache/history, and
+summary-fallback commits; then begin Stage 3A with a read-only import-consumer
+inventory for the service surface.

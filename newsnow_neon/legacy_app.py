@@ -396,8 +396,21 @@ def resolve_article_summary(headline: Headline) -> SummaryResolution:
             source_url=article.url,
         )
 
-    summary_text = summarize_article(headline.title, article.text, timeout=SUMMARY_TIMEOUT)
-    if summary_text.strip():
+    try:
+        summary_text = summarize_article(
+            headline.title, article.text, timeout=SUMMARY_TIMEOUT
+        )
+    except Exception as exc:
+        logger.warning("Article summary generation failed for %s: %s", article.url, exc)
+        fallback = _fallback_summary_from_headline(headline, article.text)
+        return SummaryResolution(
+            summary=fallback,
+            article_text=article.text,
+            from_cache=False,
+            source_url=article.url,
+            issue="summary_generation_failed",
+        )
+    if isinstance(summary_text, str) and summary_text.strip():
         store_cached_article_summary(headline.url, article.url, headline.title, summary_text)
         return SummaryResolution(
             summary=summary_text,
