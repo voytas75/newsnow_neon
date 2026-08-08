@@ -82,7 +82,7 @@ uv run --extra dev --frozen pytest -q
 
 ### Slice 1C — GitHub Actions Node 24 runtime maintenance
 
-**Status:** validated locally; remote CI verification pending.
+**Status:** completed and verified remotely by CI run [#31274048561](https://github.com/voytas75/newsnow_neon/actions/runs/31274048561).
 
 **Changed:**
 - upgraded pinned `actions/checkout` from v4 to v5;
@@ -102,8 +102,7 @@ uv run --extra dev --frozen pytest -q
 # and exact gate commands
 ```
 
-**Done condition:** the pushed SHA completes CI successfully and the completed
-run has no `Node.js 20 is deprecated` annotation.
+**Remote verification:** CI run [#31274048561](https://github.com/voytas75/newsnow_neon/actions/runs/31274048561) completed successfully; its pytest check run reported zero annotations, and its logs contain no `Node.js 20 is deprecated` message.
 
 ## Stage 2 — product behavior confidence
 
@@ -255,8 +254,6 @@ uv run newsnow-neon --check
 
 ## Current doubts / to verify
 
-- Which pinned Action revisions provide the supported Node 24 runtime while
-  preserving the current frozen pytest workflow contract.
 - Whether Python 3.11 is the right single CI runtime versus adding a later
   compatibility matrix.
 - How the 16 open Dependabot alerts should be prioritized after CI runtime
@@ -265,7 +262,6 @@ uv run newsnow-neon --check
 
 ## Current recommended next execution slice
 
-**Commit the validated Node 24 Action-runtime update, then push only when
-directed and inspect CI for the exact SHA.** The required remote evidence is a
-successful pytest job with no `Node.js 20 is deprecated` annotation before
-Stage 3A inventory.
+**Begin Stage 3A as a read-only service-surface inventory.** Map imports and
+runtime bindings of `app/services.py` and `app/services/`; stop before any
+rename, deletion, compatibility change, or public-import change.

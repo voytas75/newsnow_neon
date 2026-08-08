@@ -240,28 +240,29 @@ Quality gates become meaningful instead of aspirational noise.
 ## Current recommended next slice
 
 ### Active next slice
-**Remote CI verification of the Node-runtime update, then service-surface inventory**
+**Stage 3A — read-only service-surface inventory**
 
 ### Why this is next
-- The CI workflow has been locally updated to Action revisions whose official
-  `action.yml` files declare `runs.using: node24`.
-- The frozen full pytest suite and local workflow-shape assertions passed.
-- Only a completed GitHub run for the new SHA can confirm that the prior Node 20
-  deprecation annotation is absent.
+- CI run [#31274048561](https://github.com/voytas75/newsnow_neon/actions/runs/31274048561) passed for the Node 24 Action refresh.
+- The pytest check run has zero annotations, and its logs no longer contain the
+  Node 20 deprecation message.
+- The remaining highest-risk structural uncertainty is the coexistence of
+  `app/services.py` and `app/services/`.
 
 ## Implementation focus for the active next slice
 
 ### Goal
-Push the locally validated Action-runtime update only when directed, confirm a
-successful GitHub CI run without the Node 20 annotation, then inventory
-service-surface consumers.
+Establish evidence for the active service surface before changing package
+boundaries or compatibility behavior.
 
 ### Scope
 The next slice should:
-- fetch and push the current local commits only with explicit user direction;
-- verify the CI run for the pushed SHA, including its completed logs/annotations;
-- begin read-only imports and runtime-binding inventory for `app/services.py` and
-  `app/services/` only after that remote result is green.
+- inventory imports, dynamic imports, runtime bindings, and tests involving
+  `newsnow_neon/app/services.py` and `newsnow_neon/app/services/`;
+- identify which path is imported at runtime and which compatibility consumers
+  must be preserved;
+- produce an evidence-backed keep/replace/deprecate recommendation;
+- remain read-only: do not rename, delete, or change public imports.
 
 ### Non-goals
 Do not in this slice:
@@ -271,19 +272,17 @@ Do not in this slice:
 - reopen startup hardening unless a new regression appears.
 
 ### Preferred execution order
-1. verify the maintained upstream SHA for each action used by the CI workflow
-2. patch only `.github/workflows/ci.yml` and preserve the workflow contract
-3. validate YAML plus frozen local pytest
-4. make a scoped local commit
-5. push only when directed and verify the GitHub run
-6. begin the read-only service-surface inventory after CI is green
+1. enumerate both service surfaces and their public exports
+2. search repository imports, dynamic import strings, and runtime binding calls
+3. inspect tests and entrypoints that select or rebind services
+4. record evidence in a compact inventory without changing source
+5. propose the smallest compatibility decision as a separate approval gate
 
 ### Acceptance criteria
-- only verified Action revisions change in the CI workflow
-- workflow permissions, Python version, frozen dependency setup, and pytest-only
-  gate remain unchanged
-- the resulting GitHub Actions run is successful
-- no package-boundary edit starts before the remote CI verification
+- inventory names the actual module/package exports and all repository consumers
+- runtime selection/binding evidence is distinguished from static imports
+- unresolved external compatibility assumptions are marked explicitly
+- no source, public-import, or package-boundary change is made
 
 ## What should not drive the roadmap now
 
