@@ -240,30 +240,28 @@ Quality gates become meaningful instead of aspirational noise.
 ## Current recommended next slice
 
 ### Active next slice
-**GitHub Actions Node-runtime maintenance, then service-surface inventory**
+**Remote CI verification of the Node-runtime update, then service-surface inventory**
 
 ### Why this is next
-- Stages 1 and 2 are pushed and GitHub CI run [#31273084062](https://github.com/voytas75/newsnow_neon/actions/runs/31273084062) passed.
-- GitHub warned that the pinned Actions target deprecated Node 20 and were forced
-  to Node 24 during that successful run.
-- Package-boundary cleanup should follow only after the CI runtime update is
-  verified remotely.
+- The CI workflow has been locally updated to Action revisions whose official
+  `action.yml` files declare `runs.using: node24`.
+- The frozen full pytest suite and local workflow-shape assertions passed.
+- Only a completed GitHub run for the new SHA can confirm that the prior Node 20
+  deprecation annotation is absent.
 
 ## Implementation focus for the active next slice
 
 ### Goal
-Refresh the pinned GitHub Actions to supported Node 24-compatible revisions
-without changing the CI contract; then inventory service-surface consumers.
+Push the locally validated Action-runtime update only when directed, confirm a
+successful GitHub CI run without the Node 20 annotation, then inventory
+service-surface consumers.
 
 ### Scope
 The next slice should:
-- update only the pinned revisions used by `.github/workflows/ci.yml` after
-  verifying upstream release references;
-- preserve `contents: read`, Python 3.11, frozen `uv` setup, and pytest as the
-  only blocking job;
-- push only with explicit user direction and verify the resulting GitHub run;
-- then inventory imports and runtime bindings for `app/services.py` and
-  `app/services/` without deleting either surface.
+- fetch and push the current local commits only with explicit user direction;
+- verify the CI run for the pushed SHA, including its completed logs/annotations;
+- begin read-only imports and runtime-binding inventory for `app/services.py` and
+  `app/services/` only after that remote result is green.
 
 ### Non-goals
 Do not in this slice:

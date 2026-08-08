@@ -80,6 +80,31 @@ uv run --extra dev --frozen pytest -q
 
 **Done condition:** the Actions run for the new commit is completed/success.
 
+### Slice 1C — GitHub Actions Node 24 runtime maintenance
+
+**Status:** validated locally; remote CI verification pending.
+
+**Changed:**
+- upgraded pinned `actions/checkout` from v4 to v5;
+- upgraded pinned `actions/setup-python` from v5 to v6;
+- upgraded pinned `astral-sh/setup-uv` from v5 to v9.0.0;
+- resolved all three pins from official GitHub tags and inspected each selected
+  `action.yml`: each declares `runs.using: node24`.
+
+**Preserved:** `contents: read`, Python 3.11, `uv` 0.8.23, frozen dependency
+setup, existing triggers, and the pytest-only CI gate.
+
+**Validation:**
+```bash
+uv sync --extra dev --frozen
+uv run --extra dev --frozen pytest -q
+# local YAML parse and assertions for triggers, permissions, SHA pins, inputs,
+# and exact gate commands
+```
+
+**Done condition:** the pushed SHA completes CI successfully and the completed
+run has no `Node.js 20 is deprecated` annotation.
+
 ## Stage 2 — product behavior confidence
 
 ### Slice 2A — NewsNow parsing fixture
@@ -240,7 +265,7 @@ uv run newsnow-neon --check
 
 ## Current recommended next execution slice
 
-**After committing the governance-contract refresh, update and verify the pinned
-GitHub Actions revisions for their Node 24 runtime.** Preserve the workflow's
-permissions, Python 3.11, frozen `uv` setup, and pytest-only gate; then confirm
-the resulting remote CI run before Stage 3A inventory.
+**Commit the validated Node 24 Action-runtime update, then push only when
+directed and inspect CI for the exact SHA.** The required remote evidence is a
+successful pytest job with no `Node.js 20 is deprecated` annotation before
+Stage 3A inventory.

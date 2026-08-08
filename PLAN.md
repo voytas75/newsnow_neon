@@ -40,8 +40,9 @@ and diagnostics.
 
 ## Next ordered work
 
-1. **Actions runtime maintenance — bounded:** update pinned GitHub Actions to
-   maintained Node 24-compatible revisions, then verify the remote pytest run.
+1. **Actions runtime maintenance — remote verification pending:** pinned GitHub
+   Actions are updated locally to Node 24-compatible revisions; push and verify
+   the resulting remote pytest run before moving on.
 2. **Stage 3A — service-surface inventory:** map imports and runtime bindings of
    `newsnow_neon/app/services.py` and `newsnow_neon/app/services/`; make no
    deletion or rename in the inventory slice.
