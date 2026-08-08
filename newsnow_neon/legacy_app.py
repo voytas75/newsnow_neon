@@ -3011,7 +3011,12 @@ def _fetch_section_headlines(
     def try_add(anchor: Tag) -> None:
         title = anchor.get_text(strip=True)
         href = _normalize_href(anchor.get("href"))
-        if not title or not href or href.startswith("#"):
+        if (
+            not title
+            or not href
+            or href.startswith("#")
+            or href.lower().startswith(("javascript:", "data:"))
+        ):
             return
         full_url = urljoin(section.url, href)
         key = (title.lower(), full_url)

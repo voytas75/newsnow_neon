@@ -237,27 +237,28 @@ Quality gates become meaningful instead of aspirational noise.
 ## Current recommended next slice
 
 ### Active next slice
-**Core product behavior smoke slice**
+**Settings/cache/fallback contract smoke slice**
 
 ### Why this is next
-- The first explicit legacy-binding step is already shipped.
-- The controller package now resolves exports lazily, and `app/controller.py` no longer creates a second `AINewsApp` subclass surface.
-- The `app.services` package is now a real importable surface instead of dead scaffolding.
-- The remaining misleading file/package splits are now mostly a question of eventual removal/deprecation rather than contradictory behavior.
-- Startup import failures now classify missing non-Tk runtime dependencies as bounded operator-facing errors instead of leaking raw `ModuleNotFoundError` from legacy bootstrap imports.
-- The highest-value remaining risk is no longer front-door instability, but weak protection of scraping/settings/cache/summary workflows.
+- Fixture-based parsing coverage is now implemented locally for metadata,
+  deduplication, cutoff handling, limits, and malformed markup.
+- The parser slice remains offline and does not depend on GUI, Redis, LiteLLM, or
+  live NewsNow access.
+- The highest-value remaining product-confidence gap is settings persistence,
+  cache/history behavior, and summary/provider fallback.
 
 ## Implementation focus for the active next slice
 
 ### Goal
-Extend confidence from startup/readiness seams into the real operator workflow without broadening scope into repo-wide cleanup.
+Extend confidence from parsing into the remaining operator workflow seams
+without broadening scope into repo-wide cleanup.
 
 ### Scope
 The next slice should:
-- add bounded tests for scraping/parsing behavior,
 - add bounded tests for settings persistence,
-- add bounded tests for cache/history or summary fallback behavior,
-- preserve import-safe startup and `--check` behavior.
+- add bounded tests for cache/history behavior,
+- add bounded tests for summary/provider fallback,
+- preserve the new parser fixtures and import-safe startup behavior.
 
 ### Non-goals
 Do not in this slice:

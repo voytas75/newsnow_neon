@@ -84,19 +84,25 @@ uv run --extra dev --frozen pytest -q
 
 ### Slice 2A — NewsNow parsing fixture
 
-**Status:** next recommended slice.
+**Status:** completed locally; remote CI verification pending.
 
-**Scope:** add a small HTML fixture and tests for section parsing, metadata,
-deduplication, cutoff handling, and malformed/empty input. Avoid live network
-calls.
+**Changed:**
+- added `tests/fixtures/newsnow_section.html` with representative legacy and
+  article-card markup;
+- added `tests/test_newsnow_parsing.py` covering metadata, deduplication,
+  cutoff handling, item limits, and empty/malformed markup;
+- hardened the active parser path to ignore `javascript:` and `data:` hrefs.
 
-**Likely files:**
-- `tests/fixtures/newsnow_*.html`
-- `tests/test_news_service.py` or a focused parser test module
-- `newsnow_neon/legacy_app.py` only if a bounded behavior fix is required
+**Validation:**
+```bash
+uv run --extra dev --frozen pytest tests/test_newsnow_parsing.py -q
+uv run --extra dev --frozen ruff check tests/test_newsnow_parsing.py
+uv run --extra dev --frozen pyright tests/test_newsnow_parsing.py
+uv run --extra dev --frozen pytest -q
+```
 
-**Done condition:** core headline parsing is protected without requiring GUI,
-Redis, LiteLLM, or live NewsNow access.
+**Done condition:** core section parsing is protected without GUI, Redis,
+LiteLLM, or live NewsNow access.
 
 ### Slice 2B — settings/cache/fallback contracts
 
@@ -176,6 +182,6 @@ uv run newsnow-neon --check
 
 ## Current recommended next execution slice
 
-**Push and verify the isolated operational-baseline slice.** Confirm the new
-GitHub `CI` run for the commit containing the lockfile, toolchain policy, docs,
-and minimal workflow. After that, execute Slice 2A (NewsNow parsing fixture).
+**Execute Slice 2B: settings/cache/fallback contracts.** Start with the
+smallest seam among settings round-trip, cache payload handling, and summary
+fallback. Keep the slice offline and preserve the green parser tests.

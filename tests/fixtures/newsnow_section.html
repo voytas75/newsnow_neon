@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <body>
+    <main id="newsfeed">
+      <article>
+        <a class="newsfeed__title-link" href="/story/alpha">
+          Alpha headline contains enough words
+        </a>
+        <span class="meta">
+          <span class="src">Example Wire</span>
+          <span class="time" data-time="0">just now</span>
+        </span>
+      </article>
+
+      <div class="article-card__content-wrapper">
+        <a class="nn-feed-item__title-link" href="https://publisher.example/story/beta">
+          Beta headline also has enough words
+        </a>
+        <span class="article-card__lockup">
+          <span class="article-publisher__name">Publisher Example</span>
+          <span class="article-publisher__timestamp" data-timestamp="1">one minute ago</span>
+        </span>
+      </div>
+
+      <article>
+        <a class="newsfeed__title-link" href="/story/alpha">
+          Alpha headline contains enough words
+        </a>
+      </article>
+
+      <article>
+        <a class="newsfeed__title-link" href="javascript:void(0)">
+          Invalid JavaScript headline must not appear
+        </a>
+      </article>
+
+      <article>
+        <a class="newsfeed__title-link" href="/story/short">Too short</a>
+      </article>
+
+      <h2>More stories</h2>
+
+      <article>
+        <a class="newsfeed__title-link" href="/story/after-cutoff">
+          Headline after cutoff must not appear
+        </a>
+      </article>
+    </main>
+  </body>
+</html>

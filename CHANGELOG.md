@@ -12,6 +12,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), and this 
 
 ### Added
 - Added canonical product SSOT at `docs/product-ssot.md` for NewsNowNeon operational and quality hardening direction.
+- Added `tests/test_newsnow_parsing.py` and a representative HTML fixture to protect section parsing, metadata extraction, deduplication, cutoff handling, limits, and malformed-input behavior.
+- Hardened the active parser path to ignore non-article `javascript:` and `data:` hrefs.
 - Added active execution plan at `docs/operational-plan.md` for bounded operational cleanup, CI, and follow-up slices.
 - Added minimal GitHub Actions workflow for the frozen pytest gate.
 - Added tracked `uv.lock` for reproducible development and CI installs.
