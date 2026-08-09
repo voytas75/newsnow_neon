@@ -1,6 +1,6 @@
 # NewsNow Neon — Operational Plan
 
-**Status:** active — Stage 4W summary-fallback real-Tk acceptance and resolver-binding repair verified locally with controlled offline evidence; Stage 1 and Stage 2 verified remotely; governance controls refreshed in this slice.
+**Status:** active — Stage 4X highlight real-Tk fan-out acceptance and stale-ticker repair verified locally with controlled offline evidence; Stage 1 and Stage 2 verified remotely; governance controls refreshed in this slice.
 **Updated:** 2026-08-09
 **Canonical product direction:** [`product-ssot.md`](product-ssot.md)
 
@@ -850,6 +850,36 @@ introduced at the changed proxy call.
 **Evidence boundary:** this proves generated selection, the selected-row summary
 path, Toplevel construction, and controlled fallback rendering. It does not prove
 physical double-click input, live NewsNow, Redis, provider, or user-settings
+behavior.
+
+**Next boundary:** select a new, behavior-owned GUI workflow before assigning
+another numbered slice.
+
+## Stage 4X — highlight real-Tk fan-out
+
+**Status:** completed locally; repaired one production fan-out defect.
+
+**RED:** a real `Apply` persisted `AI:#123456` and recolored the list, but both
+tickers retained prior segment colors (`#FFD54F` and `#FFD60A`).
+
+**Changed:** `HighlightController.refresh_views_for_update()` now calls the
+existing renderer with `update_tickers=True`, so the same rule application
+recreates ticker headline segments with current highlight colors.
+
+**Acceptance:** a temporary-store offline app applies `AI:#123456` through the
+actual entry/button, then verifies the canonical stored value, list color tag,
+both ticker segment colors, enabled `Keyword Heatmap` button, and a heatmap data
+set containing the expected `AI` match. No network, Redis, provider, or user
+settings are used.
+
+**Validation:** expanded real-Tk smoke plus the `highlight_controller` and GUI-test
+Ruff/Pyright scopes are green. `tests/test_settings_behavior.py` retains 59 Ruff
+and 7 Pyright legacy diagnostics, none at the updated render-call expectation;
+full frozen pytest, `uv lock --check`, and `newsnow-neon --check` pass.
+
+**Evidence boundary:** this proves widget commands, persistence, list/ticker
+fan-out, and heatmap rendering with deterministic offline data. It does not prove
+physical pointer/keyboard input, live NewsNow, Redis, provider, or user-settings
 behavior.
 
 **Next boundary:** select a new, behavior-owned GUI workflow before assigning

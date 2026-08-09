@@ -84,11 +84,11 @@ remains. Never hide debt through blanket ignores or broad `type: ignore`.
 
 ## Current immediate boundary
 
-Stage 4W is complete: a controlled real-Tk subprocess selected an offline
-headline and opened its summary through the normal selected-row path. The app now
-uses the configured summary-service proxy, and the summary Toplevel rendered the
-controlled fallback text and status; no user settings, live services, providers,
-or Redis were used. Any next GUI work must be separately selected as one bounded,
-behavior-owned workflow; do not reopen native chooser acceptance or touch user
-settings, live services, providers, compatibility surfaces, or framework design
-without a new scope decision.
+Stage 4X is complete: a controlled real-Tk subprocess applied a custom highlight
+through the normal Apply command, persisted it in a temporary store, and verified
+matching list/ticker segments plus the keyword heatmap. Refreshing highlight rules
+now also refreshes ticker items, fixing stale ticker colors; no user settings, live
+services, providers, or Redis were used. Any next GUI work must be separately
+selected as one bounded, behavior-owned workflow; do not reopen native chooser
+acceptance or touch user settings, live services, providers, compatibility surfaces,
+or framework design without a new scope decision.

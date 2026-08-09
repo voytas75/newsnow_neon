@@ -360,7 +360,7 @@ def test_update_keywords_setting_persists_canonical_string_and_refreshes_views(h
     assert app.settings["highlight_keywords"] == "ai:#ff0; ml:#00f"
     assert highlight_patches[-1] == {"ai": "#ff0", "ml": "#00f"}
     assert app.saved_calls == 1
-    assert app.render_calls == [(False, False, False)]
+    assert app.render_calls == [(False, False, True)]
     assert app.status_messages[-1] == "Highlight keywords updated from settings."
     assert app.status_summary_updates == 1
     assert app.heatmap_btn.state_history[-1] == "normal"

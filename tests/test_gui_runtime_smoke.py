@@ -685,7 +685,8 @@ from newsnow_neon.ui.windows.summary_window import SummaryWindow
 
 app = AINewsApp()
 succeeded = False
-deadline = time.monotonic() + 3
+initial_deadline = time.monotonic() + 5
+summary_deadline = 0.0
 
 
 def summary_window():
@@ -707,14 +708,14 @@ def wait_for_summary():
         app.update_idletasks()
         window = summary_window()
         if window is None:
-            if time.monotonic() < deadline:
+            if time.monotonic() < summary_deadline:
                 app.after(25, wait_for_summary)
                 return
             raise AssertionError("summary window was not opened")
 
         summary_text = window.text_widget.get("1.0", "end-1c")
         if "Fallback summary from controlled offline resolver." not in summary_text:
-            if time.monotonic() < deadline:
+            if time.monotonic() < summary_deadline:
                 app.after(25, wait_for_summary)
                 return
             raise AssertionError(f"summary text not rendered: {summary_text!r}")
@@ -733,10 +734,11 @@ def wait_for_summary():
 
 
 def open_selected_summary():
+    global summary_deadline
     try:
         app.update_idletasks()
         if headline.title not in app.listbox.get("1.0", "end-1c"):
-            if time.monotonic() < deadline:
+            if time.monotonic() < initial_deadline:
                 app.after(25, open_selected_summary)
                 return
             raise AssertionError("headline row was not rendered")
@@ -744,7 +746,7 @@ def open_selected_summary():
         line = next(iter(app._listbox_line_to_headline))
         bbox = app.listbox.bbox(f"{line}.0")
         if not bbox:
-            if time.monotonic() < deadline:
+            if time.monotonic() < initial_deadline:
                 app.after(25, open_selected_summary)
                 return
             raise AssertionError("headline row has no geometry")
@@ -753,6 +755,7 @@ def open_selected_summary():
             "<Button-1>", x=x_coord + 1, y=y_coord + max(1, height // 2)
         )
         assert app._selected_line == line
+        summary_deadline = time.monotonic() + 5
         app.open_selected_headline(None)
         app.after(0, wait_for_summary)
     except BaseException as error:
@@ -773,12 +776,177 @@ raise SystemExit(0 if succeeded else 1)
         cwd=Path(__file__).resolve().parents[1],
         env=environment,
         text=True,
-        timeout=10,
+        timeout=15,
         check=False,
     )
 
     assert result.returncode == 0, result.stderr
     assert "summary_selection=ok" in result.stdout
+
+
+def test_real_tk_highlight_apply_persists_and_updates_all_rendered_views(
+    tmp_path: Path,
+) -> None:
+    """Apply a real highlight rule and verify list, tickers, store, and heatmap."""
+    settings_path = tmp_path / "highlight-settings.json"
+    script = r'''
+import json
+import os
+import sys
+import time
+from pathlib import Path
+
+settings_path = Path(sys.argv[1])
+os.environ["NEWS_APP_SETTINGS"] = str(settings_path)
+os.environ["REDIS_URL"] = ""
+
+from newsnow_neon.app import services
+from newsnow_neon.models import Headline
+
+headline = Headline(
+    title="AI platform launch",
+    url="https://example.test/ai-platform-launch",
+    section="Technology",
+)
+
+services.configure_app_services(
+    fetch_headlines=lambda **_kwargs: ([headline], False, None),
+    build_ticker_text=lambda entries: " | ".join(item.title for item in entries),
+    resolve_article_summary=lambda _headline: None,
+    persist_headlines_with_ticker=lambda *_args, **_kwargs: None,
+    collect_redis_statistics=lambda: None,
+    clear_cached_headlines=lambda: (True, "offline highlights: cache unavailable"),
+    load_historical_snapshots=lambda *_args, **_kwargs: [],
+)
+
+from newsnow_neon.application import AINewsApp
+from newsnow_neon.ui.windows.keyword_heatmap_window import KeywordHeatmapWindow
+
+app = AINewsApp()
+succeeded = False
+deadline = time.monotonic() + 5
+expected_color = "#123456"
+
+
+def stored_keywords():
+    with settings_path.open(encoding="utf-8") as handle:
+        return json.load(handle)["highlight_keywords"]
+
+
+def ticker_colors(ticker):
+    return [
+        color
+        for group_tag in ticker.headline_order
+        for color in ticker._headline_groups[group_tag]["base_colors"].values()
+    ]
+
+
+def highlight_apply_button():
+    for widget in app.highlight_entry.master.winfo_children():
+        if widget.winfo_class() == "Button" and widget.cget("text") == "Apply":
+            return widget
+    raise AssertionError("highlight Apply button not found")
+
+
+def finish_error(error):
+    print(f"highlight_flow_error={error!r}", file=sys.stderr)
+    app.destroy()
+    raise SystemExit(1)
+
+
+def wait_for_heatmap():
+    global succeeded
+    try:
+        app.update_idletasks()
+        window = app._heatmap_window
+        if window is None or not isinstance(window, KeywordHeatmapWindow):
+            if time.monotonic() < deadline:
+                app.after(25, wait_for_heatmap)
+                return
+            raise AssertionError("keyword heatmap window was not opened")
+        dataset = window._data
+        if dataset is None:
+            if time.monotonic() < deadline:
+                app.after(25, wait_for_heatmap)
+                return
+            raise AssertionError("keyword heatmap data was not rendered")
+        assert dataset.keywords == ["AI"]
+        assert dataset.keyword_colors == {"AI": expected_color}
+        assert dataset.counts["Technology"] == {"AI": 1}
+        succeeded = True
+        print("highlight_flow=ok")
+        window.destroy()
+        app.destroy()
+    except BaseException as error:
+        finish_error(error)
+
+
+def verify_highlighted_views():
+    try:
+        app.update_idletasks()
+        if app.highlight_keywords_var.get() != f"AI:{expected_color}":
+            if time.monotonic() < deadline:
+                app.after(25, verify_highlighted_views)
+                return
+            raise AssertionError("highlight setting was not normalized")
+        if stored_keywords() != f"AI:{expected_color}":
+            if time.monotonic() < deadline:
+                app.after(25, verify_highlighted_views)
+                return
+            raise AssertionError("highlight setting was not persisted")
+
+        line = next(iter(app._listbox_line_to_headline))
+        row_tag = app._line_to_row_tag[line]
+        row_tags = app.listbox.tag_names(f"{line}.0")
+        color_tags = [tag for tag in row_tags if tag.startswith("color_")]
+        assert color_tags == [app._listbox_color_tags[expected_color]], row_tags
+        assert app.listbox.tag_cget(color_tags[0], "foreground") == expected_color
+        for ticker in (app.ticker, app.full_ticker):
+            colors = ticker_colors(ticker)
+            assert expected_color in colors, colors
+        assert app.heatmap_btn.cget("state") == "normal"
+        app.heatmap_btn.invoke()
+        app.after(0, wait_for_heatmap)
+    except BaseException as error:
+        finish_error(error)
+
+
+def apply_highlight():
+    try:
+        app.update_idletasks()
+        if headline.title not in app.listbox.get("1.0", "end-1c"):
+            if time.monotonic() < deadline:
+                app.after(25, apply_highlight)
+                return
+            raise AssertionError("headline was not rendered")
+        app.highlight_entry.delete(0, "end")
+        app.highlight_entry.insert(0, f"AI:{expected_color}")
+        highlight_apply_button().invoke()
+        app.after(0, verify_highlighted_views)
+    except BaseException as error:
+        finish_error(error)
+
+
+app.after(0, apply_highlight)
+app.mainloop()
+raise SystemExit(0 if succeeded else 1)
+'''
+    environment = os.environ.copy()
+    environment["NEWS_APP_SETTINGS"] = str(settings_path)
+    environment["REDIS_URL"] = ""
+
+    result = subprocess.run(
+        [sys.executable, "-c", script, str(settings_path)],
+        capture_output=True,
+        cwd=Path(__file__).resolve().parents[1],
+        env=environment,
+        text=True,
+        timeout=15,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "highlight_flow=ok" in result.stdout
 
 
 def test_real_tk_restores_custom_appearance_across_restart(tmp_path: Path) -> None:

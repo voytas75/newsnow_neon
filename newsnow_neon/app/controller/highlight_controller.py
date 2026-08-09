@@ -51,7 +51,7 @@ class HighlightController:
         self.app._render_filtered_headlines(
             reschedule=False,
             log_status=False,
-            update_tickers=False,
+            update_tickers=True,
         )
         if (
             getattr(self.app, "_heatmap_window", None)

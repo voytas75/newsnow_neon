@@ -149,6 +149,10 @@ and diagnostics.
   a real summary Toplevel with a deterministic fallback result; the missing
   resolver binding was repaired through the configured service proxy. No user
   settings, NewsNow, Redis, or provider path was used.
+- **Stage 4X — highlight real-Tk fan-out:** a controlled Apply persists a custom
+  highlight, refreshes matching list/ticker segments, and opens a matching keyword
+  heatmap; a stale-ticker fan-out defect was repaired. No user settings, NewsNow,
+  Redis, or provider path was used.
 
 ## Next ordered work
 
