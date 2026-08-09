@@ -246,49 +246,49 @@ Quality gates become meaningful instead of aspirational noise.
 ## Current recommended next slice
 
 ### Active next slice
-**Stage 4M — visual GUI operator-flow acceptance**
+**Stage 4N — settings-panel default-geometry accessibility**
 
 ### Why this is next
-- The desktop GUI is the primary product surface; static-debt reduction is now
-  subordinate to evidence that its core operator workflow remains usable.
-- Stage 4L proves the real Tk application can start, enter its event loop, and
-  render controlled offline content without live services.
-- Stage 4M must establish the remaining visual/input evidence on a real desktop
-  session before further static-debt slices.
+- Stage 4M confirmed the primary offline list/ticker and the Controls toggle on
+  a real X11 window, so the next issue is no longer speculative.
+- At the documented default `900×450` geometry, the two options-panel group
+  headings exist in code but are outside the visible controls area.
+- Hiding that mismatch by weakening the checklist would reduce operator trust;
+  the bounded GUI defect must be addressed before more static-debt work.
 
 ## Implementation focus for the active next slice
 
 ### Goal
-Validate the primary desktop workflow visually and interactively with controlled
-offline data: launch, rendered headline list/ticker, controls visibility, and
-basic layout at the default geometry.
+Make `Appearance & Readability` and `Monitoring & Runtime` visible and usable
+when Controls is open at the default `900×450` geometry, without regressing the
+confirmed headline list, ticker, or toggle behavior.
 
 ### Scope
 The next slice should:
-- use a real desktop session and controlled offline service data;
-- follow and update `docs/manual-gui-smoke-checklist.md` as evidence requires;
-- record concrete pass/partial/fail observations and screenshots when capture is
-  available;
-- keep any discovered UI correction to one behavior-owned seam with a focused
-  regression test.
+- begin with a focused real-Tk layout regression contract for both headings;
+- change only the settings-panel layout/ordering needed to meet that contract;
+- preserve controlled offline rendering and the `Show Controls` / `Hide
+  Controls` cycle;
+- rerun the targeted visual capture after the code/test verification.
 
 ### Non-goals
 Do not in this slice:
 - call NewsNow, a provider, or Redis for acceptance evidence,
-- claim native OS-dialog behavior or live-service behavior from the offline run,
-- redesign the GUI framework or perform a broad visual refresh,
-- alter public imports or compatibility surfaces.
+- add a GUI framework, new dependency, or full scrollable-dashboard redesign,
+- relax the default-geometry checklist merely to make the result pass,
+- alter public imports or unrelated controls.
 
 ### Preferred execution order
-1. start the isolated real-Tk offline smoke on the available display
-2. inspect the main list/ticker and controls at the default geometry
-3. exercise the control-panel visibility workflow without live refresh
-4. record evidence, then fix only a confirmed bounded defect
+1. write a failing real-Tk layout assertion for the two headings
+2. make the smallest settings-panel layout correction
+3. verify the offline GUI smoke, focused layout contract, and full pytest
+4. repeat the controlled X11 visual capture at `900×450`
 
 ### Acceptance criteria
-- real Tk launch and offline headline rendering are observed on a desktop display
-- the primary list/ticker and controls remain usable at default geometry
-- any correction has focused regression coverage and full pytest remains green
+- both named headings are mapped and visually readable at `900×450` with
+  Controls open
+- the main list/ticker and the reversible toggle cycle remain usable
+- focused and full pytest stay green
 - the report distinguishes offline GUI evidence from unverified live behavior
 
 ## What should not drive the roadmap now
@@ -372,7 +372,10 @@ Current sync status:
   subprocess smoke that renders one offline headline through the application
   event loop and verifies the main list/ticker. It does not call NewsNow,
   Redis, or provider services.
-- the next bounded task is Stage 4M visual GUI operator-flow acceptance
+- Stage 4M visually confirmed an offline `900×450` X11 window, the primary
+  list/ticker, and the full Controls-toggle cycle. It is partial because the
+  options-panel group headings were outside the visible controls area.
+- the next bounded task is Stage 4N settings-panel default-geometry accessibility
 
 ### Do weryfikacji
 - whether Redis/LLM optional reporting belongs in a future extension of the readiness contract

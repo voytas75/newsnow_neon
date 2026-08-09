@@ -84,10 +84,10 @@ remains. Never hide debt through blanket ignores or broad `type: ignore`.
 
 ## Current immediate boundary
 
-Stage 4L is complete for the primary desktop workflow: an isolated subprocess
-starts the real Tk app on an available display, renders an offline headline,
-and verifies the main list and ticker without contacting NewsNow, Redis, or a
-provider. Stage 4M must perform bounded visual operator-flow acceptance on a
-real desktop session with controlled offline data. Do not claim live scraper,
-Redis, or provider behavior from this smoke, and do not broaden into a GUI
-redesign or alter compatibility surfaces incidentally.
+Stage 4M is complete as a partial offline visual acceptance: the primary list,
+ticker, action bar, and reversible controls toggle work on a real X11 window,
+but the options-panel group headings are outside the visible default `900×450`
+layout. Stage 4N may correct only that bounded settings-panel accessibility
+failure, starting with a focused real-Tk layout contract. Do not call NewsNow,
+Redis, or a provider; do not relax the acceptance checklist, redesign the GUI,
+or alter compatibility surfaces incidentally.

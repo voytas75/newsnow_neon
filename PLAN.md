@@ -98,12 +98,20 @@ and diagnostics.
   offline headline through its event loop, and verifies both the main list and
   ticker. It stubs NewsNow, Redis, and provider-facing services; it does not
   claim live integration acceptance.
+- **Stage 4M — visual GUI operator-flow acceptance:** verified the offline
+  list/ticker and reversible `Show Controls → Hide Controls → Show Controls`
+  cycle on a real X11 window. The result is partial: at the default `900×450`
+  geometry, the options-panel group headings are not visible after opening
+  Controls. The defect is carried into Stage 4N rather than hidden by relaxing
+  the checklist.
 
 ## Next ordered work
 
-1. **Stage 4M — visual GUI acceptance:** exercise the primary operator workflow
-   against the manual checklist on a real desktop session using controlled
-   offline data; record layout/input findings separately from live integration.
+1. **Stage 4N — settings-panel default-geometry accessibility:** make both
+   options-panel group headings visible and usable at the default `900×450`
+   geometry, preserving the confirmed list/ticker and toggle behavior. Start
+   with a focused layout contract and a real-Tk regression probe; do not widen
+   into a visual redesign.
 2. **Compatibility maintenance:** preserve the controller and services
    compatibility tests when later seams touch package loading or startup.
 

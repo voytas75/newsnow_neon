@@ -1,6 +1,6 @@
 # NewsNow Neon — Operational Plan
 
-**Status:** active — Stage 4L real-Tk GUI smoke verified locally; Stage 1 and Stage 2 verified remotely; governance controls refreshed in this slice.
+**Status:** active — Stage 4M visual GUI acceptance recorded as partial; Stage 1 and Stage 2 verified remotely; governance controls refreshed in this slice.
 **Updated:** 2026-08-09
 **Canonical product direction:** [`product-ssot.md`](product-ssot.md)
 
@@ -562,6 +562,33 @@ fidelity, input interaction, NewsNow, Redis, or provider behavior.
 **Next:** Stage 4M visual GUI operator-flow acceptance with controlled offline
 data and the revised manual checklist.
 
+## Stage 4M — visual GUI operator-flow acceptance
+
+**Status:** completed locally as partial.
+
+**Scope:** controlled offline X11 acceptance at the documented default
+`900×450` geometry. The runner used deterministic headlines, an empty Redis URL,
+and no provider or NewsNow calls.
+
+**Confirmed:** a real `NewsNow Neon` window was mapped at `900×450`; the
+headline list, ticker, search/filter row, and action bar were readable; an
+XTEST click exercised `Show Controls → Hide Controls → Show Controls`; opening
+Controls exposed readable `Refresh Now` and `Clear Headline Cache` buttons
+without overlap.
+
+**Partial result:** `Appearance & Readability` and `Monitoring & Runtime`
+exist in `options_panel.py` but are below the visible controls area at the
+default geometry. Search/filter fields correctly remain visible when the options
+panel is hidden; they are not a toggle failure.
+
+**Evidence boundary:** visual screenshots were captured for the app window only.
+The XTEST action proves one reversible click path, not general mouse/keyboard,
+native-dialog, or live-service behavior. CUA window discovery remained empty
+despite a healthy WSLg/X11 doctor result.
+
+**Next:** Stage 4N settings-panel default-geometry accessibility. Do not relax
+the checklist to reclassify this partial result as a pass.
+
 ## Security lock refresh
 
 **Status:** completed and verified remotely by CI run [#31278999184](https://github.com/voytas75/newsnow_neon/actions/runs/31278999184).
@@ -588,7 +615,7 @@ and Dependabot reports zero open alerts; all 16 prior alerts are fixed.
 
 ## Current recommended next execution slice
 
-**Begin Stage 4M as visual GUI operator-flow acceptance.** Use a real desktop
-session with controlled offline data to inspect the primary list/ticker and
-control-panel workflow. Record visual/input observations separately from
-unverified NewsNow, Redis, and provider behavior.
+**Begin Stage 4N as a settings-panel default-geometry accessibility slice.**
+Write a focused real-Tk layout contract for the two missing group headings, then
+make only the layout correction necessary to show them at `900×450` while
+preserving the confirmed offline list/ticker and Controls-toggle behavior.

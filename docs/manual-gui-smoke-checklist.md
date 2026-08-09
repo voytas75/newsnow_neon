@@ -64,6 +64,20 @@ for a manual visual session.
 - [ ] After a modest horizontal resize smaller and larger, labels still remain usable.
 - [ ] No obvious widget overlap appears after opening/closing the controls panel.
 
+## Stage 4M controlled offline result — 2026-08-09
+
+**status: partial**
+
+- confirmed: real X11 window at `900×450`; offline headline list/ticker;
+  `Show Controls → Hide Controls → Show Controls` via a reversible XTEST click;
+  readable `Refresh Now` and `Clear Headline Cache` controls without overlap.
+- failed: the two options-panel group headings are not visible at the default
+  geometry. They exist in the widget implementation but are below the visible
+  controls area.
+- note: search/filter fields remain visible when Controls is hidden; they are
+  not part of the toggled options panel.
+- follow-up: Stage 4N settings-panel default-geometry accessibility.
+
 ## Result Template
 Use this short format when recording the outcome:
 

@@ -76,7 +76,7 @@ python -m newsnow_neon
 ## Current focus
 - **Operational trust first** – startup/runtime failures should classify cleanly instead of failing with raw tracebacks.
 - **Supported compatibility surfaces** – `controller.py` and `services.py` remain supported externally; explicit `services.py` file-path loads now use the canonical package proxies.
-- **GUI-first acceptance** – Stage 4L now protects the real Tk launch, event loop, main list, and ticker with controlled offline data. Stage 4M is visual operator-flow acceptance; static-debt cleanup is secondary to the desktop workflow.
+- **GUI-first acceptance** – Stage 4M confirmed real offline list/ticker rendering and the Controls toggle, but found the options groups inaccessible at default `900×450`. Stage 4N is a narrow settings-panel accessibility repair; static-debt cleanup remains secondary.
 
 ## Configuration
 | Variable | Purpose |
