@@ -2244,3 +2244,203 @@ raise SystemExit(0 if succeeded else 1)
     )
     assert result.returncode == 0, result.stderr
     assert "mute_source=ok" in result.stdout
+
+
+def test_real_tk_history_refresh_selection_and_return_to_live(tmp_path: Path) -> None:
+    """Exercise the real History controls with offline Redis/history doubles."""
+    settings_path = tmp_path / "history-settings.json"
+    script = r'''
+import os
+import sys
+import time
+from datetime import datetime, timezone
+from pathlib import Path
+
+settings_path = Path(sys.argv[1])
+os.environ["NEWS_APP_SETTINGS"] = str(settings_path)
+os.environ["REDIS_URL"] = "redis://offline-history.test/0"
+
+from newsnow_neon.app import services
+from newsnow_neon.models import Headline, HeadlineCache, HistoricalSnapshot
+
+live_headline = Headline(
+    title="Live monitoring headline",
+    url="https://live.test/headline",
+    source="live.test",
+    section="Technology",
+)
+historical_headline = Headline(
+    title="Historical snapshot headline",
+    url="https://history.test/headline",
+    source="history.test",
+    section="Business",
+)
+snapshot = HistoricalSnapshot(
+    key="news:2026-08-09:120000",
+    captured_at=datetime(2026, 8, 9, 12, 0, tzinfo=timezone.utc),
+    cache=HeadlineCache(
+        headlines=[historical_headline],
+        ticker_text="Historical snapshot headline",
+    ),
+    headline_count=1,
+    summary_count=0,
+)
+fetch_calls = []
+history_calls = []
+
+
+def fetch_headlines(*, force_refresh=False):
+    fetch_calls.append(force_refresh)
+    return [live_headline], False, None
+
+
+def load_historical_snapshots(*_args, **_kwargs):
+    history_calls.append(True)
+    return [snapshot]
+
+
+services.configure_app_services(
+    fetch_headlines=fetch_headlines,
+    build_ticker_text=lambda entries: " | ".join(item.title for item in entries),
+    resolve_article_summary=lambda _headline: None,
+    persist_headlines_with_ticker=lambda *_args, **_kwargs: None,
+    collect_redis_statistics=lambda: None,
+    clear_cached_headlines=lambda: (True, "offline history: cache unavailable"),
+    load_historical_snapshots=load_historical_snapshots,
+)
+
+from newsnow_neon.application import AINewsApp
+from newsnow_neon.app.controller import history_controller
+
+history_controller.get_redis_client = lambda: object()
+app = AINewsApp()
+succeeded = False
+deadline = time.monotonic() + 5
+
+
+def ticker_titles(ticker):
+    return [
+        ticker._headline_groups[group_tag]["full_title"]
+        for group_tag in ticker.headline_order
+    ]
+
+
+def tickers_show(title):
+    return all(
+        any(title in rendered for rendered in ticker_titles(ticker))
+        for ticker in (app.ticker, app.full_ticker)
+    )
+
+
+def fail(error):
+    print(f"history_error={error!r}", file=sys.stderr)
+    app.destroy()
+    raise SystemExit(1)
+
+
+def wait_for_live_restore():
+    global succeeded
+    try:
+        app.update_idletasks()
+        list_text = app.listbox.get("1.0", "end-1c")
+        if (
+            app._history_mode
+            or live_headline.title not in list_text
+            or historical_headline.title in list_text
+            or not tickers_show(live_headline.title)
+        ):
+            if time.monotonic() < deadline:
+                app.after(25, wait_for_live_restore)
+                return
+            raise AssertionError(f"live view did not restore: {list_text!r}")
+        assert app.exit_history_btn.cget("state") == "disabled"
+        assert fetch_calls == [False]
+        assert history_calls == [True]
+        succeeded = True
+        print("history_round_trip=ok")
+        app.destroy()
+    except BaseException as error:
+        fail(error)
+
+
+def wait_for_history_view():
+    try:
+        app.update_idletasks()
+        list_text = app.listbox.get("1.0", "end-1c")
+        if not app._history_mode or historical_headline.title not in list_text:
+            if time.monotonic() < deadline:
+                app.after(25, wait_for_history_view)
+                return
+            raise AssertionError(f"history view did not render: {list_text!r}")
+        assert live_headline.title not in list_text
+        assert app.exit_history_btn.cget("state") == "normal"
+        assert tickers_show(live_headline.title)
+        assert not tickers_show(historical_headline.title)
+        app.exit_history_btn.invoke()
+        app.after(0, wait_for_live_restore)
+    except BaseException as error:
+        fail(error)
+
+
+def wait_for_history_entries():
+    try:
+        app.update_idletasks()
+        if app._loading_history or len(app._history_entries) != 1:
+            if time.monotonic() < deadline:
+                app.after(25, wait_for_history_entries)
+                return
+            raise AssertionError(
+                f"history entries did not load: {app._history_entries!r}"
+            )
+        assert app.history_listbox.cget("state") == "normal"
+        assert "1 snapshots loaded" in app.history_status_var.get()
+        app.history_listbox.selection_set(0)
+        app.history_listbox.event_generate("<<ListboxSelect>>")
+        app.after(0, wait_for_history_view)
+    except BaseException as error:
+        fail(error)
+
+
+def start_history_round_trip():
+    try:
+        app.update_idletasks()
+        if live_headline.title not in app.listbox.get("1.0", "end-1c"):
+            if time.monotonic() < deadline:
+                app.after(25, start_history_round_trip)
+                return
+            raise AssertionError("live headline was not rendered")
+        assert tickers_show(live_headline.title)
+        assert app.options_toggle_btn.cget("text") == "Show Controls"
+        app.options_toggle_btn.invoke()
+        assert app.options_toggle_btn.cget("text") == "Hide Controls"
+        assert app.history_reload_btn.cget("text") == "Refresh History"
+        assert app.history_reload_btn.cget("state") == "normal"
+        app.history_reload_btn.invoke()
+        app.after(0, wait_for_history_entries)
+    except BaseException as error:
+        fail(error)
+
+
+app.after(0, start_history_round_trip)
+app.mainloop()
+raise SystemExit(0 if succeeded else 1)
+'''
+    environment = {
+        key: value
+        for key, value in os.environ.items()
+        if not key.startswith(("AZURE_", "OPENAI_", "LITELLM_"))
+    }
+    environment["NEWS_APP_SETTINGS"] = str(settings_path)
+    environment["REDIS_URL"] = "redis://offline-history.test/0"
+
+    result = subprocess.run(
+        [sys.executable, "-c", script, str(settings_path)],
+        capture_output=True,
+        cwd=Path(__file__).resolve().parents[1],
+        env=environment,
+        text=True,
+        timeout=15,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    assert "history_round_trip=ok" in result.stdout
