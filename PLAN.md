@@ -196,6 +196,10 @@ and diagnostics.
 - **Stage 12 — Redis Stats real-Tk acceptance:** a controlled real-Tk process
   invoked the actual button with local Redis-presence and metrics doubles,
   verified a mapped statistics window, then closed it through its real control.
+- **Stage 13 — natural Auto Refresh real-Tk acceptance:** a controlled real-Tk
+  process used the actual Controls toggle, cadence spinbox, and timer checkbutton
+  to move from five to one minute. The unaccelerated Tk callback forced a second
+  offline fetch, replaced the list and both tickers, and rearmed the next timer.
 
 ## Next ordered work
 

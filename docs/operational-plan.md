@@ -1117,6 +1117,36 @@ deployed Redis service, live NewsNow, or provider behavior.
 **Next boundary:** select a new, behavior-owned GUI workflow before assigning
 another numbered slice.
 
+## Stage 13 — natural Auto Refresh real-Tk acceptance
+
+**Status:** completed locally; no production code changed.
+
+**Scope:** `tests/test_gui_runtime_smoke.py` runs the real Tk application against
+a temporary settings store, empty `REDIS_URL`, and deterministic local service
+doubles. The initial state disables Auto Refresh at five minutes; the runner
+opens Controls, uses the actual spinbox to select one minute, and invokes the
+real timer checkbutton.
+
+**Acceptance:** after the unaccelerated one-minute Tk `after` callback, the
+second deterministic payload replaces the initial item in the main list, primary
+ticker, and full ticker. The fetch sequence is exactly `[False, True]`; the
+enabled timer has a new pending refresh job and is no longer in `Refreshing…`
+status.
+
+**Validation:** the focused real-Tk test passed with an 85-second subprocess
+limit. It intentionally adds roughly one minute to the permanent pytest gate.
+The CI pytest step now runs under Xvfb, and its exact local frozen command passed
+with the complete real-Tk pack enabled. No user settings, NewsNow, Redis, or
+provider path was used.
+
+**Evidence boundary:** this proves the real controls, actual one-minute Tk timer
+callback, worker/callback refresh path, rendered fan-out, and timer rearming. It
+does not prove physical pointer/keyboard input, live NewsNow, deployed Redis, or
+provider behavior.
+
+**Next boundary:** select a new, behavior-owned GUI workflow before assigning
+another numbered slice.
+
 ## Security lock refresh
 
 **Status:** completed and verified remotely by CI run [#31278999184](https://github.com/voytas75/newsnow_neon/actions/runs/31278999184).

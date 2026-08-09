@@ -113,7 +113,7 @@ These came out of the bounded repo review and should drive the next planning cyc
      - cache/history payload behavior,
      - summary/provider fallback.
    - Controlled real-Tk tests now prove the selected GUI/controller workflows
-     through Stage 12, but do not prove live NewsNow availability, live provider
+     through Stage 13, but do not prove live NewsNow availability, live provider
      behavior, Redis deployment compatibility, or physical desktop input.
 
 6. **Static quality debt is measured, not hidden**
@@ -414,6 +414,9 @@ Current sync status:
   selected-row button, temporary-store exclusion, and list/ticker fan-out.
 - Stage 11 added controlled real-Tk acceptance for the History 24h refresh,
   snapshot-selection, and Return-to-Live workflow.
+- Stage 13 added controlled real-Tk acceptance that the unaccelerated one-minute
+  Auto Refresh timer forces a second offline fetch, updates the list plus both
+  tickers, and rearms itself.
 - the next task is explicit selection of one behavior-owned GUI seam
 
 ### Do weryfikacji

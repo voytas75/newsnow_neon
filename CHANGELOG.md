@@ -98,6 +98,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), and this 
 - Added `docs/manual-gui-smoke-checklist.md` so the operator-control wording slice has an explicit GUI verification script for desktop/manual review.
 
 ### Changed
+- GitHub CI now runs the frozen pytest gate under Xvfb so controlled real-Tk
+  regression tests execute on the headless runner instead of being skipped.
 - Runtime `APP_VERSION` and displayed app metadata now read the installed
   `newsnow-neon` distribution version, making `pyproject.toml` the release
   version source of truth.

@@ -1345,6 +1345,179 @@ raise SystemExit(0 if succeeded else 1)
         assert f"auto_refresh_{mode}=ok" in result.stdout
 
 
+def test_real_tk_auto_refresh_runs_after_natural_minute(tmp_path: Path) -> None:
+    """Prove that the enabled one-minute timer performs a real offline refresh."""
+    settings_path = tmp_path / "natural-auto-refresh-settings.json"
+    script = r'''
+import json
+import os
+import sys
+import time
+from pathlib import Path
+
+settings_path = Path(sys.argv[1])
+os.environ["NEWS_APP_SETTINGS"] = str(settings_path)
+os.environ["REDIS_URL"] = ""
+settings_path.write_text(
+    json.dumps({"auto_refresh_enabled": False, "auto_refresh_minutes": 5}),
+    encoding="utf-8",
+)
+
+from newsnow_neon.app import services
+from newsnow_neon.models import Headline
+
+initial = Headline(
+    title="Before natural auto refresh",
+    url="https://example.test/before-natural-auto-refresh",
+    section="Technology",
+)
+refreshed = Headline(
+    title="After natural auto refresh",
+    url="https://example.test/after-natural-auto-refresh",
+    section="Technology",
+)
+fetch_calls = []
+
+
+def fetch_headlines(*, force_refresh=False):
+    fetch_calls.append(force_refresh)
+    if fetch_calls == [False]:
+        return [initial], False, None
+    if fetch_calls == [False, True]:
+        return [refreshed], False, None
+    raise AssertionError(f"unexpected fetch call: {fetch_calls!r}")
+
+
+services.configure_app_services(
+    fetch_headlines=fetch_headlines,
+    build_ticker_text=lambda headlines: " | ".join(item.title for item in headlines),
+    resolve_article_summary=lambda _headline: None,
+    persist_headlines_with_ticker=lambda *_args, **_kwargs: None,
+    collect_redis_statistics=lambda: None,
+    clear_cached_headlines=lambda: (True, "offline natural timer: cache unavailable"),
+    load_historical_snapshots=lambda *_args, **_kwargs: [],
+)
+
+from newsnow_neon.application import AINewsApp
+
+app = AINewsApp()
+succeeded = False
+deadline = time.monotonic() + 75
+
+
+def stored():
+    with settings_path.open(encoding="utf-8") as handle:
+        return json.load(handle)
+
+
+def ticker_titles(ticker):
+    return [
+        ticker._headline_groups[group_tag]["full_title"]
+        for group_tag in ticker.headline_order
+    ]
+
+
+def finish_error(error):
+    print(f"natural_auto_refresh_error={error!r}", file=sys.stderr)
+    app.destroy()
+    raise SystemExit(1)
+
+
+def wait_for_natural_refresh():
+    global succeeded
+    try:
+        app.update_idletasks()
+        list_text = app.listbox.get("1.0", "end-1c")
+        if refreshed.title not in list_text:
+            if time.monotonic() < deadline:
+                app.after(100, wait_for_natural_refresh)
+                return
+            raise AssertionError(f"natural refresh result not rendered: {list_text!r}")
+        if (
+            app._refresh_job is None
+            or app.next_refresh_var.get() == "Refreshing…"
+        ):
+            if time.monotonic() < deadline:
+                app.after(25, wait_for_natural_refresh)
+                return
+            raise AssertionError(
+                "natural refresh did not rearm timer and publish next-refresh status"
+            )
+
+        assert fetch_calls == [False, True]
+        assert initial.title not in list_text
+        assert app.auto_refresh_var.get() is True
+        for ticker in (app.ticker, app.full_ticker):
+            titles = ticker_titles(ticker)
+            assert any(refreshed.title in title for title in titles), titles
+            assert all(initial.title not in title for title in titles), titles
+    except BaseException as error:
+        finish_error(error)
+    else:
+        succeeded = True
+        print("natural_auto_refresh=ok")
+        app.destroy()
+
+
+def enable_one_minute_timer():
+    try:
+        app.update_idletasks()
+        if not app.options_container.winfo_ismapped():
+            app.options_toggle_btn.invoke()
+            app.update_idletasks()
+        list_text = app.listbox.get("1.0", "end-1c")
+        if (
+            initial.title not in list_text
+            or not app.auto_refresh_check.winfo_ismapped()
+            or not app.auto_refresh_spin.winfo_ismapped()
+        ):
+            if time.monotonic() < deadline:
+                app.after(25, enable_one_minute_timer)
+                return
+            raise AssertionError(
+                "initial content or auto-refresh controls not rendered"
+            )
+
+        assert fetch_calls == [False]
+        assert app.auto_refresh_var.get() is False
+        for _ in range(4):
+            app.auto_refresh_spin.invoke("buttondown")
+        assert app.auto_refresh_minutes_var.get() == 1
+        assert stored()["auto_refresh_minutes"] == 1
+
+        app.auto_refresh_check.invoke()
+        assert app.auto_refresh_var.get() is True
+        assert stored()["auto_refresh_enabled"] is True
+        assert app._refresh_job is not None
+        app.after(100, wait_for_natural_refresh)
+    except BaseException as error:
+        finish_error(error)
+
+
+app.after(0, enable_one_minute_timer)
+app.mainloop()
+raise SystemExit(0 if succeeded else 1)
+'''
+    environment = os.environ.copy()
+    environment["NEWS_APP_SETTINGS"] = str(settings_path)
+    environment["REDIS_URL"] = ""
+
+    result = subprocess.run(
+        [sys.executable, "-c", script, str(settings_path)],
+        capture_output=True,
+        cwd=Path(__file__).resolve().parents[1],
+        env=environment,
+        text=True,
+        timeout=85,
+        check=False,
+    )
+
+    assert result.returncode == 0, (
+        f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
+    )
+    assert "natural_auto_refresh=ok" in result.stdout
+
+
 def test_real_tk_background_watch_persists_threshold_and_refreshes_unseen(
     tmp_path: Path,
 ) -> None:
