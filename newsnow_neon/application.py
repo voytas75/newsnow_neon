@@ -202,6 +202,7 @@ class AINewsApp(tk.Tk):
         self._latest_status: str = ""
         self.log_buffer: deque[tuple[int, str]] = deque()
         self._refresh_job: Optional[str] = None
+        self._log_drain_job: Optional[str] = None
         self._last_refresh_time: Optional[datetime] = None
         self._next_refresh_time: Optional[datetime] = None
         self._countdown_job: Optional[str] = None
@@ -428,6 +429,7 @@ class AINewsApp(tk.Tk):
         self.after(0, self.refresh_headlines)
         self.after(0, lambda: ui_flush_log_buffer(self))
         self.after(0, self.redis_controller.update_redis_meter)
+        self.after(0, self._drain_tk_log_queue)
         current_geometry = self.geometry()
         if current_geometry:
             self._last_geometry = current_geometry
@@ -1462,9 +1464,23 @@ class AINewsApp(tk.Tk):
     def _on_close(self) -> None:
         self._cancel_relative_age_refresh()
         self._cancel_background_watch()
+        if self._log_drain_job is not None:
+            try:
+                self.after_cancel(self._log_drain_job)
+            except tk.TclError:
+                pass
+            self._log_drain_job = None
         self._remember_window_geometry()
         self._save_settings()
         self.destroy()
+
+    def _drain_tk_log_queue(self) -> None:
+        """Deliver worker-thread log records only from the Tk main thread."""
+        self.log_handler.drain()
+        try:
+            self._log_drain_job = self.after(50, self._drain_tk_log_queue)
+        except tk.TclError:
+            self._log_drain_job = None
 
     def _toggle_debug_mode(self) -> None:
         debug_enabled = bool(self.debug_var.get())

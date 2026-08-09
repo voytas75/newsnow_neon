@@ -1147,6 +1147,37 @@ provider behavior.
 **Next boundary:** select a new, behavior-owned GUI workflow before assigning
 another numbered slice.
 
+## Stage 14 — cross-font Controls and worker-log Tk safety
+
+**Status:** completed locally; remote CI verification pending explicit push.
+
+**RED:** the Xvfb runner exposed default `900×450` Controls clipping under
+fallback fonts; a live probe measured a root requirement of 706 px. The same
+timing revealed a worker-log/Tk deadlock when Background Watch was invoked while
+the initial refresh worker emitted a log record.
+
+**Changed:** showing Controls now expands only an undersized live window to its
+Tk-required height while retaining its current width and position. `TkQueueHandler`
+now queues formatted records; `AINewsApp` drains that queue from its Tk main
+thread and cancels the drain job on normal close. No dependency, service,
+provider, or persistence format changed.
+
+**Validation:** the exact frozen Xvfb command passed locally for the whole
+pytest suite. The four prior remote failures (Controls smoke, Background Watch,
+Logs restore, Cache Clear) passed together; the Background Watch writer/verifier
+still invokes the real checkbutton without an artificial initial-refresh wait.
+The focused settings-stub tests, Ruff on the real-Tk test and `models.py`, and
+Pyright on those two files passed. `ui_helpers.py` and `application.py` retain
+their recorded global static-debt baseline; no broad static cleanup was added.
+`uv lock --check` and both `--check` front doors passed.
+
+**Evidence boundary:** this proves controlled real-Tk layout, worker/log queue
+delivery, and offline Background Watch behavior. It does not prove physical
+desktop input, live NewsNow, Redis, or provider behavior.
+
+**Next boundary:** push only with explicit approval, then require the Xvfb CI
+run for the delivered SHA to pass before selecting another GUI slice.
+
 ## Security lock refresh
 
 **Status:** completed and verified remotely by CI run [#31278999184](https://github.com/voytas75/newsnow_neon/actions/runs/31278999184).

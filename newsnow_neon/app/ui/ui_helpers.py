@@ -70,12 +70,32 @@ def handle_log_record(app: tk.Tk, level: int, message: str) -> None:
 
 
 # Options/status helpers
+def _expand_window_for_options(app: tk.Tk) -> None:
+    """Grow a real window only when the shown options need more vertical space."""
+    app.update_idletasks()
+    required_height = app.winfo_reqheight()
+    if app.winfo_height() >= required_height:
+        return
+
+    width = app.winfo_width()
+    if width <= 1:
+        return
+
+    x_position = app.winfo_x()
+    y_position = app.winfo_y()
+    x_offset = f"+{x_position}" if x_position >= 0 else str(x_position)
+    y_offset = f"+{y_position}" if y_position >= 0 else str(y_position)
+    app.geometry(f"{width}x{required_height}{x_offset}{y_offset}")
+
+
 def set_options_visibility(app: tk.Tk, visible: bool, *, persist: bool = True) -> None:
     """Show/hide the options container and update status summary."""
     app._options_visible = bool(visible)
     if visible:
         if not app.options_container.winfo_ismapped():
             app.options_container.pack(fill="x", padx=10, pady=(0, 10))
+        if hasattr(app, "winfo_reqheight"):
+            _expand_window_for_options(app)
         app.options_toggle_btn.config(text="Hide Controls")
     else:
         app.options_container.pack_forget()

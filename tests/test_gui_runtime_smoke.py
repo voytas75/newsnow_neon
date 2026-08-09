@@ -61,9 +61,20 @@ def verify() -> None:
         assert app.ticker.winfo_ismapped()
         assert "Offline GUI smoke headline" in app.listbox.get("1.0", "end-1c")
 
+        initial_height = app.winfo_height()
         app._toggle_options_panel()
         app.update_idletasks()
-        visible_bottom = app.winfo_rooty() + app.winfo_height()
+        required_height = app.winfo_reqheight()
+        actual_height = app.winfo_height()
+        assert actual_height >= required_height, (
+            "Controls require more vertical space than the window provides: "
+            f"actual={actual_height}, required={required_height}"
+        )
+        assert actual_height > initial_height, (
+            "Show Controls did not expand the window: "
+            f"{actual_height} <= {initial_height}"
+        )
+        visible_bottom = app.winfo_rooty() + actual_height
         pending = list(app.winfo_children())
         headings = {}
         while pending:

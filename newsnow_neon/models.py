@@ -14,6 +14,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime
+from queue import Empty, SimpleQueue
 from typing import Any, Callable, Dict, FrozenSet, List, Literal, Mapping, Optional
 
 import tkinter as tk
@@ -348,15 +349,25 @@ __all__ = [
 
 
 class TkQueueHandler(logging.Handler):
-    """Logging handler that forwards formatted records to a Tk callback."""
+    """Queue formatted records for a callback drained by the Tk main thread."""
 
     def __init__(self, callback: Callable[[int, str], None]) -> None:
         super().__init__()
         self._callback = callback
+        self._pending: SimpleQueue[tuple[int, str]] = SimpleQueue()
 
     def emit(self, record: logging.LogRecord) -> None:
         try:
             message = self.format(record)
-            self._callback(record.levelno, message)
+            self._pending.put((record.levelno, message))
         except Exception:  # pragma: no cover - guard against issues
             self.handleError(record)
+
+    def drain(self) -> None:
+        """Forward pending records from the caller's thread."""
+        while True:
+            try:
+                level, message = self._pending.get_nowait()
+            except Empty:
+                return
+            self._callback(level, message)

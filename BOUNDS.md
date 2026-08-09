@@ -84,9 +84,11 @@ remains. Never hide debt through blanket ignores or broad `type: ignore`.
 
 ## Current immediate boundary
 
-Stage 13 is complete: a controlled real-Tk process used the actual Auto Refresh
-controls at a one-minute cadence, then verified its unaccelerated callback forces
-a second offline refresh, updates the list and both tickers, and rearms the
-timer. Any next GUI work must again be separately selected as one bounded
-workflow; do not touch user settings, live services, providers, compatibility
-surfaces, or framework design without a new scope decision.
+Stage 14 is locally complete: Controls grow only when their natural Tk height
+exceeds the current window, and worker log records are drained only by the Tk
+main thread. The frozen Xvfb suite passed locally, including the immediate
+Background Watch regression. Remote CI verification for the delivered SHA is
+the current concrete boundary; after it is green, any next GUI work must again
+be separately selected as one bounded workflow. Do not touch user settings,
+live services, providers, compatibility surfaces, or framework design without a
+new scope decision.

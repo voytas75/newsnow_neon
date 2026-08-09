@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), and this 
 ## [Unreleased]
 
 ### Fixed
+- Expanded an undersized live window when Controls need more vertical Tk layout
+  space, preserving its width and position; worker log records now queue for
+  main-thread Tk delivery so an immediate Background Watch action cannot deadlock
+  against initial refresh logging.
 - Repaired the default-geometry logs-visibility restore path, the configured
   summary-service proxy binding, ticker highlight fan-out, and the Mute Keyword
   helper binding; focused real-Tk acceptance protects each repaired path.

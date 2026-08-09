@@ -417,7 +417,12 @@ Current sync status:
 - Stage 13 added controlled real-Tk acceptance that the unaccelerated one-minute
   Auto Refresh timer forces a second offline fetch, updates the list plus both
   tickers, and rearms itself.
-- the next task is explicit selection of one behavior-owned GUI seam
+- Stage 14 repaired cross-font Controls accessibility by expanding an undersized
+  live window only to Tk's required height, and moved worker log delivery to a
+  main-thread drain queue. The immediate Background Watch regression now proves
+  the action does not deadlock against initial refresh logging.
+- remote Xvfb CI verification is required before selecting the next
+  behavior-owned GUI seam
 
 ### Do weryfikacji
 - whether Redis/LLM optional reporting belongs in a future extension of the readiness contract

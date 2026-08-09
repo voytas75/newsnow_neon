@@ -200,13 +200,20 @@ and diagnostics.
   process used the actual Controls toggle, cadence spinbox, and timer checkbutton
   to move from five to one minute. The unaccelerated Tk callback forced a second
   offline fetch, replaced the list and both tickers, and rearmed the next timer.
+- **Stage 14 — cross-font Controls and thread-safe Tk logging:** opening Controls
+  now grows only an undersized live window to Tk's natural required height, and
+  worker log records are queued for a main-thread drain. The real-Tk regression
+  covers an immediate Background Watch action during initial refresh without a
+  worker-to-Tk deadlock.
 
 ## Next ordered work
 
-1. **Next GUI slice selection:** choose one unverified, behavior-owned operator
-   workflow from the desktop product surface before assigning a new numbered
-   stage. Do not reopen completed evidence or expand scope by assumption.
-2. **Compatibility maintenance:** preserve the controller and services
+1. **Remote Stage 14 verification:** after an explicit push, require the Xvfb
+   pytest job for the delivered SHA to pass before selecting more work.
+2. **Next GUI slice selection:** after remote verification, choose one
+   unverified, behavior-owned operator workflow from the desktop product surface.
+   Do not reopen completed evidence or expand scope by assumption.
+3. **Compatibility maintenance:** preserve the controller and services
    compatibility tests when later seams touch package loading or startup.
 
 ## Explicitly deferred
