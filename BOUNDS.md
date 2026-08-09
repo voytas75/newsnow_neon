@@ -84,10 +84,10 @@ remains. Never hide debt through blanket ignores or broad `type: ignore`.
 
 ## Current immediate boundary
 
-Stage 4R is complete only as partial WSLg evidence: focus + XTest reached the
-real color-button paths against a temporary settings store, and no appearance or
-persistence value changed. The host exposed only an unmapped, non-captureable
-transient rather than a visible chooser and verifiable Cancel control. Stage 4S
-requires visible desktop confirmation of open/cancel no-op behavior. Do not
-choose colors, call NewsNow, Redis, or a provider, alter user settings, redesign
-the GUI, or change compatibility surfaces incidentally.
+Stage 4S is complete: a human operator visibly opened and cancelled both native
+color choosers on the controlled temporary store, then the runner confirmed that
+both ticker bands and persisted values were unchanged. No color was selected and
+no code changed. Any next GUI work must be separately selected as one bounded,
+behavior-owned workflow; do not reopen native chooser acceptance or touch user
+settings, live services, providers, compatibility surfaces, or framework design
+without a new scope decision.

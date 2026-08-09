@@ -98,7 +98,7 @@ Sensitive values (`*KEY`, `*TOKEN`, `*SECRET`, `*PASSWORD`) are masked automatic
 - **Legacy runtime boundary**: `load_app_class()` now also binds the legacy module's service implementations into `newsnow_neon.app.services` explicitly instead of relying only on import-time side effects.
 - **Controller package surface**: `newsnow_neon.app.controller` resolves package exports lazily, and `newsnow_neon/app/controller.py` is now only a truthful compatibility alias for the same `AINewsApp` symbol.
 - **Diagnostics seam**: `--check` now renders Python/Tk/display/settings readiness through `newsnow_neon.main` without starting the GUI, and returns a readiness verdict with non-zero exit when required launch prerequisites fail.
-- **Next operational seam**: Stage 4S requires visible desktop confirmation of both chooser dialogs and their Cancel actions on a temporary store. Stage 4R verified only no-op state in WSLg; do not select colors or touch the user's settings path.
+- **Next operational seam**: select one new unverified, behavior-owned desktop operator workflow before assigning another numbered stage. Stage 4S completed native chooser open/Cancel no-op acceptance; do not reopen it without new evidence.
 - **Application layer**: `newsnow_neon/app/` now exposes a real `services` package surface for modular provider stubs, while the legacy runtime still binds concrete implementations at startup.
 - **UI**: `newsnow_neon/ui/` plus `application.py` define Tkinter windows, dialogs, keyword heatmaps, and ticker widgets.
 - **Domain models**: Shared dataclasses and helpers live in `models.py`, `cache.py`, `summaries.py`, and `settings_store.py`.

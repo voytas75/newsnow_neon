@@ -78,8 +78,8 @@ for a manual visual session.
   not part of the toggled options panel.
 - resolution: Stage 4N restored both heading labels, Stage 4O restored lower
   color controls, Stage 4P classified marquee movement, and Stage 4Q restored
-  custom colors to both ticker bands after restart. Stage 4R leaves native
-  chooser visibility and Cancel action as desktop evidence to verify.
+  custom colors to both ticker bands after restart. Stage 4R recorded the WSLg
+  limitation, while Stage 4S completed visible chooser/Cancel evidence.
 
 - **Stage 4N narrow result: pass.** At `900×450`, both `Appearance &
   Readability` and `Monitoring & Runtime` are now visible after opening
@@ -98,6 +98,9 @@ for a manual visual session.
 - **Stage 4R result: partial.** Focus + XTest reached both real color-button
   paths with no runtime/store change, but the WSLg native transient was unmapped
   and non-captureable; neither a visible chooser nor Cancel action is confirmed.
+- **Stage 4S result: pass.** A human operator visibly opened both real choosers
+  and used Cancel against the controlled temporary store; the runner then
+  confirmed unchanged `Custom` values on both ticker bands and unchanged store.
 
 ## Result Template
 Use this short format when recording the outcome:

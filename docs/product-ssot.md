@@ -245,48 +245,45 @@ Quality gates become meaningful instead of aspirational noise.
 
 ## Current recommended next slice
 
-### Active next slice
-**Stage 4S — visible native-chooser cancel confirmation**
+### Active next decision
+**Next GUI seam selection — no stage assigned yet**
 
 ### Why this is next
-- Stage 4R reached the real button paths with an offline temporary store and
-  confirmed no state change afterward.
-- WSLg exposed only an unmapped, non-captureable transient; neither a visible
-  chooser nor a Cancel action can be claimed from that environment.
-- The remaining claim is visual/native, so it needs a desktop where the actual
-  chooser is visible rather than further code or XTest retries.
+- Stage 4S completed the remaining native chooser open/Cancel acceptance with
+  human-visible desktop evidence and controlled no-op verification.
+- There is no confirmed residual defect in the appearance/color flow.
+- Assigning a new numbered slice without a user-facing gap would manufacture
+  work; the next seam must be chosen from a real operator workflow.
 
-## Implementation focus for the active next slice
+## Implementation focus for the active next decision
 
 ### Goal
-On a desktop that maps the real chooser, manually open `Background…` and `Text…`,
-cancel each dialog, and confirm no in-memory or persisted appearance change.
+Select one unverified, behavior-owned desktop workflow before opening the next
+numbered implementation or acceptance slice.
 
 ### Scope
-The next slice should:
-- use only the controlled temporary settings store and offline service doubles;
-- visually establish that each native chooser appears with a Cancel control;
-- cancel, never choose or confirm a color;
-- compare both ticker colors and temporary-store values before and afterward.
+The selection review should:
+- start from the GUI operator flow, not broad static debt;
+- identify one observable outcome and a reproducible offline acceptance path;
+- distinguish existing evidence from unverified native, input, or live behavior;
+- set a file budget and explicit non-goals before implementation.
 
 ### Non-goals
-Do not in this slice:
-- select a color, apply a custom value, or touch a user settings path,
-- treat unmapped transients or stubbed dialogs as native-dialog acceptance,
-- call NewsNow, a provider, or Redis for acceptance evidence,
-- change implementation merely to make a host dialog capturable.
+Do not in this decision:
+- reopen custom-color or native chooser work without contradictory evidence,
+- select a new feature, redesign, or framework replacement by default,
+- treat full pytest or `--check` as a substitute for a desktop workflow.
 
 ### Preferred execution order
-1. establish a visible desktop/control surface that maps the chooser
-2. open and capture or directly observe each chooser
-3. use its real Cancel control
-4. record no-op state separately from dialog visibility
+1. inspect the current operator-facing flow inventory and evidence gaps
+2. choose one bounded behavior with the user
+3. create a focused RED/acceptance contract where code change is warranted
+4. record the selected scope before executing
 
 ### Acceptance criteria
-- both chooser dialogs are visibly observed and cancelled
-- colors and temporary-store values are unchanged after each cancel
-- evidence names the desktop/control surface used
-- native-dialog claims stay absent if the chooser cannot be visibly mapped
+- one next behavior-owned GUI seam has an observable outcome and bounded scope
+- existing evidence/limitations are recorded rather than rediscovered
+- no new stage is named merely to continue numbering
 
 ## What should not drive the roadmap now
 
@@ -382,8 +379,10 @@ Current sync status:
 - Stage 4Q repaired custom-color persistence across a fresh Tk restart for both
   ticker bands; a controlled X11 capture confirmed the restored rendering.
 - Stage 4R reached the real color-button paths but could not visibly map or
-  capture the WSLg chooser; only no-op state is confirmed.
-- the next bounded task is Stage 4S visible native-chooser cancel confirmation
+  capture the WSLg chooser; only no-op state is confirmed there.
+- Stage 4S added human-visible confirmation that both choosers open and Cancel,
+  while the controlled runner verified unchanged ticker/store values.
+- the next task is explicit selection of one behavior-owned GUI seam
 
 ### Do weryfikacji
 - whether Redis/LLM optional reporting belongs in a future extension of the readiness contract

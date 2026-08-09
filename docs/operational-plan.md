@@ -1,6 +1,6 @@
 # NewsNow Neon — Operational Plan
 
-**Status:** active — Stage 4R native-chooser evidence recorded locally as partial; Stage 1 and Stage 2 verified remotely; governance controls refreshed in this slice.
+**Status:** active — Stage 4S native-chooser acceptance verified locally with manual operator evidence; Stage 1 and Stage 2 verified remotely; governance controls refreshed in this slice.
 **Updated:** 2026-08-09
 **Canonical product direction:** [`product-ssot.md`](product-ssot.md)
 
@@ -733,8 +733,31 @@ matched its post-startup baseline.
 closes as partial WSLg evidence, with dialog visibility and Cancel behavior
 explicitly unverified.
 
-**Next boundary:** Stage 4S requires visible desktop confirmation of each chooser
-and its Cancel action on a temporary store.
+**Resolution:** Stage 4S completed visible operator confirmation and the
+controlled runner's no-op verification; the next boundary is GUI seam selection.
+
+## Stage 4S — visible native chooser cancel confirmation
+
+**Status:** completed locally; no production code changed.
+
+**Scope:** a human operator used the controlled offline Tk window with a
+temporary custom settings store. The operator visibly opened `Background…` and
+`Text…`, then used each real chooser's Cancel control without choosing a color.
+
+**No-op verification:** the runner's post-action status retained `Custom`,
+`#123456` background, and `#fedcba` text on both ticker bands; its temporary
+settings JSON matched the post-startup baseline. The temporary runner, store,
+and status artifact were then removed.
+
+**Evidence boundary:** visibility and Cancel use are manual operator evidence;
+the no-change state/store is automated runner evidence. No host-wide desktop
+capture, user settings path, live service, Redis, or provider was used.
+
+**Decision:** native chooser open/Cancel acceptance is complete. Do not reopen
+this seam without contradictory evidence.
+
+**Next boundary:** select a new, behavior-owned GUI workflow before assigning
+another numbered slice.
 
 ## Security lock refresh
 
@@ -762,7 +785,7 @@ and Dependabot reports zero open alerts; all 16 prior alerts are fixed.
 
 ## Current recommended next execution slice
 
-**Begin Stage 4S only on a desktop that visibly maps native color choosers.**
-Using a temporary store, manually open and Cancel each chooser, then record
-unchanged ticker/store values. Do not select a color or retry invisible WSLg
-transients as though they were dialog acceptance.
+**Select the next behavior-owned GUI workflow before assigning another stage.**
+Use the desktop operator flow and known evidence gaps to choose one observable,
+offline-reproducible outcome with explicit scope and non-goals; do not resume
+native chooser work by default.

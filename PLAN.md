@@ -128,13 +128,16 @@ and diagnostics.
   unmapped transient and no captureable chooser or verifiable Cancel control.
   Runtime colors and the temporary store remained unchanged; native-dialog
   acceptance remains partial and needs visible desktop evidence.
+- **Stage 4S — visible native chooser cancel confirmation:** a human operator
+  visibly opened and cancelled both real choosers against the controlled temporary
+  store. The runner then confirmed unchanged `Custom` values on both tickers and
+  unchanged persisted settings. No color was selected; no code changed.
 
 ## Next ordered work
 
-1. **Stage 4S — visible native-chooser cancel confirmation:** on a desktop where
-   the real chooser is mapped and visible, manually open each color button and
-   cancel it using a temporary settings store. Record only the dialog visibility,
-   Cancel action, and unchanged values; make no color selection or code change.
+1. **Next GUI slice selection:** choose one unverified, behavior-owned operator
+   workflow from the desktop product surface before assigning a new numbered
+   stage. Do not reopen native chooser work or expand scope by assumption.
 2. **Compatibility maintenance:** preserve the controller and services
    compatibility tests when later seams touch package loading or startup.
 

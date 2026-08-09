@@ -76,7 +76,7 @@ python -m newsnow_neon
 ## Current focus
 - **Operational trust first** – startup/runtime failures should classify cleanly instead of failing with raw tracebacks.
 - **Supported compatibility surfaces** – `controller.py` and `services.py` remain supported externally; explicit `services.py` file-path loads now use the canonical package proxies.
-- **GUI-first acceptance** – Stage 4R confirmed no-op state after actual color-button paths on a temporary store, but WSLg did not expose a visible, captureable chooser or Cancel control. Stage 4S requires visible desktop confirmation; no chooser behavior was changed.
+- **GUI-first acceptance** – Stage 4S manually confirmed that both real native color choosers visibly open and Cancel without changing either ticker or the controlled temporary store. No color was selected and no chooser code changed.
 
 ## Configuration
 | Variable | Purpose |
