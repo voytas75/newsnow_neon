@@ -67,16 +67,16 @@ python -m newsnow_neon
 - If startup fails in a headless shell with no GUI display, the CLI now prints a short terminal message instead of a raw Tk traceback.
 
 ## Features
-- **Aggregated headlines** – Scrapes multiple NewsNow sections into a scrolling ticker plus sortable list.
-- **Cached summaries** – LiteLLM summaries persist locally/Redis for reuse and offline access.
+- **Aggregated headlines** – Scrapes multiple NewsNow sections into a scrolling ticker and grouped headline list.
+- **Cached summaries** – LiteLLM summaries can be persisted in the optional Redis cache for reuse; without Redis, the app falls back to in-memory operation.
 - **Rich preferences** – Colour profiles, ticker speed, geometry, logging flags, and keyword highlights survive restarts.
-- **Redis insights** – Optional Redis integration exposes diagnostics, history snapshots, and cache warmers.
+- **Redis insights** – Optional Redis integration exposes diagnostics, cache persistence, and history snapshots.
 - **Observability toggles** – Enable debug logging, LiteLLM verbosity, keyword heatmaps, and info dialogs without restarts.
 
 ## Current focus
 - **Operational trust first** – startup/runtime failures should classify cleanly instead of failing with raw tracebacks.
 - **Supported compatibility surfaces** – `controller.py` and `services.py` remain supported externally; explicit `services.py` file-path loads now use the canonical package proxies.
-- **Bounded static recovery** – Stage 4A–4H cleaned small pure seams; deeper legacy and typing work stays seam-based, not repo-wide.
+- **Bounded static recovery** – Stage 4A–4I cleaned bounded seams; deeper legacy and typing work stays seam-based, not repo-wide. Stage 4J is the next bounded slice.
 
 ## Configuration
 | Variable | Purpose |
@@ -94,8 +94,6 @@ python -m newsnow_neon
 | `AZURE_OPENAI_*` | Generic Azure OpenAI deployment/API/key overrides shared across LiteLLM calls. |
 | `XDG_CONFIG_HOME` | Linux/macOS config base override (default `~/.config` / `~/Library/Application Support`). |
 | `LOCALAPPDATA` | Windows config base override. |
-| `NEWSNOW_APP_AUTHOR` | Author string displayed by the Info dialog (defaults to `https://github.com/voytas75`). |
-| `NEWSNOW_DONATE_URL` | Support link opened from the Info dialog (defaults to `https://ko-fi.com/voytas`). |
 
 > ⚠️ Keys/tokens are never logged. Any variable ending with `KEY`, `TOKEN`, `SECRET`, or `PASSWORD` (plus known Azure variants) is masked in startup reports.
 
