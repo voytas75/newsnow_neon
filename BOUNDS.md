@@ -84,10 +84,10 @@ remains. Never hide debt through blanket ignores or broad `type: ignore`.
 
 ## Current immediate boundary
 
-Stage 10 is complete: a controlled real-Tk process selected a headline, invoked
-the actual `Mute Source` button, and used a local final-URL resolver stub. The
-canonical temporary-store exclusion filtered the selected item from the list and
-both tickers without another fetch or live service. Any next GUI work must again
-be separately selected as one bounded, behavior-owned workflow; do not reopen
-completed evidence or touch user settings, live services, providers,
-compatibility surfaces, or framework design without a new scope decision.
+Stage 11 is selected as one bounded, acceptance-first GUI workflow: a controlled
+real-Tk process will invoke `Refresh History`, select one deterministic snapshot,
+then invoke `Return to Live`. A local Redis-presence and history-service double
+must prove list/history state plus intended ticker continuity and live-list
+restoration. Do not touch production behavior, user settings, live Redis,
+NewsNow, providers, compatibility surfaces, or framework design unless the
+acceptance test exposes a defect requiring a new scope decision.

@@ -189,9 +189,11 @@ and diagnostics.
 
 ## Next ordered work
 
-1. **Next GUI slice selection:** choose one unverified, behavior-owned operator
-   workflow from the desktop product surface before assigning a new numbered
-   stage. Do not reopen completed evidence or expand scope by assumption.
+1. **Stage 11 — History 24h real-Tk acceptance:** with a local Redis-presence
+   stub and deterministic historical snapshot, invoke `Refresh History`, select
+   the snapshot, then invoke `Return to Live`. Verify history/list state, the
+   intended live-ticker continuity, and restoration of the prior live list
+   without a live Redis, NewsNow, provider, or user-settings path.
 2. **Compatibility maintenance:** preserve the controller and services
    compatibility tests when later seams touch package loading or startup.
 
