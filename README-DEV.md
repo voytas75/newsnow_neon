@@ -5,7 +5,7 @@ This guide captures the engineering-facing details that complement the user-focu
 Canonical product SSOT: `docs/product-ssot.md`
 
 ## Getting Started
-1. Ensure Python 3.10+ is available and that the local Python runtime includes
+1. Ensure Python 3.11+ is available and that the local Python runtime includes
    `tkinter`.
 2. From the repository root, create or update the project `.venv` with the
    locked development environment:

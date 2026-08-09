@@ -1132,10 +1132,14 @@ and security closure result are in
 **Remote result:** GitHub's Dependency Graph submitted the refreshed versions,
 and Dependabot reports zero open alerts; all 16 prior alerts are fixed.
 
+## Current compatibility decision
+
+- Python 3.11 is the declared minimum supported runtime and the sole CI
+  runtime. A later compatibility matrix is optional, not a prerequisite for the
+  supported contract.
+
 ## Current doubts / to verify
 
-- Whether Python 3.11 is the right single CI runtime versus adding a later
-  compatibility matrix.
 - Whether external users depend on the compatibility module/package aliases.
 - Whether live NewsNow, Redis, provider behavior, or physical desktop input
   needs a separately approved acceptance contract; current GUI evidence is

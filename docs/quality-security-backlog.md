@@ -21,11 +21,11 @@ and the full pytest suite passed locally.
 
 ## Static-quality baseline
 
-Current measured baseline after Stage 9:
+Current measured baseline after the Python 3.11 policy update:
 
 | Tool | Result | Scope |
 |---|---:|---|
-| Ruff | 940 diagnostics | repository-wide |
+| Ruff | 957 diagnostics | repository-wide |
 | Pyright | 532 errors, 15 warnings | configured `newsnow_neon` + `tests` scope |
 
 `[tool.pyright]` in `pyproject.toml` excludes generated `build/` copies, so the
@@ -38,6 +38,7 @@ scope before changing it.
 ## Operating decision
 
 - Keep pytest as the sole blocking CI gate.
+- Declare Python 3.11 as the minimum supported runtime and sole CI runtime.
 - Keep Ruff and Pyright as visible local baselines; do not add blanket ignores
   or repo-wide autofixes.
 - Treat each future static-debt slice as a single behavior-owned seam with

@@ -42,6 +42,7 @@ Supporting layers:
 
 Confirmed from live repo/runtime checks in this cycle:
 - package/version in `pyproject.toml`: `0.53.0`
+- supported Python runtime in `pyproject.toml`: `>=3.11`
 - canonical runtime entrypoints:
   - `python -m newsnow_neon`
   - installed script `newsnow-neon`
@@ -116,7 +117,8 @@ These came out of the bounded repo review and should drive the next planning cyc
      behavior, Redis deployment compatibility, or physical desktop input.
 
 6. **Static quality debt is measured, not hidden**
-   - Ruff baseline: 940 diagnostics on the current repository-wide scope.
+   - Ruff baseline: 957 diagnostics on the current repository-wide scope after
+     raising the Ruff target to Python 3.11.
    - Pyright baseline: 532 errors and 15 warnings on the configured
      `newsnow_neon` + `tests` scope; generated `build/` copies are excluded by
      `[tool.pyright]` in `pyproject.toml`.

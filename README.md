@@ -6,7 +6,7 @@ Canonical product SSOT: `docs/product-ssot.md`
 
 ## Installation
 
-- Requires Python 3.10+.
+- Requires Python 3.11+.
 - Requires a desktop Python build with `tkinter` available.
 - On some Linux distributions this means installing the OS package separately (for example `python3-tk`).
 

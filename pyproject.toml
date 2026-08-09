@@ -7,7 +7,7 @@ name = "newsnow-neon"
 version = "0.53.0"
 description = "A desktop news-ticker and summarization app (Neon edition)."
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 license = { file = "LICENSE" }
 authors = [
   { name = "voytas75" }
@@ -47,7 +47,7 @@ newsnow-neon = { workspace = true }
 
 [tool.ruff]
 line-length = 88
-target-version = "py310"
+target-version = "py311"
 lint.select = ["E", "F", "I", "B", "UP", "D", "N", "C90"]
 
 [tool.pyright]
