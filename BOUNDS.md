@@ -1,7 +1,7 @@
 # NewsNow Neon — Execution Bounds
 
 **Status:** active
-**Updated:** 2026-08-08
+**Updated:** 2026-08-09
 
 ## Governing documents
 
@@ -84,9 +84,10 @@ remains. Never hide debt through blanket ignores or broad `type: ignore`.
 
 ## Current immediate boundary
 
-Stage 4H is complete for
-`newsnow_neon/app/controller/auto_refresh_controller.py`. The next Stage 4
-slice must choose one new proven, behavior-owned seam and reduce only its
-directly owned Ruff/Pyright debt with focused regression coverage. Do not start
-repo-wide cleanup or alter the supported controller/services compatibility
+Stage 4I is complete for the duplicated private helper declarations in
+`newsnow_neon/legacy_app.py`; the final active implementations were retained
+and protected by offline structural and behavior regression coverage. The next
+Stage 4 slice must choose one new proven, behavior-owned seam and reduce only
+its directly owned Ruff/Pyright debt with focused regression coverage. Do not
+start repo-wide cleanup or alter the supported controller/services compatibility
 surfaces incidentally.

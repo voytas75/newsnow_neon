@@ -1,7 +1,7 @@
 # NewsNow Neon — Delivery Plan
 
 **Status:** active
-**Updated:** 2026-08-08
+**Updated:** 2026-08-09
 
 ## Purpose
 
@@ -75,10 +75,16 @@ and diagnostics.
 - **Stage 4H — auto-refresh-controller seam:** reduced the
   `app/controller/auto_refresh_controller.py` Ruff baseline from 1 diagnostic
   to 0 and added focused pending-job cancellation coverage.
+- **Stage 4I — legacy helper consolidation:** removed 57 redundant top-level
+  helper definitions from `legacy_app.py`, retaining the final active
+  implementations and adding an AST structural regression test plus offline
+  helper-contract coverage. The global measured baselines fell from Ruff
+  `1,091` to `968` diagnostics and Pyright `641` to `536` errors; neither is
+  yet a blocking repository-wide gate.
 
 ## Next ordered work
 
-1. **Stage 4I — next bounded static-debt seam:** select one proven seam and
+1. **Stage 4J — next bounded static-debt seam:** select one proven seam and
    reduce only its directly owned Ruff/Pyright debt; never start with repo-wide
    cleanup.
 2. **Compatibility maintenance:** preserve the controller and services

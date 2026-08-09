@@ -1,7 +1,7 @@
 # NewsNow Neon — Operational Plan
 
-**Status:** active — Stage 1 and Stage 2 verified remotely; governance controls refreshed in this slice.
-**Updated:** 2026-08-08
+**Status:** active — Stage 4I helper-consolidation slice verified locally; Stage 1 and Stage 2 verified remotely; governance controls refreshed in this slice.
+**Updated:** 2026-08-09
 **Canonical product direction:** [`product-ssot.md`](product-ssot.md)
 
 ## Goal
@@ -454,7 +454,34 @@ jobs and safe identifier clearing when Tk cancellation reports an expired job.
 baseline is Ruff `1,091` diagnostics and Pyright `641` errors plus `15` warnings;
 global Pyright remains intentionally non-blocking.
 
-**Next:** select one new behavior-owned seam for Stage 4I.
+**Next:** select one new behavior-owned seam for Stage 4J.
+
+## Stage 4I — legacy duplicate-helper consolidation
+
+**Status:** completed locally.
+
+**Scope:** `newsnow_neon/legacy_app.py` and
+`tests/test_legacy_helper_consolidation.py`.
+
+**RED:** the new AST structural regression test established that three private
+helper names had 25, 25, and 10 top-level definitions respectively.
+
+**Changed:** removed the continuous duplicate block at lines 435–2771 from the
+pre-change file: 57 redundant definitions plus their adjacent blank lines. The
+final active definitions of `_normalize_href`, `_resolve_final_url`, and
+`_extract_completion_text` remain. The new offline test protects both singular
+definition counts and retained helper behavior without network, provider, Redis,
+or GUI access.
+
+**Validation:** focused helper/parsing/summary tests passed; the full frozen
+pytest suite passed; the new test is Ruff- and Pyright-clean; and
+`py_compile newsnow_neon/legacy_app.py` passed.
+
+**Measured result:** repository-wide Ruff fell from `1,091` to `968`
+diagnostics and Pyright from `641` to `536` errors (warnings remain `15`).
+Both repository-wide checks intentionally remain non-blocking.
+
+**Next:** select one new behavior-owned seam for Stage 4J.
 
 ## Security lock refresh
 
@@ -482,6 +509,6 @@ and Dependabot reports zero open alerts; all 16 prior alerts are fixed.
 
 ## Current recommended next execution slice
 
-**Begin Stage 4I as a bounded static-debt reduction slice.** Select one new
+**Begin Stage 4J as a bounded static-debt reduction slice.** Select one new
 behavior-owned seam, establish its quality baseline, and reduce only directly
 owned Ruff/Pyright debt with focused regression coverage.

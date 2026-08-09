@@ -115,8 +115,8 @@ These came out of the bounded repo review and should drive the next planning cyc
      behavior, Redis deployment compatibility, or main GUI/controller workflows.
 
 6. **Static quality debt is measured, not hidden**
-   - Ruff baseline: 1,091 diagnostics on the current repository-wide scope.
-   - Pyright baseline: 641 errors and 15 warnings on the current repository-wide scope.
+   - Ruff baseline: 968 diagnostics on the current repository-wide scope.
+   - Pyright baseline: 536 errors and 15 warnings on the current repository-wide scope.
    - These are not blocking CI until reduced through bounded slices.
 
 7. **Version truth is not yet unified**
@@ -246,7 +246,7 @@ Quality gates become meaningful instead of aspirational noise.
 ## Current recommended next slice
 
 ### Active next slice
-**Stage 4 — bounded static-debt reduction**
+**Stage 4J — bounded static-debt reduction**
 
 ### Why this is next
 - CI run [#31278999184](https://github.com/voytas75/newsnow_neon/actions/runs/31278999184) passed for the security lock refresh.
@@ -346,8 +346,13 @@ Current sync status:
 - Stage 4G reduced the `app/controller/refresh_controller.py` Ruff seam from 2
   diagnostics to 0 and added focused refresh-controller regression coverage
 - Stage 4H reduced the `app/controller/auto_refresh_controller.py` Ruff seam
-  from 1 diagnostic to 0 and added focused auto-refresh regression coverage
-- the next bounded task is Stage 4I static-debt reduction in one new proven seam
+  from 1 diagnostic to 0 and added focused pending-job cancellation coverage
+- Stage 4I removed 57 redundant top-level helper definitions from
+  `legacy_app.py`, retaining the final active implementations; an AST
+  structural regression test and offline helper-contract coverage protect the
+  consolidation. The repository-wide baselines are now Ruff `968` diagnostics
+  and Pyright `536` errors plus `15` warnings.
+- the next bounded task is Stage 4J static-debt reduction in one new proven seam
 
 ### Do weryfikacji
 - whether Redis/LLM optional reporting belongs in a future extension of the readiness contract
