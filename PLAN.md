@@ -123,13 +123,18 @@ and diagnostics.
   found that custom colors restored only to the primary ticker. Both immediate
   custom-color application and store restoration now apply colors to both
   tickers; a fresh X11 capture confirms the shared custom rendering.
+- **Stage 4R — native chooser cancel path:** focus + XTest reached both real
+  color-button paths against a temporary store, but WSLg exposed only an
+  unmapped transient and no captureable chooser or verifiable Cancel control.
+  Runtime colors and the temporary store remained unchanged; native-dialog
+  acceptance remains partial and needs visible desktop evidence.
 
 ## Next ordered work
 
-1. **Stage 4R — native color-chooser cancel-path acceptance:** on a controlled
-   temporary settings store, open each color chooser through its real button and
-   cancel it. Verify the dialog invocation does not alter either ticker or
-   persisted values; do not choose a color or touch the user's settings file.
+1. **Stage 4S — visible native-chooser cancel confirmation:** on a desktop where
+   the real chooser is mapped and visible, manually open each color button and
+   cancel it using a temporary settings store. Record only the dialog visibility,
+   Cancel action, and unchanged values; make no color selection or code change.
 2. **Compatibility maintenance:** preserve the controller and services
    compatibility tests when later seams touch package loading or startup.
 

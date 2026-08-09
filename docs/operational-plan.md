@@ -1,6 +1,6 @@
 # NewsNow Neon — Operational Plan
 
-**Status:** active — Stage 4Q appearance round-trip verified locally; Stage 1 and Stage 2 verified remotely; governance controls refreshed in this slice.
+**Status:** active — Stage 4R native-chooser evidence recorded locally as partial; Stage 1 and Stage 2 verified remotely; governance controls refreshed in this slice.
 **Updated:** 2026-08-09
 **Canonical product direction:** [`product-ssot.md`](product-ssot.md)
 
@@ -706,8 +706,35 @@ These historical diagnostics are intentionally outside this bounded fix.
 share the restored dark-blue background and pale-pink text, while offline rows
 and the action bar remain readable without overlap.
 
-**Next boundary:** Stage 4R may exercise only native color-chooser open/cancel
-no-op behavior against a temporary store.
+**Resolution:** Stage 4R recorded no-op state but could not visibly map or
+capture the chooser; Stage 4S is the remaining desktop-evidence boundary.
+
+## Stage 4R — native color-chooser cancel path
+
+**Status:** completed locally as partial evidence; no production code changed.
+
+**Scope:** a real Tk app with offline headline doubles and a temporary custom
+settings store. Target-only X11 geometry identified the `Background…` and
+`Text…` controls; focus + XTest delivered their real button paths. No color was
+selected, no user settings path was used, and no service/provider was called.
+
+**Observed:** after focusing the Tk client and clicking `Background…`, X11
+exposed a short-lived `NewsNow Neon` Tk `Toplevel` (`259×68`). It was already
+unmapped before inspection; `import -window` could not capture it. Repeating the
+focused `Text…` path did not yield a viewable chooser or visible Cancel control.
+The host therefore does not support a claim that either native dialog was
+visibly opened or cancelled.
+
+**No-op evidence:** after both attempts, both ticker bands retained `#123456`
+background and `#fedcba` text under `Custom`; the temporary settings JSON exactly
+matched its post-startup baseline.
+
+**Decision:** do not change chooser code or fake a native dialog. Stage 4R
+closes as partial WSLg evidence, with dialog visibility and Cancel behavior
+explicitly unverified.
+
+**Next boundary:** Stage 4S requires visible desktop confirmation of each chooser
+and its Cancel action on a temporary store.
 
 ## Security lock refresh
 
@@ -735,7 +762,7 @@ and Dependabot reports zero open alerts; all 16 prior alerts are fixed.
 
 ## Current recommended next execution slice
 
-**Begin Stage 4R as native color-chooser cancel-path acceptance.** Against a
-temporary settings store, open each chooser using its real button and cancel it;
-verify both ticker colors and persisted values remain unchanged. Do not select a
-color or touch the user's settings path.
+**Begin Stage 4S only on a desktop that visibly maps native color choosers.**
+Using a temporary store, manually open and Cancel each chooser, then record
+unchanged ticker/store values. Do not select a color or retry invisible WSLg
+transients as though they were dialog acceptance.

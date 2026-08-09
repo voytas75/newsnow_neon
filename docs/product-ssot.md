@@ -246,51 +246,47 @@ Quality gates become meaningful instead of aspirational noise.
 ## Current recommended next slice
 
 ### Active next slice
-**Stage 4R — native color-chooser cancel-path acceptance**
+**Stage 4S — visible native-chooser cancel confirmation**
 
 ### Why this is next
-- Stage 4Q repaired and verified the settings-store round-trip for custom colors
-  on both real ticker bands.
-- The GUI primary surface still has one bounded interaction not exercised:
-  opening and cancelling the native color chooser through its actual buttons.
-- A cancel-only path tests dialog reachability and no-op safety without selecting
-  colors, touching user settings, or extending this into native-dialog E2E.
+- Stage 4R reached the real button paths with an offline temporary store and
+  confirmed no state change afterward.
+- WSLg exposed only an unmapped, non-captureable transient; neither a visible
+  chooser nor a Cancel action can be claimed from that environment.
+- The remaining claim is visual/native, so it needs a desktop where the actual
+  chooser is visible rather than further code or XTest retries.
 
 ## Implementation focus for the active next slice
 
 ### Goal
-Open and cancel each real native color chooser against a controlled temporary
-settings store, verifying that cancellation leaves the appearance state and
-persisted values unchanged.
+On a desktop that maps the real chooser, manually open `Background…` and `Text…`,
+cancel each dialog, and confirm no in-memory or persisted appearance change.
 
 ### Scope
 The next slice should:
-- start the real Tk app with offline service doubles and temporary settings;
-- open `Background…` and `Text…` through their normal UI actions;
-- capture the real dialog reachability where the desktop supports it, then
-  cancel rather than select a value;
-- verify both ticker colors and the temporary store are unchanged afterward.
+- use only the controlled temporary settings store and offline service doubles;
+- visually establish that each native chooser appears with a Cancel control;
+- cancel, never choose or confirm a color;
+- compare both ticker colors and temporary-store values before and afterward.
 
 ### Non-goals
 Do not in this slice:
-- choose a color, confirm a color dialog, or alter user settings,
+- select a color, apply a custom value, or touch a user settings path,
+- treat unmapped transients or stubbed dialogs as native-dialog acceptance,
 - call NewsNow, a provider, or Redis for acceptance evidence,
-- claim native dialog behavior where the host desktop cannot expose it,
-- redesign the color controls or alter public imports.
+- change implementation merely to make a host dialog capturable.
 
 ### Preferred execution order
-1. inspect the native dialog behavior and available desktop automation boundary
-2. run the controlled open/cancel attempt for each button
-3. compare in-memory and persisted appearance values before and after cancellation
-4. classify unsupported desktop automation honestly rather than simulating a
-   native dialog in a stub
+1. establish a visible desktop/control surface that maps the chooser
+2. open and capture or directly observe each chooser
+3. use its real Cancel control
+4. record no-op state separately from dialog visibility
 
 ### Acceptance criteria
-- each chooser is either visibly opened then cancelled with no state change, or
-  explicitly reported as unsupported by the desktop boundary
-- temporary-store values and both ticker colors remain unchanged after cancel
-- no user setting, live service, or selected color is involved
-- the report distinguishes real dialog evidence from any unsupported path
+- both chooser dialogs are visibly observed and cancelled
+- colors and temporary-store values are unchanged after each cancel
+- evidence names the desktop/control surface used
+- native-dialog claims stay absent if the chooser cannot be visibly mapped
 
 ## What should not drive the roadmap now
 
@@ -385,7 +381,9 @@ Current sync status:
   controlled real-Tk coordinates and paired X11 captures; no ticker change made.
 - Stage 4Q repaired custom-color persistence across a fresh Tk restart for both
   ticker bands; a controlled X11 capture confirmed the restored rendering.
-- the next bounded task is Stage 4R native color-chooser cancel-path acceptance
+- Stage 4R reached the real color-button paths but could not visibly map or
+  capture the WSLg chooser; only no-op state is confirmed.
+- the next bounded task is Stage 4S visible native-chooser cancel confirmation
 
 ### Do weryfikacji
 - whether Redis/LLM optional reporting belongs in a future extension of the readiness contract

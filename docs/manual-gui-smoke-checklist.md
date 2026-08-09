@@ -78,7 +78,8 @@ for a manual visual session.
   not part of the toggled options panel.
 - resolution: Stage 4N restored both heading labels, Stage 4O restored lower
   color controls, Stage 4P classified marquee movement, and Stage 4Q restored
-  custom colors to both ticker bands after restart.
+  custom colors to both ticker bands after restart. Stage 4R leaves native
+  chooser visibility and Cancel action as desktop evidence to verify.
 
 - **Stage 4N narrow result: pass.** At `900×450`, both `Appearance &
   Readability` and `Monitoring & Runtime` are now visible after opening
@@ -94,6 +95,9 @@ for a manual visual session.
 - **Stage 4Q narrow result: pass.** A fresh Tk process restores `Custom`, speed
   `7`, `#123456` background, and `#fedcba` text on both ticker bands through a
   temporary store; target-only X11 capture confirms the shared rendering.
+- **Stage 4R result: partial.** Focus + XTest reached both real color-button
+  paths with no runtime/store change, but the WSLg native transient was unmapped
+  and non-captureable; neither a visible chooser nor Cancel action is confirmed.
 
 ## Result Template
 Use this short format when recording the outcome:

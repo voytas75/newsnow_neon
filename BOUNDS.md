@@ -84,9 +84,10 @@ remains. Never hide debt through blanket ignores or broad `type: ignore`.
 
 ## Current immediate boundary
 
-Stage 4Q is complete for the custom-color round-trip defect: controlled
-cross-process real Tk now restores the custom profile, speed, background, and
-text on both tickers through a temporary settings store. Stage 4R may only open
-and cancel each native color chooser against a temporary store; it must not
-choose a color, call NewsNow, Redis, or a provider, alter the user's settings
-file, redesign the GUI, or change compatibility surfaces incidentally.
+Stage 4R is complete only as partial WSLg evidence: focus + XTest reached the
+real color-button paths against a temporary settings store, and no appearance or
+persistence value changed. The host exposed only an unmapped, non-captureable
+transient rather than a visible chooser and verifiable Cancel control. Stage 4S
+requires visible desktop confirmation of open/cancel no-op behavior. Do not
+choose colors, call NewsNow, Redis, or a provider, alter user settings, redesign
+the GUI, or change compatibility surfaces incidentally.

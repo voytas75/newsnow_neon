@@ -76,7 +76,7 @@ python -m newsnow_neon
 ## Current focus
 - **Operational trust first** – startup/runtime failures should classify cleanly instead of failing with raw tracebacks.
 - **Supported compatibility surfaces** – `controller.py` and `services.py` remain supported externally; explicit `services.py` file-path loads now use the canonical package proxies.
-- **GUI-first acceptance** – Stage 4Q fixes cross-process restoration of custom colors: both ticker bands now load the saved custom background/text alongside the selected speed. Stage 4R is limited to native chooser open/cancel acceptance on a temporary store.
+- **GUI-first acceptance** – Stage 4R confirmed no-op state after actual color-button paths on a temporary store, but WSLg did not expose a visible, captureable chooser or Cancel control. Stage 4S requires visible desktop confirmation; no chooser behavior was changed.
 
 ## Configuration
 | Variable | Purpose |
