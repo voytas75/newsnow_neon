@@ -249,11 +249,11 @@ Quality gates become meaningful instead of aspirational noise.
 **Next GUI seam selection — no stage assigned yet**
 
 ### Why this is next
-- Stage 4V established real-Tk, offline evidence that actual exclusion Apply/Clear
-  commands normalize and persist the terms while keeping the rendered list and
-  both ticker bands aligned as the headline set narrows and restores.
+- Stage 4W established real-Tk, offline evidence that selecting an actual list
+  row reaches a summary Toplevel and renders the configured fallback result after
+  repairing the missing summary-service proxy binding.
 - There is no confirmed residual defect in the appearance/color, manual-refresh,
-  search/filter, or exclusion flows.
+  search/filter, exclusion, or summary-fallback flows.
 - Assigning a new numbered slice without a user-facing gap would manufacture
   work; the next seam must be chosen from a real operator workflow.
 
@@ -392,6 +392,8 @@ Current sync status:
   both ticker bands.
 - Stage 4V added a controlled real-Tk exclusion acceptance: Apply/Clear persist
   normalized terms to a temporary store and restore matching list/ticker views.
+- Stage 4W repaired the missing summary-service proxy binding and added a
+  controlled real-Tk selected-row fallback-summary acceptance.
 - the next task is explicit selection of one behavior-owned GUI seam
 
 ### Do weryfikacji

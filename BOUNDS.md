@@ -84,10 +84,11 @@ remains. Never hide debt through blanket ignores or broad `type: ignore`.
 
 ## Current immediate boundary
 
-Stage 4V is complete: a controlled real-Tk subprocess used a temporary settings
-store and local service doubles to apply and clear normalized exclusion terms.
-The store, list, and both ticker bands reflected the expected three-headline
-offline subsets at every step; no production code changed. Any next GUI work must
-be separately selected as one bounded, behavior-owned workflow; do not reopen
-native chooser acceptance or touch user settings, live services, providers,
-compatibility surfaces, or framework design without a new scope decision.
+Stage 4W is complete: a controlled real-Tk subprocess selected an offline
+headline and opened its summary through the normal selected-row path. The app now
+uses the configured summary-service proxy, and the summary Toplevel rendered the
+controlled fallback text and status; no user settings, live services, providers,
+or Redis were used. Any next GUI work must be separately selected as one bounded,
+behavior-owned workflow; do not reopen native chooser acceptance or touch user
+settings, live services, providers, compatibility surfaces, or framework design
+without a new scope decision.

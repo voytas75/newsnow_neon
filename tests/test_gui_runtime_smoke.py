@@ -636,6 +636,151 @@ raise SystemExit(0 if succeeded else 1)
     assert "exclusion_flow=ok" in result.stdout
 
 
+def test_real_tk_selection_opens_offline_fallback_summary(tmp_path: Path) -> None:
+    """Select a real list row and render its fallback summary in a Toplevel."""
+    settings_path = tmp_path / "summary-selection-settings.json"
+    script = r'''
+import os
+import sys
+import time
+from pathlib import Path
+
+settings_path = Path(sys.argv[1])
+os.environ["NEWS_APP_SETTINGS"] = str(settings_path)
+os.environ["REDIS_URL"] = ""
+
+from newsnow_neon.app import services
+from newsnow_neon.models import Headline, SummaryResolution
+
+headline = Headline(
+    title="Offline summary selection",
+    url="https://example.test/offline-summary-selection",
+    section="Technology",
+)
+summary_calls = []
+
+
+def resolve_summary(candidate):
+    summary_calls.append(candidate.title)
+    return SummaryResolution(
+        summary="Fallback summary from controlled offline resolver.",
+        article_text=None,
+        from_cache=False,
+        issue="article_fetch_failed",
+    )
+
+
+services.configure_app_services(
+    fetch_headlines=lambda **_kwargs: ([headline], False, None),
+    build_ticker_text=lambda entries: " | ".join(item.title for item in entries),
+    resolve_article_summary=resolve_summary,
+    persist_headlines_with_ticker=lambda *_args, **_kwargs: None,
+    collect_redis_statistics=lambda: None,
+    clear_cached_headlines=lambda: (True, "offline summary: cache unavailable"),
+    load_historical_snapshots=lambda *_args, **_kwargs: [],
+)
+
+from newsnow_neon.application import AINewsApp
+from newsnow_neon.ui.windows.summary_window import SummaryWindow
+
+app = AINewsApp()
+succeeded = False
+deadline = time.monotonic() + 3
+
+
+def summary_window():
+    for widget in app.winfo_children():
+        if isinstance(widget, SummaryWindow):
+            return widget
+    return None
+
+
+def finish_error(error):
+    print(f"summary_selection_error={error!r}", file=sys.stderr)
+    app.destroy()
+    raise SystemExit(1)
+
+
+def wait_for_summary():
+    global succeeded
+    try:
+        app.update_idletasks()
+        window = summary_window()
+        if window is None:
+            if time.monotonic() < deadline:
+                app.after(25, wait_for_summary)
+                return
+            raise AssertionError("summary window was not opened")
+
+        summary_text = window.text_widget.get("1.0", "end-1c")
+        if "Fallback summary from controlled offline resolver." not in summary_text:
+            if time.monotonic() < deadline:
+                app.after(25, wait_for_summary)
+                return
+            raise AssertionError(f"summary text not rendered: {summary_text!r}")
+
+        assert window.status_var.get() == (
+            "Showing fallback summary; article content unavailable."
+        )
+        assert window.title() == "Summary • Offline summary selection"
+        assert summary_calls == [headline.title]
+        succeeded = True
+        print("summary_selection=ok")
+        window.destroy()
+        app.destroy()
+    except BaseException as error:
+        finish_error(error)
+
+
+def open_selected_summary():
+    try:
+        app.update_idletasks()
+        if headline.title not in app.listbox.get("1.0", "end-1c"):
+            if time.monotonic() < deadline:
+                app.after(25, open_selected_summary)
+                return
+            raise AssertionError("headline row was not rendered")
+
+        line = next(iter(app._listbox_line_to_headline))
+        bbox = app.listbox.bbox(f"{line}.0")
+        if not bbox:
+            if time.monotonic() < deadline:
+                app.after(25, open_selected_summary)
+                return
+            raise AssertionError("headline row has no geometry")
+        x_coord, y_coord, _width, height = bbox
+        app.listbox.event_generate(
+            "<Button-1>", x=x_coord + 1, y=y_coord + max(1, height // 2)
+        )
+        assert app._selected_line == line
+        app.open_selected_headline(None)
+        app.after(0, wait_for_summary)
+    except BaseException as error:
+        finish_error(error)
+
+
+app.after(0, open_selected_summary)
+app.mainloop()
+raise SystemExit(0 if succeeded else 1)
+'''
+    environment = os.environ.copy()
+    environment["NEWS_APP_SETTINGS"] = str(settings_path)
+    environment["REDIS_URL"] = ""
+
+    result = subprocess.run(
+        [sys.executable, "-c", script, str(settings_path)],
+        capture_output=True,
+        cwd=Path(__file__).resolve().parents[1],
+        env=environment,
+        text=True,
+        timeout=10,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "summary_selection=ok" in result.stdout
+
+
 def test_real_tk_restores_custom_appearance_across_restart(tmp_path: Path) -> None:
     """Persist custom appearance in one real-Tk process and restore it in another."""
     settings_path = tmp_path / "appearance-round-trip-settings.json"

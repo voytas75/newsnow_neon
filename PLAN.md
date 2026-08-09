@@ -145,6 +145,10 @@ and diagnostics.
   uses actual exclusion Apply/Clear commands and a temporary settings store to
   prove persisted exclusions and restored list/ticker rendering. No production
   code, user settings, NewsNow, Redis, or provider path was used.
+- **Stage 4W — summary fallback real-Tk acceptance:** a controlled selection opens
+  a real summary Toplevel with a deterministic fallback result; the missing
+  resolver binding was repaired through the configured service proxy. No user
+  settings, NewsNow, Redis, or provider path was used.
 
 ## Next ordered work
 

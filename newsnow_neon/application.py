@@ -1782,7 +1782,7 @@ class AINewsApp(tk.Tk):
         SummaryWindow(
             self,
             self._headline_with_timezone(headline_obj),
-            summary_resolver=resolve_article_summary,
+            summary_resolver=app_services.resolve_article_summary,
         )
 
 

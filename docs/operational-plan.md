@@ -1,6 +1,6 @@
 # NewsNow Neon — Operational Plan
 
-**Status:** active — Stage 4V exclusion real-Tk acceptance verified locally with controlled offline evidence; Stage 1 and Stage 2 verified remotely; governance controls refreshed in this slice.
+**Status:** active — Stage 4W summary-fallback real-Tk acceptance and resolver-binding repair verified locally with controlled offline evidence; Stage 1 and Stage 2 verified remotely; governance controls refreshed in this slice.
 **Updated:** 2026-08-09
 **Canonical product direction:** [`product-ssot.md`](product-ssot.md)
 
@@ -821,6 +821,36 @@ production behavior.
 **Evidence boundary:** this proves real widget commands, settings-store writes,
 and controlled offline rendering. It does not prove physical pointer/keyboard
 input, live NewsNow, Redis, provider, or user-settings behavior.
+
+**Next boundary:** select a new, behavior-owned GUI workflow before assigning
+another numbered slice.
+
+## Stage 4W — summary fallback real-Tk acceptance
+
+**Status:** completed locally; repaired one production binding.
+
+**RED:** after a controlled list-row selection, `open_selected_headline()` raised
+`NameError` because it referenced an undefined `resolve_article_summary` name;
+the real summary Toplevel was never created.
+
+**Changed:** the `SummaryWindow` now receives
+`app_services.resolve_article_summary`, the configured stable service proxy.
+
+**Acceptance:** a generated real-Tk list selection sets the normal selected-row
+state, then the normal selected-row open path creates `SummaryWindow`. A local
+resolver returns `SummaryResolution(issue='article_fetch_failed')`; the window
+renders the fallback body and the bounded unavailable-article status. No network,
+provider, Redis, or user settings are used.
+
+**Validation:** the expanded real-Tk smoke passes. Scoped Ruff/Pyright show
+pre-existing `application.py` debt (Ruff 167 diagnostics; Pyright 33 errors),
+while the test module is Ruff-clean and Pyright-clean; no new diagnostic was
+introduced at the changed proxy call.
+
+**Evidence boundary:** this proves generated selection, the selected-row summary
+path, Toplevel construction, and controlled fallback rendering. It does not prove
+physical double-click input, live NewsNow, Redis, provider, or user-settings
+behavior.
 
 **Next boundary:** select a new, behavior-owned GUI workflow before assigning
 another numbered slice.
