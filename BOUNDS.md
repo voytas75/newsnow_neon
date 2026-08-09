@@ -84,10 +84,11 @@ remains. Never hide debt through blanket ignores or broad `type: ignore`.
 
 ## Current immediate boundary
 
-Stage 4T is complete: a controlled real-Tk subprocess used a temporary settings
-store and local service doubles to invoke `Refresh Now` after initial rendering.
-The second offline payload replaced the first in the list and both ticker bands;
-no production code changed. Any next GUI work must be separately selected as one
-bounded, behavior-owned workflow; do not reopen native chooser acceptance or touch
-user settings, live services, providers, compatibility surfaces, or framework
-design without a new scope decision.
+Stage 4U is complete: a controlled real-Tk subprocess used a temporary settings
+store and local service doubles to select a section, enter a search query, clear
+it, and restore all sections. The list and both ticker bands matched the expected
+three-headline offline subsets at every step; no production code changed. Any
+next GUI work must be separately selected as one bounded, behavior-owned workflow;
+do not reopen native chooser acceptance or touch user settings, live services,
+providers, compatibility surfaces, or framework design without a new scope
+decision.

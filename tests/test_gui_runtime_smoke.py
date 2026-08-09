@@ -279,6 +279,187 @@ raise SystemExit(0 if succeeded else 1)
     assert "manual_refresh=ok" in result.stdout
 
 
+def test_real_tk_search_and_section_filter_update_list_and_tickers(
+    tmp_path: Path,
+) -> None:
+    """Exercise the real triage controls against deterministic offline headlines."""
+    settings_path = tmp_path / "search-filter-settings.json"
+    script = r'''
+import os
+import sys
+import time
+from pathlib import Path
+
+settings_path = Path(sys.argv[1])
+os.environ["NEWS_APP_SETTINGS"] = str(settings_path)
+os.environ["REDIS_URL"] = ""
+
+from newsnow_neon.app import services
+from newsnow_neon.models import Headline
+
+technology_ai = Headline(
+    title="AI platform launch",
+    url="https://example.test/ai-platform",
+    section="Technology",
+)
+business_market = Headline(
+    title="Market update",
+    url="https://example.test/market-update",
+    section="Business",
+)
+technology_security = Headline(
+    title="Security update",
+    url="https://example.test/security-update",
+    section="Technology",
+)
+headlines = [technology_ai, business_market, technology_security]
+fetch_calls = []
+
+
+def fetch_headlines(*, force_refresh=False):
+    fetch_calls.append(force_refresh)
+    return headlines, False, None
+
+
+services.configure_app_services(
+    fetch_headlines=fetch_headlines,
+    build_ticker_text=lambda entries: " | ".join(item.title for item in entries),
+    resolve_article_summary=lambda _headline: None,
+    persist_headlines_with_ticker=lambda *_args, **_kwargs: None,
+    collect_redis_statistics=lambda: None,
+    clear_cached_headlines=lambda: (True, "offline filters: cache unavailable"),
+    load_historical_snapshots=lambda *_args, **_kwargs: [],
+)
+
+from newsnow_neon.application import AINewsApp
+
+app = AINewsApp()
+succeeded = False
+deadline = time.monotonic() + 3
+all_titles = [item.title for item in headlines]
+technology_titles = [technology_ai.title, technology_security.title]
+security_titles = [technology_security.title]
+
+
+def ticker_titles(ticker):
+    return [
+        ticker._headline_groups[group_tag]["full_title"]
+        for group_tag in ticker.headline_order
+    ]
+
+
+def view_matches(expected_titles):
+    list_text = app.listbox.get("1.0", "end-1c")
+    unexpected_titles = [title for title in all_titles if title not in expected_titles]
+    if not all(title in list_text for title in expected_titles):
+        return False
+    if any(title in list_text for title in unexpected_titles):
+        return False
+    for ticker in (app.ticker, app.full_ticker):
+        titles = ticker_titles(ticker)
+        if not all(
+            any(expected in title for title in titles)
+            for expected in expected_titles
+        ):
+            return False
+        if any(
+            any(unexpected in title for title in titles)
+            for unexpected in unexpected_titles
+        ):
+            return False
+    return True
+
+
+def finish_error(error):
+    print(f"search_filter_error={error!r}", file=sys.stderr)
+    app.destroy()
+    raise SystemExit(1)
+
+
+def wait_for_view(expected_titles, next_step):
+    try:
+        app.update_idletasks()
+        if not view_matches(expected_titles):
+            if time.monotonic() < deadline:
+                app.after(25, lambda: wait_for_view(expected_titles, next_step))
+                return
+            list_text = app.listbox.get("1.0", "end-1c")
+            raise AssertionError(f"expected {expected_titles!r}, got {list_text!r}")
+        next_step()
+    except BaseException as error:
+        finish_error(error)
+
+
+def select_section(label):
+    menu = app.section_filter_menu["menu"]
+    end = menu.index("end")
+    if end is None:
+        raise AssertionError("section filter has no menu entries")
+    for index in range(int(end) + 1):
+        if menu.entrycget(index, "label") == label:
+            menu.invoke(index)
+            return
+    raise AssertionError(f"section menu entry not found: {label}")
+
+
+def clear_search():
+    for widget in app.search_entry.master.winfo_children():
+        if widget.winfo_class() == "Button" and widget.cget("text") == "Clear":
+            widget.invoke()
+            return
+    raise AssertionError("search Clear button not found")
+
+
+def finish():
+    global succeeded
+    assert fetch_calls == [False]
+    succeeded = True
+    print("search_filter=ok")
+    app.destroy()
+
+
+def select_all_sections():
+    select_section("All sections")
+    app.after(0, lambda: wait_for_view(all_titles, finish))
+
+
+def clear_query():
+    clear_search()
+    app.after(0, lambda: wait_for_view(technology_titles, select_all_sections))
+
+
+def enter_query():
+    app.search_entry.insert(0, "security")
+    app.after(0, lambda: wait_for_view(security_titles, clear_query))
+
+
+def select_technology():
+    select_section("Technology")
+    app.after(0, lambda: wait_for_view(technology_titles, enter_query))
+
+
+app.after(0, lambda: wait_for_view(all_titles, select_technology))
+app.mainloop()
+raise SystemExit(0 if succeeded else 1)
+'''
+    environment = os.environ.copy()
+    environment["NEWS_APP_SETTINGS"] = str(settings_path)
+    environment["REDIS_URL"] = ""
+
+    result = subprocess.run(
+        [sys.executable, "-c", script, str(settings_path)],
+        capture_output=True,
+        cwd=Path(__file__).resolve().parents[1],
+        env=environment,
+        text=True,
+        timeout=10,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "search_filter=ok" in result.stdout
+
+
 def test_real_tk_restores_custom_appearance_across_restart(tmp_path: Path) -> None:
     """Persist custom appearance in one real-Tk process and restore it in another."""
     settings_path = tmp_path / "appearance-round-trip-settings.json"

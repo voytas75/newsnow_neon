@@ -249,11 +249,11 @@ Quality gates become meaningful instead of aspirational noise.
 **Next GUI seam selection — no stage assigned yet**
 
 ### Why this is next
-- Stage 4T established real-Tk, offline evidence that the actual `Refresh Now`
-  command replaces the rendered list and both ticker bands after its worker
-  completes.
-- There is no confirmed residual defect in the appearance/color or manual-refresh
-  flows.
+- Stage 4U established real-Tk, offline evidence that the actual section-menu,
+  search-entry, and Clear-button commands keep the rendered list and both ticker
+  bands aligned as triage filters narrow and restore the headline set.
+- There is no confirmed residual defect in the appearance/color, manual-refresh,
+  or search/filter flows.
 - Assigning a new numbered slice without a user-facing gap would manufacture
   work; the next seam must be chosen from a real operator workflow.
 
@@ -387,6 +387,9 @@ Current sync status:
 - Stage 4T added a controlled real-Tk manual-refresh acceptance: the actual
   `Refresh Now` command replaces the first offline payload in the list and both
   ticker bands after its worker completes.
+- Stage 4U added a controlled real-Tk triage acceptance: section selection,
+  search entry, and Clear restore the expected offline subsets in the list and
+  both ticker bands.
 - the next task is explicit selection of one behavior-owned GUI seam
 
 ### Do weryfikacji

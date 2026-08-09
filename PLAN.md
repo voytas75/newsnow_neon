@@ -137,6 +137,10 @@ and diagnostics.
   and verifies the completed second result replaces the first in the list and
   both ticker bands. No production code, user settings, NewsNow, Redis, or
   provider path was used.
+- **Stage 4U — search/filter real-Tk acceptance:** a three-headline offline
+  fixture uses the actual section-menu, search-entry, and Clear-button commands
+  to prove the list and both ticker bands narrow and restore together. No
+  production code, user settings, NewsNow, Redis, or provider path was used.
 
 ## Next ordered work
 
