@@ -246,52 +246,58 @@ Quality gates become meaningful instead of aspirational noise.
 ## Current recommended next slice
 
 ### Active next slice
-**Stage 4L — bounded static-debt reduction**
+**Stage 4M — visual GUI operator-flow acceptance**
 
 ### Why this is next
-- CI run [#31278999184](https://github.com/voytas75/newsnow_neon/actions/runs/31278999184) passed for the security lock refresh.
-- GitHub's Dependency Graph submitted `aiohttp 3.14.3` and `soupsieve 2.9.2`,
-  and all 16 prior Dependabot alerts are now fixed.
-- Stage 3C and P0 established supported compatibility surfaces, and P1 proved
-  that `services.py` file-path dispatch uses the canonical package proxies.
+- The desktop GUI is the primary product surface; static-debt reduction is now
+  subordinate to evidence that its core operator workflow remains usable.
+- Stage 4L proves the real Tk application can start, enter its event loop, and
+  render controlled offline content without live services.
+- Stage 4M must establish the remaining visual/input evidence on a real desktop
+  session before further static-debt slices.
 
 ## Implementation focus for the active next slice
 
 ### Goal
-Reduce directly owned Ruff/Pyright debt in one behavior-owned seam without
-turning the known repository-wide baseline into an unbounded cleanup campaign.
+Validate the primary desktop workflow visually and interactively with controlled
+offline data: launch, rendered headline list/ticker, controls visibility, and
+basic layout at the default geometry.
 
 ### Scope
 The next slice should:
-- establish a scoped Ruff/Pyright baseline for one selected seam;
-- add or preserve focused regression coverage for that seam;
-- reduce only diagnostics directly owned by the chosen behavior boundary.
+- use a real desktop session and controlled offline service data;
+- follow and update `docs/manual-gui-smoke-checklist.md` as evidence requires;
+- record concrete pass/partial/fail observations and screenshots when capture is
+  available;
+- keep any discovered UI correction to one behavior-owned seam with a focused
+  regression test.
 
 ### Non-goals
 Do not in this slice:
-- perform a rename, deletion, or public-import change,
-- redesign the full legacy/runtime boundary,
-- broaden into repo-wide typed-seam cleanup,
-- do repo-wide lint/type cleanup.
+- call NewsNow, a provider, or Redis for acceptance evidence,
+- claim native OS-dialog behavior or live-service behavior from the offline run,
+- redesign the GUI framework or perform a broad visual refresh,
+- alter public imports or compatibility surfaces.
 
 ### Preferred execution order
-1. select a seam with a small, measurable static baseline
-2. preserve or add a regression test for its behavior
-3. reduce only the seam's direct diagnostics
-4. verify focused and full pytest plus scoped quality checks
+1. start the isolated real-Tk offline smoke on the available display
+2. inspect the main list/ticker and controls at the default geometry
+3. exercise the control-panel visibility workflow without live refresh
+4. record evidence, then fix only a confirmed bounded defect
 
 ### Acceptance criteria
-- the selected seam's diagnostics are reduced without broad ignores
-- focused behavior and the full pytest suite remain green
-- no rename, deletion, or public-import change is made
+- real Tk launch and offline headline rendering are observed on a desktop display
+- the primary list/ticker and controls remain usable at default geometry
+- any correction has focused regression coverage and full pytest remains green
+- the report distinguishes offline GUI evidence from unverified live behavior
 
 ## What should not drive the roadmap now
 
 Do not prioritize these before the readiness-contract slice:
 - repo-wide Ruff cleanup,
 - repo-wide Mypy cleanup,
-- framework replacement,
-- broad UI redesign,
+- broad UI redesign or framework replacement; bounded GUI runtime and visual
+  acceptance work is in scope because the desktop workflow is primary,
 - deep legacy refactors without a bounded seam,
 - feature expansion unrelated to operator trust.
 
@@ -362,7 +368,11 @@ Current sync status:
   highlight/settings coverage remained green and scoped Pyright stayed at 0
   errors and 0 warnings. The repository-wide baselines are now Ruff `942`
   diagnostics and Pyright `536` errors plus `15` warnings.
-- the next bounded task is Stage 4L static-debt reduction in one new proven seam
+- Stage 4L added `tests/test_gui_runtime_smoke.py`: an isolated real-Tk
+  subprocess smoke that renders one offline headline through the application
+  event loop and verifies the main list/ticker. It does not call NewsNow,
+  Redis, or provider services.
+- the next bounded task is Stage 4M visual GUI operator-flow acceptance
 
 ### Do weryfikacji
 - whether Redis/LLM optional reporting belongs in a future extension of the readiness contract

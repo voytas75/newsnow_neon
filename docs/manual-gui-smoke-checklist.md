@@ -3,17 +3,30 @@
 Updates: v0.53.2 - 2026-05-15 - Added bounded manual smoke checklist for operator-control wording/layout verification.
 
 ## Scope
-Bounded visual verification for the operator-control wording slice only.
-Do not evaluate behavior changes here; this checklist is only for layout/copy regressions.
+Bounded GUI acceptance for the primary desktop workflow: real Tk launch, offline
+headline rendering, control visibility, and layout/copy at default geometry.
+
+- The automated baseline is `tests/test_gui_runtime_smoke.py`, which starts the
+  real Tk app in an isolated subprocess with controlled offline data.
+- This checklist records visual/input evidence that the subprocess cannot prove.
+- It does not establish NewsNow, Redis, provider, native-dialog, or live-network
+  behavior.
 
 ## Preconditions
 - Run NewsNowNeon in a desktop session with Tk support and GUI display access.
-- Start from the current working tree for the bounded operator-control slice.
+- Start from the current working tree for the bounded GUI acceptance slice.
+
+## Automated runtime preflight
+```bash
+uv run --extra dev --frozen pytest -q tests/test_gui_runtime_smoke.py
+```
+- [ ] The isolated real-Tk smoke passes on the current desktop display.
+- [ ] Its output is understood as offline GUI evidence only.
 
 ## Launch
-```bash
-python -m newsnow_neon
-```
+Do not use the normal `python -m newsnow_neon` path for offline acceptance: it
+starts a NewsNow refresh. Use a separately approved controlled offline runner
+for a manual visual session.
 
 ## Checklist
 

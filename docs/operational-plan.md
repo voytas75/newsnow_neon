@@ -1,6 +1,6 @@
 # NewsNow Neon — Operational Plan
 
-**Status:** active — Stage 4K highlight-controller seam verified locally; Stage 1 and Stage 2 verified remotely; governance controls refreshed in this slice.
+**Status:** active — Stage 4L real-Tk GUI smoke verified locally; Stage 1 and Stage 2 verified remotely; governance controls refreshed in this slice.
 **Updated:** 2026-08-09
 **Canonical product direction:** [`product-ssot.md`](product-ssot.md)
 
@@ -534,7 +534,33 @@ passed.
 Pyright remains at `536` errors and `15` warnings; both repository-wide checks
 remain intentionally non-blocking.
 
-**Next:** select one new behavior-owned seam for Stage 4L.
+**Next:** Stage 4L real-Tk GUI runtime smoke.
+
+## Stage 4L — real-Tk GUI runtime smoke
+
+**Status:** completed locally.
+
+**Scope:** `tests/test_gui_runtime_smoke.py` and the existing Tk application
+runtime. The test starts a separate Python process specifically to avoid the
+repository's headless tkinter import stub and to exercise a real GUI backend.
+
+**Changed:** added controlled offline service implementations for one headline,
+ticker construction, persistence, history, Redis, and summaries. The subprocess
+starts `AINewsApp`, enters `mainloop()`, verifies the primary list and ticker,
+and exits deterministically. No production GUI behavior changed.
+
+**Validation:** the targeted GUI smoke passed; its test file is Ruff- and
+Pyright-clean; the full frozen pytest suite passed; `newsnow-neon --check`,
+`uv lock --check`, and `git diff --check` passed. A separate direct probe also
+confirmed one offline headline rendered in the list and ticker with
+`Redis: OFF`.
+
+**Evidence boundary:** this proves real Tk construction, event-loop dispatch,
+and offline rendering on the available display. It does not prove native visual
+fidelity, input interaction, NewsNow, Redis, or provider behavior.
+
+**Next:** Stage 4M visual GUI operator-flow acceptance with controlled offline
+data and the revised manual checklist.
 
 ## Security lock refresh
 
@@ -562,6 +588,7 @@ and Dependabot reports zero open alerts; all 16 prior alerts are fixed.
 
 ## Current recommended next execution slice
 
-**Begin Stage 4L as a bounded static-debt reduction slice.** Select one new
-behavior-owned seam, establish its quality baseline, and reduce only directly
-owned Ruff/Pyright debt with focused regression coverage.
+**Begin Stage 4M as visual GUI operator-flow acceptance.** Use a real desktop
+session with controlled offline data to inspect the primary list/ticker and
+control-panel workflow. Record visual/input observations separately from
+unverified NewsNow, Redis, and provider behavior.

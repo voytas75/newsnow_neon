@@ -93,18 +93,25 @@ and diagnostics.
   coverage remained green; scoped Pyright stayed at 0 errors and 0 warnings.
   The repository-wide Ruff baseline is now `942` diagnostics; Pyright remains
   `536` errors and `15` warnings.
+- **Stage 4L — real-Tk GUI smoke:** added an isolated subprocess regression
+  test that starts the real Tk application on an available display, renders an
+  offline headline through its event loop, and verifies both the main list and
+  ticker. It stubs NewsNow, Redis, and provider-facing services; it does not
+  claim live integration acceptance.
 
 ## Next ordered work
 
-1. **Stage 4L — next bounded static-debt seam:** select one proven seam and
-   reduce only its directly owned Ruff/Pyright debt; never start with repo-wide
-   cleanup.
+1. **Stage 4M — visual GUI acceptance:** exercise the primary operator workflow
+   against the manual checklist on a real desktop session using controlled
+   offline data; record layout/input findings separately from live integration.
 2. **Compatibility maintenance:** preserve the controller and services
    compatibility tests when later seams touch package loading or startup.
 
 ## Explicitly deferred
 
-- Broad GUI redesign or framework replacement.
+- Broad GUI redesign or framework replacement. Targeted GUI runtime and visual
+  acceptance work remains in scope because the desktop workflow is the primary
+  product surface.
 - Live-network scraper acceptance tests as a substitute for fixtures.
 - Live provider-backed summary acceptance without case-by-case approval.
 - Repository-wide Ruff/Pyright cleanup.

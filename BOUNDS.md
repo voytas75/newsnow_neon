@@ -84,10 +84,10 @@ remains. Never hide debt through blanket ignores or broad `type: ignore`.
 
 ## Current immediate boundary
 
-Stage 4K is complete for the behavior-owned seam in
-`newsnow_neon/app/controller/highlight_controller.py`; its direct Ruff baseline
-is 0, scoped Pyright is 0 errors and 0 warnings, and existing focused
-highlight/settings tests remain green. The next Stage 4 slice must choose one
-new proven, behavior-owned seam and reduce only its directly owned Ruff/Pyright
-debt with focused regression coverage. Do not start repo-wide cleanup or alter
-the supported controller/services compatibility surfaces incidentally.
+Stage 4L is complete for the primary desktop workflow: an isolated subprocess
+starts the real Tk app on an available display, renders an offline headline,
+and verifies the main list and ticker without contacting NewsNow, Redis, or a
+provider. Stage 4M must perform bounded visual operator-flow acceptance on a
+real desktop session with controlled offline data. Do not claim live scraper,
+Redis, or provider behavior from this smoke, and do not broaden into a GUI
+redesign or alter compatibility surfaces incidentally.

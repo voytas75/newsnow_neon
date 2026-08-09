@@ -76,7 +76,7 @@ python -m newsnow_neon
 ## Current focus
 - **Operational trust first** – startup/runtime failures should classify cleanly instead of failing with raw tracebacks.
 - **Supported compatibility surfaces** – `controller.py` and `services.py` remain supported externally; explicit `services.py` file-path loads now use the canonical package proxies.
-- **Bounded static recovery** – Stage 4A–4K cleaned bounded seams; deeper legacy and typing work stays seam-based, not repo-wide. Stage 4L is the next bounded slice.
+- **GUI-first acceptance** – Stage 4L now protects the real Tk launch, event loop, main list, and ticker with controlled offline data. Stage 4M is visual operator-flow acceptance; static-debt cleanup is secondary to the desktop workflow.
 
 ## Configuration
 | Variable | Purpose |
