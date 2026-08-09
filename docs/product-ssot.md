@@ -117,9 +117,9 @@ These came out of the bounded repo review and should drive the next planning cyc
 
 6. **Static quality debt is measured, not hidden**
    - Ruff baseline: 940 diagnostics on the current repository-wide scope.
-   - Pyright baseline: 532 errors and 15 warnings on canonical
-     `newsnow_neon` + `tests`; an unscoped root invocation includes ignored
-     `build/` copies and is not the canonical debt measurement.
+   - Pyright baseline: 532 errors and 15 warnings on the configured
+     `newsnow_neon` + `tests` scope; generated `build/` copies are excluded by
+     `[tool.pyright]` in `pyproject.toml`.
    - These are not blocking CI until reduced through bounded slices.
 
 7. **Version truth is not yet unified**

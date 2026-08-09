@@ -26,10 +26,10 @@ Current measured baseline after Stage 9:
 | Tool | Result | Scope |
 |---|---:|---|
 | Ruff | 940 diagnostics | repository-wide |
-| Pyright | 532 errors, 15 warnings | canonical `newsnow_neon` + `tests` scope |
+| Pyright | 532 errors, 15 warnings | configured `newsnow_neon` + `tests` scope |
 
-An unscoped root `pyright` invocation also analyzes ignored `build/` copies and
-therefore duplicates diagnostics. It is not the canonical debt measurement.
+`[tool.pyright]` in `pyproject.toml` excludes generated `build/` copies, so the
+normal root `pyright` command measures this same canonical debt scope.
 
 The detailed hotspot inventory is intentionally not treated as a single cleanup
 campaign; select one behavior-owned seam at a time and remeasure its direct

@@ -50,5 +50,9 @@ line-length = 88
 target-version = "py310"
 lint.select = ["E", "F", "I", "B", "UP", "D", "N", "C90"]
 
+[tool.pyright]
+include = ["newsnow_neon", "tests"]
+exclude = ["build"]
+
 [tool.setuptools.packages.find]
 where = ["."]
