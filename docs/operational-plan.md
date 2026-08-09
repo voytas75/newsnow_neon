@@ -1,6 +1,6 @@
 # NewsNow Neon — Operational Plan
 
-**Status:** active — Stage 11 history real-Tk acceptance verified locally with controlled offline evidence; Stage 1 and Stage 2 verified remotely; governance controls refreshed in this slice.
+**Status:** active — Stage 12 Redis Stats real-Tk acceptance verified locally with controlled offline evidence; Stage 1 and Stage 2 verified remotely; governance controls refreshed in this slice.
 **Updated:** 2026-08-09
 **Canonical product direction:** [`product-ssot.md`](product-ssot.md)
 
@@ -1091,6 +1091,26 @@ No user settings, live Redis, NewsNow, or provider path was used.
 **Evidence boundary:** this proves generated history-list selection, real
 widget-command wiring, local history-worker completion, list/ticker state, and
 live-list restoration. It does not prove physical pointer/keyboard input, a
+deployed Redis service, live NewsNow, or provider behavior.
+
+**Next boundary:** select a new, behavior-owned GUI workflow before assigning
+another numbered slice.
+
+## Stage 12 — Redis Stats real-Tk acceptance
+
+**Status:** completed locally; no production code changed.
+
+**Acceptance:** a controlled real-Tk process used local Redis-presence and
+metrics doubles, invoked the actual `Redis Stats` button, verified a mapped
+`RedisStatsWindow` with deterministic headline and TTL values, then invoked its
+real `Close` control and verified cleanup.
+
+**Validation:** focused real-Tk acceptance, full frozen pytest, scoped Ruff and
+Pyright on the GUI test, `uv lock --check`, and `newsnow-neon --check` passed.
+No user settings, deployed Redis, NewsNow, or provider path was used.
+
+**Evidence boundary:** this proves the button, local metrics-worker callback,
+window rendering, and close lifecycle. It does not prove physical input, a
 deployed Redis service, live NewsNow, or provider behavior.
 
 **Next boundary:** select a new, behavior-owned GUI workflow before assigning

@@ -44,6 +44,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), and this 
 - bootstrap tests now verify the explicit runtime-dependency classification instead of relying on brittle subprocess assumptions about import order
 
 ### Added
+- Added controlled offline real-Tk acceptance for `Redis Stats`, covering the
+  real button, local metrics-worker callback, mapped statistics window, and its
+  real Close control without deployed Redis access.
 - Added controlled offline real-Tk acceptance for `Refresh History → select →
   Return to Live`, covering local snapshot loading, history/list state, live
   ticker continuity, and prior live-list restoration without a second fetch.

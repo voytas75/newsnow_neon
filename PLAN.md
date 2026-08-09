@@ -190,14 +190,15 @@ and diagnostics.
   invoked `Refresh History`, selected a local snapshot, and invoked `Return to
   Live`; it verified snapshot-list state, live-ticker continuity, and restored
   the prior live list without a second fetch or live service.
+- **Stage 12 — Redis Stats real-Tk acceptance:** a controlled real-Tk process
+  invoked the actual button with local Redis-presence and metrics doubles,
+  verified a mapped statistics window, then closed it through its real control.
 
 ## Next ordered work
 
-1. **Stage 12 — Redis Stats real-Tk acceptance:** configure local Redis-presence
-   and statistics doubles, invoke the actual `Redis Stats` button, then verify a
-   mapped statistics window renders deterministic metrics and closes through its
-   real control. Do not connect to a deployed Redis, NewsNow, provider, or user
-   settings path.
+1. **Next GUI slice selection:** choose one unverified, behavior-owned operator
+   workflow from the desktop product surface before assigning a new numbered
+   stage. Do not reopen completed evidence or expand scope by assumption.
 2. **Compatibility maintenance:** preserve the controller and services
    compatibility tests when later seams touch package loading or startup.
 

@@ -84,9 +84,9 @@ remains. Never hide debt through blanket ignores or broad `type: ignore`.
 
 ## Current immediate boundary
 
-Stage 12 is selected as one bounded, acceptance-first GUI workflow: a controlled
-real-Tk process will invoke `Redis Stats` with local Redis-presence and statistics
-doubles, verify the mapped metrics window, then close it through its real control.
-Do not touch production behavior, user settings, deployed Redis, NewsNow,
-providers, compatibility surfaces, or framework design unless the acceptance test
-exposes a defect requiring a new scope decision.
+Stage 12 is complete: a controlled real-Tk process invoked `Redis Stats` with
+local Redis-presence and statistics doubles, verified the mapped metrics window,
+then closed it through its real control. Any next GUI work must again be
+separately selected as one bounded workflow; do not touch user settings, live
+services, providers, compatibility surfaces, or framework design without a new
+scope decision.

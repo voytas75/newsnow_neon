@@ -256,32 +256,27 @@ next slice.
 ## Current recommended next slice
 
 ### Active next decision
-**Stage 12 — Redis Stats real-Tk acceptance**
+**Next GUI seam selection — no stage assigned yet**
 
 ### Why this is next
-- Redis Stats is a visible optional-integration control with no real-Tk
-  acceptance of its button, worker callback, mapped window, or close lifecycle.
-- A local Redis-presence and deterministic metrics double can prove that path
-  without claiming deployed Redis behavior.
+- Stage 12 establishes controlled real-Tk evidence for Redis Stats: button,
+  local metrics worker, mapped window, and Close-control lifecycle.
 
 ## Implementation focus for the active next decision
 
 ### Goal
-Prove the existing Redis Stats operator flow through its real Tk control and
-deterministic local metrics.
+Select one unverified, behavior-owned desktop workflow before opening the next
+numbered implementation or acceptance slice.
 
 ### Scope
-The acceptance slice must invoke the real enabled `Redis Stats` button with a
-local Redis-presence stub, then assert a mapped `RedisStatsWindow`, stable metric
-values, and real Close-control cleanup.
+The selection review should start from the GUI operator flow and identify one
+observable, offline-reproducible outcome with explicit non-goals.
 
 ### Non-goals
 Do not in this decision:
 - reopen custom-color or native chooser work without contradictory evidence,
-- call a deployed Redis, NewsNow, or a provider; touch user settings; or claim
-  physical pointer/keyboard acceptance,
-- redesign Redis integration or treat full pytest/`--check` as a substitute for
-  the desktop workflow.
+- select a new feature, redesign, or framework replacement by default,
+- treat full pytest or `--check` as a substitute for a desktop workflow.
 
 ### Preferred execution order
 1. inspect the current operator-facing flow inventory and evidence gaps
