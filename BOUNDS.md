@@ -84,10 +84,10 @@ remains. Never hide debt through blanket ignores or broad `type: ignore`.
 
 ## Current immediate boundary
 
-Stage 4N is complete for the bounded heading-accessibility defect: the real Tk
-layout now places `Appearance & Readability` and `Monitoring & Runtime` inside
-the visible default `900×450` Controls panel, while the list/ticker and complete
-toggle cycle remain protected. Stage 4O may address only the remaining lower
-color-controls overflow. Do not call NewsNow, Redis, or a provider; do not
-relax the checklist, redesign the GUI, or alter compatibility surfaces
-incidentally.
+Stage 4O is complete for the lower-controls defect: compacted existing vertical
+spacing lets `Background…` and `Text…` keep their requested height inside the
+visible default `900×450` Controls panel. The Stage 4N headings, action rows,
+and close-state headline list remain protected. Stage 4P may only classify the
+observed ticker edge clipping before any ticker change. Do not call NewsNow,
+Redis, or a provider; do not relax the checklist, redesign the GUI, or alter
+compatibility surfaces incidentally.

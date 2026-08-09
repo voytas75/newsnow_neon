@@ -76,16 +76,18 @@ for a manual visual session.
   controls area.
 - note: search/filter fields remain visible when Controls is hidden; they are
   not part of the toggled options panel.
-- resolution: Stage 4N restored both heading labels; the remaining lower-control
-  overflow is carried into Stage 4O.
+- resolution: Stage 4N restored both heading labels and Stage 4O restored the
+  lower color controls; ticker-boundary behavior remains Stage 4P evidence work.
 
 - **Stage 4N narrow result: pass.** At `900×450`, both `Appearance &
   Readability` and `Monitoring & Runtime` are now visible after opening
   Controls; the real-Tk smoke and controlled X11 capture also confirm the full
   Controls-toggle cycle and restored headline rows after closing.
-- **Broader checklist status: partial.** The lower `Background…` / `Text…`
-  controls remain partly below the window edge when Controls is open. This is
-  carried into Stage 4O rather than treated as an unobserved pass.
+- **Stage 4O narrow result: pass.** `Background…` and `Text…` now render at
+  their full requested height within the root geometry, and controlled X11
+  capture confirms both are readable without overlap.
+- **Ticker note: to verify.** Edge clipping observed in a still capture may be
+  intended marquee motion; Stage 4P must classify it before any ticker change.
 
 ## Result Template
 Use this short format when recording the outcome:

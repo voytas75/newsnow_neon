@@ -81,6 +81,26 @@ def verify() -> None:
                 f"{label} is outside the visible default geometry"
             )
 
+        color_controls = {}
+        pending = list(app.winfo_children())
+        while pending:
+            widget = pending.pop()
+            if widget.winfo_class() == "Button":
+                label = widget.cget("text")
+                if label in {"Background…", "Text…"}:
+                    color_controls[label] = widget
+            pending.extend(widget.winfo_children())
+
+        assert set(color_controls) == {"Background…", "Text…"}
+        for label, widget in color_controls.items():
+            assert widget.winfo_ismapped(), f"{label} is not mapped"
+            assert widget.winfo_height() == widget.winfo_reqheight(), (
+                f"{label} is vertically clipped"
+            )
+            assert widget.winfo_rooty() + widget.winfo_height() <= visible_bottom, (
+                f"{label} is outside the visible default geometry"
+            )
+
         app._toggle_options_panel()
         app.update_idletasks()
         assert app.options_toggle_btn.cget("text") == "Show Controls"

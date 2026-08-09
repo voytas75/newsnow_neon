@@ -246,48 +246,49 @@ Quality gates become meaningful instead of aspirational noise.
 ## Current recommended next slice
 
 ### Active next slice
-**Stage 4O — lower-controls default-geometry accessibility**
+**Stage 4P — ticker-boundary behavior classification**
 
 ### Why this is next
-- Stage 4N resolved the observed heading defect with a real-Tk geometry contract
-  and controlled X11 capture at `900×450`.
-- The same visual evidence shows that the lower `Background…` / `Text…` color
-  controls remain partly below the visible Controls panel.
-- The GUI is the primary product surface; that residual accessibility failure
-  should be resolved before returning to static-debt work.
+- Stage 4O resolved the confirmed lower-control clipping with a focused real-Tk
+  geometry contract and controlled X11 capture at `900×450`.
+- The same captures show ticker text clipped at the viewport edges, but a still
+  image cannot distinguish intentional marquee motion from persistent truncation.
+- Altering ticker layout without that classification would be speculative and
+  could regress the primary headline workflow.
 
 ## Implementation focus for the active next slice
 
 ### Goal
-Make the remaining lower color controls accessible at the default `900×450`
-geometry while preserving Stage 4N's visible group headings, offline headline
-list/ticker, and full Controls-toggle cycle.
+Classify ticker-edge clipping under controlled offline data as intended marquee
+motion or a persistent layout defect, then decide whether a separate fix is
+needed without changing ticker behavior preemptively.
 
 ### Scope
 The next slice should:
-- begin with a focused real-Tk layout contract for the two color controls;
-- select one smallest layout/viewport adjustment based on that contract;
-- preserve the settings headings and close-state headline-list visibility;
-- repeat controlled target-window visual evidence after test verification.
+- capture two or more controlled real-Tk ticker states separated by a known
+  event-loop interval;
+- inspect ticker position/content boundaries and document the observation;
+- add a narrow deterministic assertion only if the current ticker model exposes
+  a stable behavior contract;
+- leave the completed Controls-panel layout unchanged.
 
 ### Non-goals
 Do not in this slice:
+- change ticker speed, content, or layout before classification,
 - call NewsNow, a provider, or Redis for acceptance evidence,
-- add a GUI framework, new dependency, or full visual redesign,
-- hide the overflow by weakening the default-geometry checklist,
-- alter public imports or unrelated controls.
+- mistake a single clipped marquee frame for a confirmed bug,
+- alter public imports, GUI framework, or unrelated controls.
 
 ### Preferred execution order
-1. write a failing real-Tk visibility assertion for `Background…` and `Text…`
-2. make the smallest layout/viewport correction
-3. verify the real-Tk smoke, focused contract, and full pytest
-4. repeat target-only X11 capture with Controls open and closed
+1. run controlled offline real-Tk ticker observation over multiple event-loop ticks
+2. compare boundary position/content across captures or widget state
+3. record intended-motion versus persistent-defect evidence
+4. propose a separate bounded correction only if persistent truncation is proven
 
 ### Acceptance criteria
-- both color controls are mapped and visually readable at `900×450` with
-  Controls open
-- Stage 4N headings and close-state headline rows remain visible
-- focused and full pytest stay green
+- the evidence distinguishes motion from persistent clipping at `900×450`
+- no ticker behavior changes without a confirmed defect
+- Stage 4O controls and close-state headline rows remain protected
 - the report distinguishes offline GUI evidence from unverified live behavior
 
 ## What should not drive the roadmap now
@@ -377,7 +378,9 @@ Current sync status:
 - Stage 4N moved the existing options panel before history, making both group
   headings visible in real Tk at `900×450`; the smoke also protects the full
   toggle cycle and close-state headline rows.
-- the next bounded task is Stage 4O lower-controls default-geometry accessibility
+- Stage 4O compacted only existing appearance-panel vertical spacing, restoring
+  both color buttons to their full requested height at `900×450` without overlap.
+- the next bounded task is Stage 4P ticker-boundary behavior classification
 
 ### Do weryfikacji
 - whether Redis/LLM optional reporting belongs in a future extension of the readiness contract

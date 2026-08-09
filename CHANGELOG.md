@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), and this 
 ## [Unreleased]
 
 ### Fixed
+- Compacted only existing appearance-panel vertical spacing so `Background…`
+  and `Text…` retain their full requested height at the default `900×450`
+  geometry; real-Tk coverage protects both controls with the existing
+  Controls-toggle contract.
 - Reordered the existing settings and history panels so both settings-group
   headings are visible at the default `900×450` geometry; real-Tk regression
   coverage now protects the heading layout and full Controls-toggle cycle.

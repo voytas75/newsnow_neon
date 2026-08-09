@@ -21,7 +21,7 @@ def _profile_name_options() -> list[str]:
 def build_options_panel(app: tk.Tk) -> tk.Frame:
     """Create appearance and behavior settings sections."""
     settings_frame = tk.Frame(app.options_container, name="options", bg="black")
-    settings_frame.pack(fill="x", pady=(0, 10))
+    settings_frame.pack(fill="x")
 
     appearance_section = tk.Frame(settings_frame, bg="black")
     appearance_section.pack(side="left", fill="x", expand=True)
@@ -39,7 +39,7 @@ def build_options_panel(app: tk.Tk) -> tk.Frame:
     appearance_header.pack(anchor="w")
 
     profile_row = tk.Frame(appearance_section, bg="black")
-    profile_row.pack(fill="x", pady=(6, 0))
+    profile_row.pack(fill="x", pady=(2, 0))
 
     profile_names = _profile_name_options()
     app.color_profile_var = tk.StringVar(value=DEFAULT_COLOR_PROFILE_NAME)
@@ -57,7 +57,7 @@ def build_options_panel(app: tk.Tk) -> tk.Frame:
     app.profile_menu = profile_menu
 
     speed_row = tk.Frame(appearance_section, bg="black")
-    speed_row.pack(fill="x", pady=(6, 0))
+    speed_row.pack(fill="x", pady=(2, 0))
     speed_label = tk.Label(speed_row, text="Speed:", bg="black", fg="lightgray")
     speed_label.pack(side="left")
     app.ticker_speed_var = tk.IntVar(value=getattr(app, "ticker").speed)
@@ -75,7 +75,7 @@ def build_options_panel(app: tk.Tk) -> tk.Frame:
     speed_spin.bind("<Return>", getattr(app, "_apply_speed"))
 
     color_row = tk.Frame(appearance_section, bg="black")
-    color_row.pack(fill="x", pady=(6, 0))
+    color_row.pack(fill="x", pady=(2, 0))
     app.ticker_bg_var = tk.StringVar(value=str(getattr(app, "ticker")["bg"]))
     app.ticker_fg_var = tk.StringVar(
         value=getattr(app, "ticker").itemcget(getattr(app, "ticker").message_item, "fill")

@@ -109,14 +109,18 @@ and diagnostics.
   Runtime` are visible at `900×450`. The real-Tk smoke now verifies both heading
   geometry and the complete controls-toggle cycle. The remaining lower-controls
   overflow is deferred to Stage 4O.
+- **Stage 4O — lower-controls accessibility:** compacted only vertical padding
+  within the existing appearance rows. `Background…` and `Text…` now retain
+  their full requested height at `900×450`; the real-Tk smoke protects this,
+  the Stage 4N headings, and the close-state list. Ticker edge clipping remains
+  explicitly unclassified pending Stage 4P.
 
 ## Next ordered work
 
-1. **Stage 4O — lower-controls default-geometry accessibility:** select one
-   bounded way to make the remaining color controls accessible at `900×450`,
-   preserving the newly visible group headings, headline list/ticker, and
-   Controls toggle. Begin with a focused real-Tk layout contract; do not broaden
-   into a framework or full visual redesign.
+1. **Stage 4P — ticker-boundary behavior classification:** determine with
+   controlled real-Tk evidence whether edge clipping is intended marquee motion
+   or a persistent layout defect. Add no ticker change until the behavior is
+   classified; preserve the completed `900×450` Controls-panel contract.
 2. **Compatibility maintenance:** preserve the controller and services
    compatibility tests when later seams touch package loading or startup.
 

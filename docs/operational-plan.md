@@ -1,6 +1,6 @@
 # NewsNow Neon — Operational Plan
 
-**Status:** active — Stage 4N heading-accessibility seam verified locally; Stage 1 and Stage 2 verified remotely; governance controls refreshed in this slice.
+**Status:** active — Stage 4O lower-controls seam verified locally; Stage 1 and Stage 2 verified remotely; governance controls refreshed in this slice.
 **Updated:** 2026-08-09
 **Canonical product direction:** [`product-ssot.md`](product-ssot.md)
 
@@ -622,6 +622,39 @@ headline rows and `Show Controls`.
 **Remaining boundary:** lower `Background…` / `Text…` controls are still partly
 below the open-panel edge. Stage 4O owns that separate accessibility defect.
 
+## Stage 4O — lower-controls accessibility
+
+**Status:** completed locally.
+
+**Scope:** `newsnow_neon/app/views/options_panel.py` vertical spacing and the
+existing isolated real-Tk smoke. No widget commands, services, persistence, or
+public-import surface changed.
+
+**RED:** the real-Tk subprocess found both color buttons mapped but vertically
+clipped: actual height `11` versus requested height `29` at `900×450`.
+
+**Changed:** removed only the settings frame's bottom padding and reduced the
+three appearance-row vertical gaps from 6 to 2 pixels. The change recovers 22
+pixels without adding scrolling, removing help, or changing control behavior.
+
+**Validation:** the real-Tk smoke now requires both color buttons to be mapped,
+fully requested-height, and within the root geometry; it retains Stage 4N
+heading checks and closes Controls to verify the offline headline list. Full
+frozen pytest, targeted test Ruff/Pyright, `newsnow-neon --check`, `uv lock
+--check`, and `git diff --check` passed.
+
+**Static baseline:** `options_panel.py` Ruff remains 43 diagnostics with no new
+or removed entries; Pyright remains 39 errors and 0 warnings before and after.
+These historical diagnostics are intentionally outside the GUI layout seam.
+
+**Visual evidence:** target-only X11 capture at `900×450` showed both color
+buttons fully readable with no overlap; a reversible XTEST close restored the
+headline rows and action bar.
+
+**Remaining boundary:** a still capture shows ticker text at viewport edges, but
+that can be normal marquee motion. Stage 4P owns classification before any
+Ticker change.
+
 ## Security lock refresh
 
 **Status:** completed and verified remotely by CI run [#31278999184](https://github.com/voytas75/newsnow_neon/actions/runs/31278999184).
@@ -648,7 +681,7 @@ and Dependabot reports zero open alerts; all 16 prior alerts are fixed.
 
 ## Current recommended next execution slice
 
-**Begin Stage 4O as a lower-controls default-geometry accessibility slice.**
-Write a focused real-Tk visibility contract for `Background…` and `Text…`, then
-make only the layout or viewport correction necessary to expose them at `900×450`
-while preserving Stage 4N's headings and close-state headline rows.
+**Begin Stage 4P as ticker-boundary behavior classification.** Observe multiple
+controlled real-Tk ticker states at `900×450` and decide whether edge clipping
+is normal marquee motion or persistent truncation. Do not change ticker behavior
+without that evidence; preserve the completed Controls-panel layout.
