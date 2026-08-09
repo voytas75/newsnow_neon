@@ -5,26 +5,36 @@ This guide captures the engineering-facing details that complement the user-focu
 Canonical product SSOT: `docs/product-ssot.md`
 
 ## Getting Started
-1. Ensure Python 3.10+ is available and create a virtual environment.
-2. Ensure the local Python runtime includes `tkinter`.
-3. Install the project with tooling enabled:
+1. Ensure Python 3.10+ is available and that the local Python runtime includes
+   `tkinter`.
+2. From the repository root, create or update the project `.venv` with the
+   locked development environment:
    ```bash
    uv sync --extra dev --frozen
    ```
-4. (Optional) Add runtime extras as needed:
+3. (Optional) Add runtime extras as needed:
    ```bash
    uv sync --extra dev --extra redis --extra llm --extra dotenv
    ```
-5. Create a `.env` file if you need to pin provider credentials locally (the loader auto-runs when `python-dotenv` is present).
+4. Create a `.env` file if you need to pin provider credentials locally (the
+   loader auto-runs when `python-dotenv` is present).
 
-Alternative pip flow:
+### Direct virtual-environment flow
+
+If you do not use `uv`, create and activate `.venv` before installing. Do not
+use bare `pip`, because it can select a host interpreter instead of the project
+runtime.
+
 ```bash
-pip install -e .[dev]
-pip install .[redis,llm,dotenv]  # optional
+python -m venv .venv
+source .venv/bin/activate  # POSIX shells; PowerShell: .venv\Scripts\Activate.ps1
+python -m pip install -e ".[dev]"
+python -m pip install ".[redis,llm,dotenv]"  # optional
 ```
 
 ## Tooling & Daily Commands
 ```bash
+# Create/update the project .venv from the locked development environment.
 uv sync --extra dev --frozen
 
 # Required CI contract
@@ -34,10 +44,11 @@ uv run --extra dev --frozen pytest -q
 uv run --extra dev --frozen ruff check .
 uv run --extra dev --frozen pyright
 
-uv run newsnow-neon
-uv run python -m newsnow_neon
-uv run newsnow-neon --check
-uv run python -m newsnow_neon --check
+# Supported application entrypoints, run from the project .venv.
+uv run --frozen newsnow-neon
+uv run --frozen python -m newsnow_neon
+uv run --frozen newsnow-neon --check
+uv run --frozen python -m newsnow_neon --check
 ```
 - CI currently requires the full `pytest -q` suite. It does not claim a
   coverage threshold because `pytest-cov` is not part of the configured toolchain.
@@ -46,13 +57,17 @@ uv run python -m newsnow_neon --check
 - Run `uv sync --extra dev --frozen` before daily work to keep the environment aligned.
 - The bounded startup smoke pack is `tests/test_main_metadata.py` + `tests/test_bootstrap.py`.
 
-Alternative direct tool flow in an activated venv:
+Direct project-`.venv` alternative (POSIX):
 ```bash
+source .venv/bin/activate
+python -m pytest -q
 ruff check .
 pyright
-pytest -q
 python -m newsnow_neon
 ```
+
+Without activation, use `.venv/bin/python`, `.venv/bin/pytest`,
+`.venv/bin/ruff`, and `.venv/bin/pyright` explicitly.
 
 ## Environment & Secrets
 - `.env` files are loaded automatically when `python-dotenv` is installed (see `newsnow_neon/config.py`).

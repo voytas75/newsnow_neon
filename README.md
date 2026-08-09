@@ -9,32 +9,39 @@ Canonical product SSOT: `docs/product-ssot.md`
 - Requires Python 3.10+.
 - Requires a desktop Python build with `tkinter` available.
 - On some Linux distributions this means installing the OS package separately (for example `python3-tk`).
-- Editable developer install (recommended, pip):
-```bash
-pip install -e .[dev]
-```
-- Editable developer install (recommended, uv):
+
+### Project `.venv` with uv (recommended)
+
+Run from the repository root. `uv sync` creates or updates the project's `.venv`;
+all subsequent `uv run` commands use that environment.
+
 ```bash
 uv sync --extra dev --frozen
 ```
-- Minimal runtime install (pip):
+
+For a minimal runtime environment:
+
 ```bash
-pip install .
+uv sync --frozen
 ```
-- Minimal runtime environment (uv):
+
+### Direct virtual-environment flow
+
+If you do not use `uv`, create and target the project `.venv` explicitly. Do not
+run bare `pip install ...`, because it may target a host Python instead.
+
 ```bash
-uv sync
-```
-- Optional extras:
-```bash
-pip install .[redis]   # Redis-backed caching (reads REDIS_URL)
-pip install .[llm]     # LiteLLM-powered summaries
-pip install .[dotenv]  # Auto-load .env via python-dotenv
+python -m venv .venv
+source .venv/bin/activate  # POSIX shells; PowerShell: .venv\Scripts\Activate.ps1
+python -m pip install -e ".[dev]"
+
+# Optional runtime extras
+python -m pip install ".[redis,llm,dotenv]"
 ```
 
 ## Quick Start
 ```bash
-# Dev installation with uv
+# Create/update the project .venv from the locked development environment.
 uv sync --extra dev --frozen
 
 # Configure environment (examples)
@@ -42,19 +49,23 @@ export NEWS_SUMMARY_MODEL=gpt-4.1
 export NEWS_TICKER_TIMEOUT=15
 # export REDIS_URL=redis://localhost:6379/0
 
-# Run the desktop app
-uv run newsnow-neon  # installed console script
-uv run python -m newsnow_neon  # module entrypoint
+# Run the desktop app from the project .venv.
+uv run --frozen newsnow-neon       # installed console script
+uv run --frozen python -m newsnow_neon  # module entrypoint
 
-# Check launch readiness without starting the GUI
-uv run newsnow-neon --check
-uv run python -m newsnow_neon --check
+# Check launch readiness without starting the GUI.
+uv run --frozen newsnow-neon --check
+uv run --frozen python -m newsnow_neon --check
 ```
 
-Alternative pip-based flow:
+Direct `.venv` alternatives (POSIX; activate first or call the executable path):
 ```bash
-pip install -e .[dev]
+source .venv/bin/activate
 python -m newsnow_neon
+
+# Equivalent without activation
+.venv/bin/newsnow-neon
+.venv/bin/python -m newsnow_neon
 ```
 
 - `.env` files are auto-loaded when `python-dotenv` is installed (see `newsnow_neon/config.py`).
@@ -122,13 +133,16 @@ uv run --extra dev --frozen ruff check .
 uv run --extra dev --frozen pyright
 ```
 
-Alternative pip-based flow:
+Direct project-`.venv` alternative (POSIX):
 ```bash
-pip install -e .[dev]
+source .venv/bin/activate
+python -m pytest -q
 ruff check .
 pyright
-pytest -q
 ```
+
+Without activation, use `.venv/bin/pytest`, `.venv/bin/ruff`, and
+`.venv/bin/pyright` explicitly.
 
 GitHub Actions requires the full pytest suite on pushes and pull requests to
 `main`. Ruff and Pyright remain local quality tools while their existing
