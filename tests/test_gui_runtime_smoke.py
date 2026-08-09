@@ -1521,3 +1521,149 @@ raise SystemExit(0 if succeeded else 1)
         )
         assert result.returncode == 0, result.stderr
         assert f"background_watch_{mode}=ok" in result.stdout
+
+
+def test_real_tk_log_visibility_persists_across_restart(tmp_path: Path) -> None:
+    """Exercise the real logs toggle through a temporary-store restart."""
+    settings_path = tmp_path / "log-visibility-settings.json"
+    script = r'''
+import json
+import os
+import sys
+import time
+from pathlib import Path
+
+mode = sys.argv[1]
+settings_path = Path(sys.argv[2])
+os.environ["NEWS_APP_SETTINGS"] = str(settings_path)
+os.environ["REDIS_URL"] = ""
+
+from newsnow_neon.app import services
+from newsnow_neon.models import Headline
+
+headline = Headline("Offline log visibility", "https://example.test/logs", "Technology")
+services.configure_app_services(
+    fetch_headlines=lambda **_kwargs: ([headline], False, None),
+    build_ticker_text=lambda entries: " | ".join(item.title for item in entries),
+    resolve_article_summary=lambda _headline: None,
+    persist_headlines_with_ticker=lambda *_args, **_kwargs: None,
+    collect_redis_statistics=lambda: None,
+    clear_cached_headlines=lambda: (True, "offline logs: cache unavailable"),
+    load_historical_snapshots=lambda *_args, **_kwargs: [],
+)
+
+from newsnow_neon.application import AINewsApp
+
+app = AINewsApp()
+succeeded = False
+deadline = time.monotonic() + 5
+
+
+def stored():
+    with settings_path.open(encoding="utf-8") as handle:
+        return json.load(handle)
+
+
+def fail(error):
+    print(f"log_visibility_error={mode}:{error!r}", file=sys.stderr)
+    app.destroy()
+    raise SystemExit(1)
+
+
+def finish():
+    global succeeded
+    if mode == "write":
+        app.geometry("900x450")
+        app._remember_window_geometry()
+        app._save_settings()
+    succeeded = True
+    print(f"log_visibility_{mode}=ok")
+    app.destroy()
+
+
+def wait_for_writer_logs():
+    try:
+        app.update_idletasks()
+        if not app.log_frame.winfo_ismapped() or app.options_container.winfo_ismapped():
+            if time.monotonic() < deadline:
+                app.after(25, wait_for_writer_logs)
+                return
+            raise AssertionError("logs did not map after Show Logs")
+        assert app.log_visible is True
+        assert app.options_toggle_btn.cget("text") == "Show Controls"
+        assert app.toggle_logs_btn.cget("text") == "Hide Logs"
+        assert stored()["log_visible"] is True
+        assert stored()["options_visible"] is False
+    except BaseException as error:
+        fail(error)
+    else:
+        finish()
+
+
+def verify():
+    try:
+        app.update_idletasks()
+        if mode == "write":
+            if not app.options_container.winfo_ismapped():
+                app.options_toggle_btn.invoke()
+                app.update_idletasks()
+            if not app.toggle_logs_btn.winfo_ismapped():
+                if time.monotonic() < deadline:
+                    app.after(25, verify)
+                    return
+                raise AssertionError("log visibility control did not initialize")
+            assert app.log_visible is False
+            assert not app.log_frame.winfo_ismapped()
+            assert app.toggle_logs_btn.cget("text") == "Show Logs"
+            app.toggle_logs_btn.invoke()
+            app.after(0, wait_for_writer_logs)
+            return
+        if mode == "verify":
+            if not app.log_frame.winfo_ismapped():
+                if time.monotonic() < deadline:
+                    app.after(25, verify)
+                    return
+                raise AssertionError("persisted logs were not mapped")
+            assert app.log_visible is True
+            assert not app.options_container.winfo_ismapped()
+            assert app.options_toggle_btn.cget("text") == "Show Controls"
+            assert stored()["log_visible"] is True
+            app.options_toggle_btn.invoke()
+            app.update_idletasks()
+            assert app.toggle_logs_btn.winfo_ismapped()
+            assert app.toggle_logs_btn.cget("text") == "Hide Logs"
+            app.toggle_logs_btn.invoke()
+            app.update_idletasks()
+            assert app.log_visible is False
+            assert not app.log_frame.winfo_ismapped()
+            assert app.toggle_logs_btn.cget("text") == "Show Logs"
+            assert stored()["log_visible"] is False
+            finish()
+            return
+        raise AssertionError(f"unsupported mode: {mode}")
+    except BaseException as error:
+        fail(error)
+    else:
+        finish()
+
+
+app.after(0, verify)
+app.mainloop()
+raise SystemExit(0 if succeeded else 1)
+'''
+    environment = os.environ.copy()
+    environment["NEWS_APP_SETTINGS"] = str(settings_path)
+    environment["REDIS_URL"] = ""
+
+    for mode in ("write", "verify"):
+        result = subprocess.run(
+            [sys.executable, "-c", script, mode, str(settings_path)],
+            capture_output=True,
+            cwd=Path(__file__).resolve().parents[1],
+            env=environment,
+            text=True,
+            timeout=15,
+            check=False,
+        )
+        assert result.returncode == 0, result.stderr
+        assert f"log_visibility_{mode}=ok" in result.stdout

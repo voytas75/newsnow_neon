@@ -35,6 +35,8 @@ def toggle_logs(app: tk.Tk) -> None:
         app.log_visible = False
         app.toggle_logs_btn.config(text="Show Logs")
     else:
+        if getattr(app, "_options_visible", False):
+            set_options_visibility(app, False)
         app.log_frame.pack(fill="both", expand=True, padx=10, pady=(0, 10))
         app.log_visible = True
         app.toggle_logs_btn.config(text="Hide Logs")
@@ -533,12 +535,12 @@ def apply_settings_from_store(app: tk.Tk) -> None:
 
     # Logs visibility
     desired_log = bool(app.settings.get("log_visible", DEFAULT_SETTINGS["log_visible"]))
-    if desired_log and not app.log_visible:
+    if desired_log:
         app.log_frame.pack(fill="both", expand=True, padx=10, pady=(0, 10))
         app.log_visible = True
         app.toggle_logs_btn.config(text="Hide Logs")
         flush_log_buffer(app)
-    elif not desired_log and app.log_visible:
+    else:
         app.log_frame.pack_forget()
         app.log_visible = False
         app.toggle_logs_btn.config(text="Show Logs")

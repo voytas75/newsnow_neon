@@ -1,6 +1,6 @@
 # NewsNow Neon — Operational Plan
 
-**Status:** active — Stage 5 background-watch real-Tk round-trip verified locally with controlled offline evidence; Stage 1 and Stage 2 verified remotely; governance controls refreshed in this slice.
+**Status:** active — Stage 6 logs-visibility real-Tk round-trip verified locally with controlled offline evidence; Stage 1 and Stage 2 verified remotely; governance controls refreshed in this slice.
 **Updated:** 2026-08-09
 **Canonical product direction:** [`product-ssot.md`](product-ssot.md)
 
@@ -963,6 +963,35 @@ persistence, scheduled watcher state, and a controlled threshold-refresh path.
 It does not prove physical pointer or keyboard input, the natural 15-second or
 90-second watcher delays, live NewsNow, Redis, provider, or user-settings
 behavior.
+
+**Next boundary:** select a new, behavior-owned GUI workflow before assigning
+another numbered slice.
+
+## Stage 6 — logs visibility real-Tk round-trip
+
+**Status:** completed locally; repaired one production layout/restore defect.
+
+**RED:** at default `900×450`, the real `Show Logs` command persisted
+`log_visible=True` and changed its label to `Hide Logs`, but the packed log frame
+remained unmapped at `1×1`. A larger window proved the panel itself was valid;
+the defect was available layout space plus restore ownership.
+
+**Changed:** `toggle_logs()` now hides Controls before packing the log frame.
+Settings application always packs or unpacks the frame from persisted
+`log_visible`, rather than treating the pre-apply boolean as proof of rendered
+state.
+
+**Acceptance:** the writer uses the actual `Show Logs` button and verifies a
+mapped log frame, hidden Controls, and persisted flags. A fresh verifier restores
+that state, reopens Controls through its real command, then invokes `Hide Logs`
+and confirms the panel is unmapped and persistence is false.
+
+**Validation:** the new real-Tk acceptance passes at `900×450`. No user settings,
+NewsNow, Redis, or provider path was used.
+
+**Evidence boundary:** this proves widget commands, default-geometry panel
+visibility, and temporary-store persistence. It does not prove physical pointer
+or keyboard input, live services, provider logging, or user-settings behavior.
 
 **Next boundary:** select a new, behavior-owned GUI workflow before assigning
 another numbered slice.

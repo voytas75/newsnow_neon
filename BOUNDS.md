@@ -84,13 +84,13 @@ remains. Never hide debt through blanket ignores or broad `type: ignore`.
 
 ## Current immediate boundary
 
-Stage 5 is complete: two fresh controlled real-Tk processes used a temporary
-settings store to exercise `Background Watch` and its refresh threshold. The
-writer enabled the watcher, decremented its threshold with the real spinbox, and
-observed one controlled unseen-headline threshold refresh; the verifier restored
-and disabled the watcher. Both processes confirmed persisted state and scheduled
-or cleared watcher job IDs. No production code, user settings, live services,
-providers, or Redis were used. Any next GUI work must be separately selected as
-one bounded, behavior-owned workflow; do not reopen native chooser acceptance or
-touch user settings, live services, providers, compatibility surfaces, or
-framework design without a new scope decision.
+Stage 6 is complete: two fresh controlled real-Tk processes used a temporary
+settings store to exercise `Show Logs` and `Hide Logs`. A default-geometry defect
+was repaired: `Show Logs` now hides Controls before packing the log panel, and
+startup restores the panel from persisted `log_visible`. The writer verified the
+mapped panel and hidden Controls; the verifier restored that state and hid logs
+through the real control. No user settings, live services, providers, or Redis
+were used. Any next GUI work must be separately selected as one bounded,
+behavior-owned workflow; do not reopen native chooser acceptance or touch user
+settings, live services, providers, compatibility surfaces, or framework design
+without a new scope decision.

@@ -249,12 +249,12 @@ Quality gates become meaningful instead of aspirational noise.
 **Next GUI seam selection — no stage assigned yet**
 
 ### Why this is next
-- Stage 5 established real-Tk, offline evidence that the actual Background Watch
-  checkbutton and threshold spinbox persist, restore in a fresh process, and
-  trigger a controlled unseen-headline refresh at the configured threshold.
+- Stage 6 established real-Tk, offline evidence that `Show Logs` visibly maps
+  the panel at default geometry by hiding Controls, and that fresh startup
+  restores persisted log visibility without a false `Hide Logs` state.
 - There is no confirmed residual defect in the appearance/color, manual-refresh,
   auto-refresh, background-watch, search/filter, exclusion, summary-fallback,
-  highlight, or controls-visibility flows.
+  highlight, controls-visibility, or logs-visibility flows.
 - Assigning a new numbered slice without a user-facing gap would manufacture
   work; the next seam must be chosen from a real operator workflow.
 
@@ -404,6 +404,8 @@ Current sync status:
   `Next refresh` status.
 - Stage 5 added a controlled two-process real-Tk Background Watch round-trip,
   including persisted threshold, unseen-headline refresh, and watcher scheduling.
+- Stage 6 repaired the log-panel default-geometry visibility defect and added a
+  controlled two-process real-Tk `Show Logs` / `Hide Logs` persistence round-trip.
 - the next task is explicit selection of one behavior-owned GUI seam
 
 ### Do weryfikacji

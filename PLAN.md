@@ -167,6 +167,11 @@ and diagnostics.
   their temporary-store values, and verify unseen-headline threshold refresh plus
   scheduled or cleared watcher state. No production code, user settings, NewsNow,
   Redis, or provider path was used.
+- **Stage 6 — logs visibility real-Tk round-trip:** repaired the default-geometry
+  false-success path where `Hide Logs` could label an unmapped panel. `Show Logs`
+  now hides Controls before displaying logs, and fresh-process restore respects
+  persisted `log_visible`. No user settings, NewsNow, Redis, or provider path was
+  used.
 
 ## Next ordered work
 
