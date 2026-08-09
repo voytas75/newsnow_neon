@@ -115,7 +115,7 @@ These came out of the bounded repo review and should drive the next planning cyc
      behavior, Redis deployment compatibility, or main GUI/controller workflows.
 
 6. **Static quality debt is measured, not hidden**
-   - Ruff baseline: 968 diagnostics on the current repository-wide scope.
+   - Ruff baseline: 952 diagnostics on the current repository-wide scope.
    - Pyright baseline: 536 errors and 15 warnings on the current repository-wide scope.
    - These are not blocking CI until reduced through bounded slices.
 
@@ -246,7 +246,7 @@ Quality gates become meaningful instead of aspirational noise.
 ## Current recommended next slice
 
 ### Active next slice
-**Stage 4J — bounded static-debt reduction**
+**Stage 4K — bounded static-debt reduction**
 
 ### Why this is next
 - CI run [#31278999184](https://github.com/voytas75/newsnow_neon/actions/runs/31278999184) passed for the security lock refresh.
@@ -352,7 +352,12 @@ Current sync status:
   structural regression test and offline helper-contract coverage protect the
   consolidation. The repository-wide baselines are now Ruff `968` diagnostics
   and Pyright `536` errors plus `15` warnings.
-- the next bounded task is Stage 4J static-debt reduction in one new proven seam
+- Stage 4J reduced the `app/controller/background_watch_controller.py` Ruff
+  seam from 16 diagnostics to 0 without runtime behavior changes. Existing
+  focused background-watch/settings coverage remained green and scoped
+  Pyright stayed at 0 errors and 0 warnings. The repository-wide baselines are
+  now Ruff `952` diagnostics and Pyright `536` errors plus `15` warnings.
+- the next bounded task is Stage 4K static-debt reduction in one new proven seam
 
 ### Do weryfikacji
 - whether Redis/LLM optional reporting belongs in a future extension of the readiness contract

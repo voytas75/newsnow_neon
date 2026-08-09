@@ -9,15 +9,14 @@ from __future__ import annotations
 import logging
 import threading
 from datetime import datetime, timedelta
-from typing import Any, List, Optional, Set, Tuple
+from typing import Any
 
+from ...app.services import fetch_headlines
 from ...config import (
-    BACKGROUND_WATCH_INTERVAL_MS,
     BACKGROUND_WATCH_INITIAL_DELAY_MS,
+    BACKGROUND_WATCH_INTERVAL_MS,
 )
 from ...models import Headline
-from ...app.services import fetch_headlines
-
 
 logger = logging.getLogger(__name__)
 
@@ -26,18 +25,21 @@ class BackgroundWatchController:
     """Handles scheduling, detection, and auto-refresh triggers for background watch."""
 
     def __init__(self, app) -> None:
+        """Bind the controller to the Tk application state."""
         self.app = app
 
     # Scheduling API
 
     def schedule(self, *, immediate: bool = False) -> None:
-        """Schedule the next background watch run; computes delay and registers Tk job."""
+        """Schedule the next background watch run."""
         self.cancel()
         if not bool(self.app.background_watch_var.get()):
             self.app._background_watch_next_run = None
             return
         delay = (
-            BACKGROUND_WATCH_INITIAL_DELAY_MS if immediate else BACKGROUND_WATCH_INTERVAL_MS
+            BACKGROUND_WATCH_INITIAL_DELAY_MS
+            if immediate
+            else BACKGROUND_WATCH_INTERVAL_MS
         )
         if delay <= 0:
             delay = BACKGROUND_WATCH_INTERVAL_MS
@@ -105,8 +107,8 @@ class BackgroundWatchController:
         if bool(self.app.background_watch_var.get()):
             self.schedule()
 
-    def handle_result(self, headlines: List[Headline]) -> None:
-        """Compute pending unseen headlines; update label; maybe auto-refresh; reschedule."""
+    def handle_result(self, headlines: list[Headline]) -> None:
+        """Compute pending unseen headlines and reschedule the watcher."""
         self.app._background_watch_running = False
         if not bool(self.app.background_watch_var.get()):
             self.app._pending_new_headlines = 0
@@ -118,10 +120,11 @@ class BackgroundWatchController:
             return
 
         filtered = self.app._filter_headlines(headlines)
-        current_keys: Set[Tuple[str, str]] = {
-            self.app._headline_key(headline) for _, headline in self.app._filtered_entries()
+        current_keys: set[tuple[str, str]] = {
+            self.app._headline_key(headline)
+            for _, headline in self.app._filtered_entries()
         }
-        candidate_keys: Set[Tuple[str, str]] = {
+        candidate_keys: set[tuple[str, str]] = {
             self.app._headline_key(headline)
             for headline in filtered
             if self.app._matches_filters(headline)
@@ -198,7 +201,8 @@ class BackgroundWatchController:
         if not getattr(self.app, "_background_candidate_keys", None):
             return
         current_keys = {
-            self.app._headline_key(headline) for _, headline in self.app._filtered_entries()
+            self.app._headline_key(headline)
+            for _, headline in self.app._filtered_entries()
         }
         pending = len(self.app._background_candidate_keys.difference(current_keys))
         if pending == self.app._pending_new_headlines:

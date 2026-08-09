@@ -81,10 +81,16 @@ and diagnostics.
   helper-contract coverage. The global measured baselines fell from Ruff
   `1,091` to `968` diagnostics and Pyright `641` to `536` errors; neither is
   yet a blocking repository-wide gate.
+- **Stage 4J — background-watch controller seam:** reduced the
+  `app/controller/background_watch_controller.py` Ruff baseline from 16
+  diagnostics to 0 with no runtime behavior change. Existing focused
+  background-watch/settings coverage remained green; scoped Pyright stayed at
+  0 errors and 0 warnings. The repository-wide Ruff baseline is now `952`
+  diagnostics; Pyright remains `536` errors and `15` warnings.
 
 ## Next ordered work
 
-1. **Stage 4J — next bounded static-debt seam:** select one proven seam and
+1. **Stage 4K — next bounded static-debt seam:** select one proven seam and
    reduce only its directly owned Ruff/Pyright debt; never start with repo-wide
    cleanup.
 2. **Compatibility maintenance:** preserve the controller and services

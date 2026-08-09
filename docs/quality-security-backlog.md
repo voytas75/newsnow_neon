@@ -21,22 +21,16 @@ and the full pytest suite passed locally.
 
 ## Static-quality baseline
 
-Current measured baseline, after P1 service compatibility and Stage 4A–4H:
+Current measured baseline, after P1 service compatibility and Stage 4A–4J:
 
 | Tool | Result | Scope |
 |---|---:|---|
-| Ruff | 1,091 diagnostics | repository-wide |
-| Pyright | 641 errors, 15 warnings, 68 files | repository-wide |
+| Ruff | 952 diagnostics | repository-wide |
+| Pyright | 536 errors, 15 warnings, 68 files | repository-wide |
 
-Largest current hotspots are intentionally not treated as a single cleanup:
-
-- Ruff: `legacy_app.py` (281), `application.py` (169), `models.py` (85), and
-  `cache.py` (59) diagnostics.
-- Pyright: `app/ui/ui_helpers.py` (219), `app/ui/history_ui.py` (134), and
-  `legacy_app.py` (111) errors.
-- Pyright rule concentration: `reportAttributeAccessIssue` (507),
-  `reportRedeclaration` (57), `reportArgumentType` (42), and
-  `reportCallIssue` (27).
+The detailed hotspot inventory is intentionally not treated as a single cleanup
+campaign; select one behavior-owned seam at a time and remeasure its direct
+scope before changing it.
 
 ## Operating decision
 
