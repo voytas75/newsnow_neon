@@ -34,4 +34,4 @@ jobs:
         run: uv sync --extra dev --frozen
 
       - name: Run test suite
-        run: xvfb-run --auto-servernum uv run --extra dev --frozen pytest -q
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24 -dpi 96" uv run --extra dev --frozen pytest -q

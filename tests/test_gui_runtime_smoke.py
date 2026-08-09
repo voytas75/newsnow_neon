@@ -1918,6 +1918,16 @@ def verify_result():
 def invoke_clear():
     try:
         app.update_idletasks()
+        initial_list = app.listbox.get("1.0", "end-1c")
+        if (
+            headline.title not in initial_list
+            or headline.title not in app._latest_status
+        ):
+            if time.monotonic() < deadline:
+                app.after(25, invoke_clear)
+                return
+            detail = f"list={initial_list!r}, status={app._latest_status!r}"
+            raise AssertionError(f"initial refresh did not settle: {detail}")
         if not app.options_container.winfo_ismapped():
             app.options_toggle_btn.invoke()
             app.update_idletasks()
