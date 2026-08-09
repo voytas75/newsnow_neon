@@ -162,6 +162,11 @@ and diagnostics.
   persist timer state and cadence in a temporary store, and verify scheduled or
   cleared Tk job IDs plus the corresponding `Next refresh` status. No production
   code, user settings, NewsNow, Redis, or provider path was used.
+- **Stage 5 — background-watch real-Tk round-trip:** two fresh offline Tk
+  processes use the actual watcher checkbutton and threshold spinbox, persist
+  their temporary-store values, and verify unseen-headline threshold refresh plus
+  scheduled or cleared watcher state. No production code, user settings, NewsNow,
+  Redis, or provider path was used.
 
 ## Next ordered work
 

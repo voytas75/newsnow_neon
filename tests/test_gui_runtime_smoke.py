@@ -1343,3 +1343,181 @@ raise SystemExit(0 if succeeded else 1)
         )
         assert result.returncode == 0, result.stderr
         assert f"auto_refresh_{mode}=ok" in result.stdout
+
+
+def test_real_tk_background_watch_persists_threshold_and_refreshes_unseen(
+    tmp_path: Path,
+) -> None:
+    """Exercise Background Watch with controlled unseen headlines across restart."""
+    settings_path = tmp_path / "background-watch-settings.json"
+    script = r'''
+import json
+import os
+import sys
+import time
+from pathlib import Path
+
+mode = sys.argv[1]
+settings_path = Path(sys.argv[2])
+os.environ["NEWS_APP_SETTINGS"] = str(settings_path)
+os.environ["REDIS_URL"] = ""
+if mode == "write":
+    settings_path.write_text(
+        json.dumps({"background_watch_refresh_threshold": 2}),
+        encoding="utf-8",
+    )
+
+from newsnow_neon.app import services
+from newsnow_neon.models import Headline
+
+baseline = Headline("Existing headline", "https://example.test/existing", "Technology")
+unseen = Headline("Unseen headline", "https://example.test/unseen", "Technology")
+fetch_calls = []
+
+
+def fetch_headlines(*, force_refresh=False):
+    fetch_calls.append(force_refresh)
+    return ([baseline, unseen] if force_refresh else [baseline]), False, None
+
+
+services.configure_app_services(
+    fetch_headlines=fetch_headlines,
+    build_ticker_text=lambda entries: " | ".join(item.title for item in entries),
+    resolve_article_summary=lambda _headline: None,
+    persist_headlines_with_ticker=lambda *_args, **_kwargs: None,
+    collect_redis_statistics=lambda: None,
+    clear_cached_headlines=lambda: (True, "offline watch: cache unavailable"),
+    load_historical_snapshots=lambda *_args, **_kwargs: [],
+)
+
+from newsnow_neon.application import AINewsApp
+
+app = AINewsApp()
+succeeded = False
+deadline = time.monotonic() + 5
+
+
+def stored():
+    with settings_path.open(encoding="utf-8") as handle:
+        return json.load(handle)
+
+
+def fail(error):
+    print(f"background_watch_error={mode}:{error!r}", file=sys.stderr)
+    app.destroy()
+    raise SystemExit(1)
+
+
+def finish():
+    global succeeded
+    if mode == "write":
+        app.geometry("900x450")
+        app._remember_window_geometry()
+        app._save_settings()
+    succeeded = True
+    print(f"background_watch_{mode}=ok")
+    app.destroy()
+
+
+def wait_for_refresh():
+    try:
+        app.update_idletasks()
+        list_text = app.listbox.get("1.0", "end-1c")
+        if unseen.title not in list_text or fetch_calls.count(True) < 2:
+            if time.monotonic() < deadline:
+                app.after(25, wait_for_refresh)
+                return
+            detail = f"calls={fetch_calls!r}, list={list_text!r}"
+            raise AssertionError(f"watch refresh did not render: {detail}")
+        assert fetch_calls[0] is False
+        assert fetch_calls.count(True) == 2
+        assert app._pending_new_headlines == 0
+        assert app.new_headlines_var.get() == "New headlines pending: 0"
+        assert app._background_watch_job is not None
+        assert app._background_watch_next_run is not None
+    except BaseException as error:
+        fail(error)
+    else:
+        finish()
+
+
+def verify():
+    try:
+        app.update_idletasks()
+        if not app.options_container.winfo_ismapped():
+            app.options_toggle_btn.invoke()
+            app.update_idletasks()
+        if not app.background_watch_check.winfo_ismapped():
+            if time.monotonic() < deadline:
+                app.after(25, verify)
+                return
+            raise AssertionError("background-watch controls did not initialize")
+
+        assert app.background_watch_check.cget("text") == "Background Watch"
+        if mode == "write":
+            if baseline.title not in app.listbox.get("1.0", "end-1c"):
+                if time.monotonic() < deadline:
+                    app.after(25, verify)
+                    return
+                raise AssertionError("baseline headline was not rendered")
+            assert app.background_watch_var.get() is False
+            assert app.background_watch_threshold_var.get() == 2
+            app.background_watch_threshold_spin.invoke("buttondown")
+            app.update_idletasks()
+            assert app.background_watch_threshold_var.get() == 1
+            assert stored()["background_watch_refresh_threshold"] == 1
+
+            app.background_watch_check.invoke()
+            assert app.background_watch_var.get() is True
+            assert stored()["background_watch_enabled"] is True
+            assert app._background_watch_job is not None
+            assert app._background_watch_next_run is not None
+            app._schedule_background_watch_with_delay(0)
+            app.after(0, wait_for_refresh)
+            return
+        if mode == "verify":
+            if app._background_watch_job is None:
+                if time.monotonic() < deadline:
+                    app.after(25, verify)
+                    return
+                raise AssertionError("restored watch was not scheduled")
+            assert app.background_watch_var.get() is True
+            assert app.background_watch_threshold_var.get() == 1
+            assert stored()["background_watch_enabled"] is True
+            assert stored()["background_watch_refresh_threshold"] == 1
+
+            app.background_watch_check.invoke()
+            app.update_idletasks()
+            assert app.background_watch_var.get() is False
+            assert stored()["background_watch_enabled"] is False
+            assert app._background_watch_job is None
+            assert app._background_watch_next_run is None
+            assert app.new_headlines_var.get() == "Background watch: off"
+        else:
+            raise AssertionError(f"unsupported mode: {mode}")
+    except BaseException as error:
+        fail(error)
+    else:
+        finish()
+
+
+app.after(0, verify)
+app.mainloop()
+raise SystemExit(0 if succeeded else 1)
+'''
+    environment = os.environ.copy()
+    environment["NEWS_APP_SETTINGS"] = str(settings_path)
+    environment["REDIS_URL"] = ""
+
+    for mode in ("write", "verify"):
+        result = subprocess.run(
+            [sys.executable, "-c", script, mode, str(settings_path)],
+            capture_output=True,
+            cwd=Path(__file__).resolve().parents[1],
+            env=environment,
+            text=True,
+            timeout=15,
+            check=False,
+        )
+        assert result.returncode == 0, result.stderr
+        assert f"background_watch_{mode}=ok" in result.stdout

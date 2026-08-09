@@ -1,6 +1,6 @@
 # NewsNow Neon — Operational Plan
 
-**Status:** active — Stage 4Z auto-refresh real-Tk round-trip verified locally with controlled offline evidence; Stage 1 and Stage 2 verified remotely; governance controls refreshed in this slice.
+**Status:** active — Stage 5 background-watch real-Tk round-trip verified locally with controlled offline evidence; Stage 1 and Stage 2 verified remotely; governance controls refreshed in this slice.
 **Updated:** 2026-08-09
 **Canonical product direction:** [`product-ssot.md`](product-ssot.md)
 
@@ -934,6 +934,35 @@ transient unmapped `1×1` window. No production code was needed.
 persistence, and Tk scheduler/status transitions. It does not prove physical
 pointer or keyboard input, an elapsed minute firing a refresh, live NewsNow,
 Redis, provider, or user-settings behavior.
+
+**Next boundary:** select a new, behavior-owned GUI workflow before assigning
+another numbered slice.
+
+## Stage 5 — background-watch real-Tk round-trip
+
+**Status:** completed locally; no production code changed.
+
+**Scope:** `tests/test_gui_runtime_smoke.py` runs two fresh real-Tk subprocesses
+against one temporary settings store, deterministic offline headlines, empty
+`REDIS_URL`, and local service doubles.
+
+**Acceptance:** the writer starts with a controlled threshold of two, invokes the
+real spinbox down to one, then enables the actual `Background Watch` checkbutton.
+The test confirms persistence and initial scheduling, accelerates the already
+selected scheduler through its existing zero-delay wrapper, and observes a local
+unseen headline trigger one forced refresh into the list. The fresh verifier
+restores the enabled threshold-one watcher and disables it through the real
+checkbutton, confirming persisted and cleared scheduler state.
+
+**Validation:** the new real-Tk acceptance passes. The temporary writer records
+`900×450` geometry before closing so the fresh verifier cannot inherit a
+transient unmapped `1×1` window. No production code was needed.
+
+**Evidence boundary:** this proves real widget commands, temporary-store
+persistence, scheduled watcher state, and a controlled threshold-refresh path.
+It does not prove physical pointer or keyboard input, the natural 15-second or
+90-second watcher delays, live NewsNow, Redis, provider, or user-settings
+behavior.
 
 **Next boundary:** select a new, behavior-owned GUI workflow before assigning
 another numbered slice.

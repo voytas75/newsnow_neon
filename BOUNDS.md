@@ -84,13 +84,13 @@ remains. Never hide debt through blanket ignores or broad `type: ignore`.
 
 ## Current immediate boundary
 
-Stage 4Z is complete: two fresh controlled real-Tk processes used a temporary
-settings store to exercise `Auto Refresh Timer` and `Every (min)`. The writer
-disabled the timer, changed its cadence through the real spinbox, then restored
-it; the verifier restored the persisted timer/cadence and disabled it again.
-Both processes confirmed the associated Tk job IDs and `Next refresh` state. No
-production code, user settings, live services, providers, or Redis were used.
-Any next GUI work must be separately selected as one bounded, behavior-owned
-workflow; do not reopen native chooser acceptance or touch user settings, live
-services, providers, compatibility surfaces, or framework design without a new
-scope decision.
+Stage 5 is complete: two fresh controlled real-Tk processes used a temporary
+settings store to exercise `Background Watch` and its refresh threshold. The
+writer enabled the watcher, decremented its threshold with the real spinbox, and
+observed one controlled unseen-headline threshold refresh; the verifier restored
+and disabled the watcher. Both processes confirmed persisted state and scheduled
+or cleared watcher job IDs. No production code, user settings, live services,
+providers, or Redis were used. Any next GUI work must be separately selected as
+one bounded, behavior-owned workflow; do not reopen native chooser acceptance or
+touch user settings, live services, providers, compatibility surfaces, or
+framework design without a new scope decision.
