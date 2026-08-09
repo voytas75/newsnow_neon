@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), and this 
 ## [Unreleased]
 
 ### Fixed
+- Restored custom background/text colors to both ticker bands when applying
+  them and when loading a custom profile from settings; cross-process real-Tk
+  coverage protects the temporary-store round-trip.
 - Compacted only existing appearance-panel vertical spacing so `Background…`
   and `Text…` retain their full requested height at the default `900×450`
   geometry; real-Tk coverage protects both controls with the existing

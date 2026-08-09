@@ -8,7 +8,7 @@ from __future__ import annotations
 import tkinter as tk
 from tkinter import colorchooser
 import logging
-from typing import Optional, Sequence, List
+from typing import Any, List, Optional, Sequence, cast
 from datetime import datetime, timezone
 
 from ..timeutils import coerce_timezone as _coerce_timezone_fn
@@ -308,6 +308,7 @@ def update_ticker_colors(app: tk.Tk) -> None:
     background = app.ticker_bg_var.get()
     text = app.ticker_fg_var.get()
     app.ticker.set_colors(background=background, text=text)
+    cast(Any, app).full_ticker.set_colors(background=background, text=text)
     hover_color = app.ticker.hover_color
     COLOR_PROFILES[CUSTOM_PROFILE_NAME] = {
         "background": background,
@@ -514,6 +515,9 @@ def apply_settings_from_store(app: tk.Tk) -> None:
         app.ticker_bg_var.set(background)
         app.ticker_fg_var.set(text_color)
         app.ticker.set_colors(background=background, text=text_color)
+        cast(Any, app).full_ticker.set_colors(
+            background=background, text=text_color
+        )
     elif profile in COLOR_PROFILES:
         app.color_profile_var.set(profile)
         apply_color_profile(app, profile)

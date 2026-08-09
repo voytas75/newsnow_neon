@@ -119,13 +119,17 @@ and diagnostics.
   across 250 ms samples; paired X11 captures one second apart showed matching
   leftward motion. Edge clipping is normal marquee behavior, not a defect; no
   ticker code changed.
+- **Stage 4Q — custom appearance round-trip:** a cross-process real-Tk contract
+  found that custom colors restored only to the primary ticker. Both immediate
+  custom-color application and store restoration now apply colors to both
+  tickers; a fresh X11 capture confirms the shared custom rendering.
 
 ## Next ordered work
 
-1. **Stage 4Q — appearance-settings offline round-trip:** verify theme, ticker
-   speed, and color values persist through a controlled temporary settings store
-   and a real-Tk restart, without invoking the native color chooser, live
-   services, or the user's settings file.
+1. **Stage 4R — native color-chooser cancel-path acceptance:** on a controlled
+   temporary settings store, open each color chooser through its real button and
+   cancel it. Verify the dialog invocation does not alter either ticker or
+   persisted values; do not choose a color or touch the user's settings file.
 2. **Compatibility maintenance:** preserve the controller and services
    compatibility tests when later seams touch package loading or startup.
 

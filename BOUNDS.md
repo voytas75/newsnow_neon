@@ -84,10 +84,9 @@ remains. Never hide debt through blanket ignores or broad `type: ignore`.
 
 ## Current immediate boundary
 
-Stage 4P is complete as an evidence-only classification: controlled real-Tk
-samples and paired X11 captures confirm that observed ticker-edge clipping is
-normal leftward marquee motion, not a persistent layout defect. Stage 4Q may
-only verify appearance-settings persistence through a temporary settings store
-and real-Tk restart. Do not invoke the native color chooser, call NewsNow,
-Redis, or a provider, alter the user's settings file, redesign the GUI, or
-change compatibility surfaces incidentally.
+Stage 4Q is complete for the custom-color round-trip defect: controlled
+cross-process real Tk now restores the custom profile, speed, background, and
+text on both tickers through a temporary settings store. Stage 4R may only open
+and cancel each native color chooser against a temporary store; it must not
+choose a color, call NewsNow, Redis, or a provider, alter the user's settings
+file, redesign the GUI, or change compatibility surfaces incidentally.

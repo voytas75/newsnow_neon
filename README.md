@@ -76,7 +76,7 @@ python -m newsnow_neon
 ## Current focus
 - **Operational trust first** – startup/runtime failures should classify cleanly instead of failing with raw tracebacks.
 - **Supported compatibility surfaces** – `controller.py` and `services.py` remain supported externally; explicit `services.py` file-path loads now use the canonical package proxies.
-- **GUI-first acceptance** – Stage 4P classified ticker-edge clipping as normal marquee motion through controlled real-Tk positions and paired X11 captures; no ticker code changed. Stage 4Q is an offline, temporary-store appearance-settings round-trip.
+- **GUI-first acceptance** – Stage 4Q fixes cross-process restoration of custom colors: both ticker bands now load the saved custom background/text alongside the selected speed. Stage 4R is limited to native chooser open/cancel acceptance on a temporary store.
 
 ## Configuration
 | Variable | Purpose |

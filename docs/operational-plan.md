@@ -1,6 +1,6 @@
 # NewsNow Neon — Operational Plan
 
-**Status:** active — Stage 4P ticker classification verified locally; Stage 1 and Stage 2 verified remotely; governance controls refreshed in this slice.
+**Status:** active — Stage 4Q appearance round-trip verified locally; Stage 1 and Stage 2 verified remotely; governance controls refreshed in this slice.
 **Updated:** 2026-08-09
 **Canonical product direction:** [`product-ssot.md`](product-ssot.md)
 
@@ -672,8 +672,42 @@ showed matching leftward shifts of the visible text.
 **Decision:** the edge clipping seen in a still is a normal marquee frame, not
 persistent truncation. No ticker change or new regression test is warranted.
 
-**Next boundary:** Stage 4Q may verify appearance-settings persistence through a
-temporary settings store and real-Tk restart only.
+**Resolution:** Stage 4Q completed the temporary-store appearance persistence
+round-trip; the next boundary is Stage 4R native chooser cancel-path behavior.
+
+## Stage 4Q — custom appearance round-trip
+
+**Status:** completed locally.
+
+**Scope:** `newsnow_neon/app/ui/ui_helpers.py` custom-color application and the
+isolated real-Tk smoke. The test uses two fresh subprocesses with one temporary
+settings file and local service doubles; no native dialog or user settings path
+is used.
+
+**RED:** the writer process persisted `Custom`, speed `7`, background `#123456`,
+and text `#fedcba`. A fresh verifier restored the primary ticker but failed on
+the full ticker colors.
+
+**Changed:** custom-color updates now call `set_colors` for the full ticker both
+when applying selected custom values and when rebuilding the custom profile from
+persisted settings.
+
+**Validation:** the new cross-process real-Tk test writes through supported
+appearance behavior, restarts against the same temporary store, and asserts
+profile, speed, plus background/text on both tickers. Full frozen pytest,
+targeted test Ruff/Pyright, `newsnow-neon --check`, `uv lock --check`, and
+`git diff --check` passed.
+
+**Static baseline:** `ui_helpers.py` Ruff remains 13 diagnostics with no new or
+removed entries; Pyright remains 219 errors and 0 warnings before and after.
+These historical diagnostics are intentionally outside this bounded fix.
+
+**Visual evidence:** a fresh target-only X11 window confirmed both ticker bands
+share the restored dark-blue background and pale-pink text, while offline rows
+and the action bar remain readable without overlap.
+
+**Next boundary:** Stage 4R may exercise only native color-chooser open/cancel
+no-op behavior against a temporary store.
 
 ## Security lock refresh
 
@@ -701,7 +735,7 @@ and Dependabot reports zero open alerts; all 16 prior alerts are fixed.
 
 ## Current recommended next execution slice
 
-**Begin Stage 4Q as an appearance-settings offline round-trip.** Use only a
-temporary settings store and local service doubles to verify theme, ticker speed,
-and color restoration after real-Tk restart. Do not invoke native dialogs or
-touch the user's settings path.
+**Begin Stage 4R as native color-chooser cancel-path acceptance.** Against a
+temporary settings store, open each chooser using its real button and cancel it;
+verify both ticker colors and persisted values remain unchanged. Do not select a
+color or touch the user's settings path.

@@ -135,3 +135,95 @@ raise SystemExit(0 if succeeded else 1)
 
     assert result.returncode == 0, result.stderr
     assert "gui_smoke=ok" in result.stdout
+
+
+def test_real_tk_restores_custom_appearance_across_restart(tmp_path: Path) -> None:
+    """Persist custom appearance in one real-Tk process and restore it in another."""
+    settings_path = tmp_path / "appearance-round-trip-settings.json"
+    script = r'''
+import os
+import sys
+from pathlib import Path
+
+mode = sys.argv[1]
+settings_path = Path(sys.argv[2])
+os.environ["NEWS_APP_SETTINGS"] = str(settings_path)
+os.environ["REDIS_URL"] = ""
+
+from newsnow_neon.app import services
+from newsnow_neon.app.ui.ui_helpers import update_ticker_colors
+from newsnow_neon.config import CUSTOM_PROFILE_NAME
+from newsnow_neon.models import Headline
+
+EXPECTED_BACKGROUND = "#123456"
+EXPECTED_TEXT = "#fedcba"
+EXPECTED_SPEED = 7
+headline = Headline(
+    title="Offline appearance round-trip",
+    url="https://example.test/newsnow-neon-appearance-round-trip",
+    section="Technology",
+)
+services.configure_app_services(
+    fetch_headlines=lambda **_kwargs: ([headline], False, None),
+    build_ticker_text=lambda headlines: " | ".join(item.title for item in headlines),
+    resolve_article_summary=lambda _headline: None,
+    persist_headlines_with_ticker=lambda *_args, **_kwargs: None,
+    collect_redis_statistics=lambda: None,
+    clear_cached_headlines=lambda: (True, "offline appearance: cache unavailable"),
+    load_historical_snapshots=lambda *_args, **_kwargs: [],
+)
+
+from newsnow_neon.application import AINewsApp
+
+app = AINewsApp()
+succeeded = False
+
+
+def verify() -> None:
+    global succeeded
+    try:
+        app.update_idletasks()
+        if mode == "write":
+            app.ticker_speed_var.set(EXPECTED_SPEED)
+            app._apply_speed()
+            app.ticker_bg_var.set(EXPECTED_BACKGROUND)
+            app.ticker_fg_var.set(EXPECTED_TEXT)
+            update_ticker_colors(app)
+        elif mode == "verify":
+            assert app.color_profile_var.get() == CUSTOM_PROFILE_NAME
+            assert app.ticker_speed_var.get() == EXPECTED_SPEED
+            assert app.ticker.speed == EXPECTED_SPEED
+            for ticker in (app.ticker, app.full_ticker):
+                assert ticker.bg_color == EXPECTED_BACKGROUND
+                assert ticker.text_color == EXPECTED_TEXT
+        else:
+            raise AssertionError(f"unsupported mode: {mode}")
+    except BaseException as error:
+        print(f"appearance_round_trip_error={error!r}", file=sys.stderr)
+    else:
+        succeeded = True
+        print(f"appearance_round_trip_{mode}=ok")
+    finally:
+        app.destroy()
+
+
+app.after(750, verify)
+app.mainloop()
+raise SystemExit(0 if succeeded else 1)
+'''
+    environment = os.environ.copy()
+    environment["NEWS_APP_SETTINGS"] = str(settings_path)
+    environment["REDIS_URL"] = ""
+
+    for mode in ("write", "verify"):
+        result = subprocess.run(
+            [sys.executable, "-c", script, mode, str(settings_path)],
+            capture_output=True,
+            cwd=Path(__file__).resolve().parents[1],
+            env=environment,
+            text=True,
+            timeout=10,
+            check=False,
+        )
+        assert result.returncode == 0, result.stderr
+        assert f"appearance_round_trip_{mode}=ok" in result.stdout

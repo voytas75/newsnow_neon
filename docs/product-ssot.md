@@ -246,51 +246,51 @@ Quality gates become meaningful instead of aspirational noise.
 ## Current recommended next slice
 
 ### Active next slice
-**Stage 4Q — appearance-settings offline round-trip**
+**Stage 4R — native color-chooser cancel-path acceptance**
 
 ### Why this is next
-- Stage 4P established that the observed ticker-edge clipping is intended marquee
-  motion, so no ticker correction is justified.
-- Appearance controls are now fully visible at the default geometry, but their
-  persistence through a restart has not been verified in the real-Tk lane.
-- A temporary-store round-trip is the smallest next operator-facing check and
-  avoids touching the user's settings or native chooser dialogs.
+- Stage 4Q repaired and verified the settings-store round-trip for custom colors
+  on both real ticker bands.
+- The GUI primary surface still has one bounded interaction not exercised:
+  opening and cancelling the native color chooser through its actual buttons.
+- A cancel-only path tests dialog reachability and no-op safety without selecting
+  colors, touching user settings, or extending this into native-dialog E2E.
 
 ## Implementation focus for the active next slice
 
 ### Goal
-Verify that controlled theme, ticker-speed, and color values survive a real-Tk
-restart using only a temporary settings store and offline service doubles.
+Open and cancel each real native color chooser against a controlled temporary
+settings store, verifying that cancellation leaves the appearance state and
+persisted values unchanged.
 
 ### Scope
 The next slice should:
-- set deterministic appearance values through supported application behavior or
-  a controlled temporary settings fixture;
-- start a second real Tk application against the same temporary store;
-- assert the restored settings and rendered ticker values;
-- clean up the temporary store and preserve the default-geometry layout contract.
+- start the real Tk app with offline service doubles and temporary settings;
+- open `Background…` and `Text…` through their normal UI actions;
+- capture the real dialog reachability where the desktop supports it, then
+  cancel rather than select a value;
+- verify both ticker colors and the temporary store are unchanged afterward.
 
 ### Non-goals
 Do not in this slice:
-- invoke or automate native color chooser dialogs,
-- touch the user's settings file,
+- choose a color, confirm a color dialog, or alter user settings,
 - call NewsNow, a provider, or Redis for acceptance evidence,
-- alter appearance behavior before a failing round-trip contract identifies a
-  defect,
-- alter public imports, GUI framework, or unrelated controls.
+- claim native dialog behavior where the host desktop cannot expose it,
+- redesign the color controls or alter public imports.
 
 ### Preferred execution order
-1. inspect the current settings persistence seam and existing behavior tests
-2. write a controlled real-Tk restart contract using a temporary store
-3. classify the result before changing settings code
-4. repeat only the offline real-Tk evidence required by the result
+1. inspect the native dialog behavior and available desktop automation boundary
+2. run the controlled open/cancel attempt for each button
+3. compare in-memory and persisted appearance values before and after cancellation
+4. classify unsupported desktop automation honestly rather than simulating a
+   native dialog in a stub
 
 ### Acceptance criteria
-- restored theme, speed, and color values match the controlled fixture
-- no real user settings path or live service is accessed
-- the completed ticker and Controls-panel contracts remain protected
-- the report distinguishes offline persistence evidence from native-dialog and
-  live-service behavior
+- each chooser is either visibly opened then cancelled with no state change, or
+  explicitly reported as unsupported by the desktop boundary
+- temporary-store values and both ticker colors remain unchanged after cancel
+- no user setting, live service, or selected color is involved
+- the report distinguishes real dialog evidence from any unsupported path
 
 ## What should not drive the roadmap now
 
@@ -383,7 +383,9 @@ Current sync status:
   both color buttons to their full requested height at `900×450` without overlap.
 - Stage 4P classified observed ticker edge clipping as normal marquee motion by
   controlled real-Tk coordinates and paired X11 captures; no ticker change made.
-- the next bounded task is Stage 4Q appearance-settings offline round-trip
+- Stage 4Q repaired custom-color persistence across a fresh Tk restart for both
+  ticker bands; a controlled X11 capture confirmed the restored rendering.
+- the next bounded task is Stage 4R native color-chooser cancel-path acceptance
 
 ### Do weryfikacji
 - whether Redis/LLM optional reporting belongs in a future extension of the readiness contract
