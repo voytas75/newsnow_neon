@@ -249,12 +249,11 @@ Quality gates become meaningful instead of aspirational noise.
 **Next GUI seam selection — no stage assigned yet**
 
 ### Why this is next
-- Stage 7 established real-Tk, offline evidence that the actual cache-clear
-  button reaches its worker callback, returns a controlled operator status, and
-  refreshes the disabled Redis meter without a Redis connection.
+- Stage 8 established real-Tk, offline evidence that the actual Info button
+  opens a mapped AppInfoWindow with canonical metadata.
 - There is no confirmed residual defect in the appearance/color, manual-refresh,
   auto-refresh, background-watch, search/filter, exclusion, summary-fallback,
-  highlight, controls-visibility, logs-visibility, or cache-clear flows.
+  highlight, controls-visibility, logs-visibility, cache-clear, or info flows.
 - Assigning a new numbered slice without a user-facing gap would manufacture
   work; the next seam must be chosen from a real operator workflow.
 
@@ -407,6 +406,7 @@ Current sync status:
 - Stage 6 repaired the log-panel default-geometry visibility defect and added a
   controlled two-process real-Tk `Show Logs` / `Hide Logs` persistence round-trip.
 - Stage 7 added a controlled real-Tk cache-clear worker/callback acceptance.
+- Stage 8 added a controlled real-Tk Info-window acceptance.
 - the next task is explicit selection of one behavior-owned GUI seam
 
 ### Do weryfikacji

@@ -1,6 +1,6 @@
 # NewsNow Neon — Operational Plan
 
-**Status:** active — Stage 7 cache-clear real-Tk acceptance verified locally with controlled offline evidence; Stage 1 and Stage 2 verified remotely; governance controls refreshed in this slice.
+**Status:** active — Stage 8 info-window real-Tk acceptance verified locally with controlled offline evidence; Stage 1 and Stage 2 verified remotely; governance controls refreshed in this slice.
 **Updated:** 2026-08-09
 **Canonical product direction:** [`product-ssot.md`](product-ssot.md)
 
@@ -1015,6 +1015,20 @@ Redis, or provider path was used.
 **Evidence boundary:** this proves controlled worker/callback wiring and status
 rendering. It does not prove a deployed Redis deletion, physical pointer input,
 or user-settings behavior.
+
+**Next boundary:** select a new, behavior-owned GUI workflow before assigning
+another numbered slice.
+
+## Stage 8 — info-window real-Tk acceptance
+
+**Status:** completed locally; no production code changed.
+
+**Acceptance:** a controlled real-Tk process invokes the actual `Info` button,
+then verifies a mapped `AppInfoWindow`, canonical `About NewsNow Neon` title, and
+window existence. No user settings, NewsNow, Redis, or provider path was used.
+
+**Evidence boundary:** this proves button-to-Toplevel wiring and metadata window
+construction, not physical pointer input or external-service behavior.
 
 **Next boundary:** select a new, behavior-owned GUI workflow before assigning
 another numbered slice.

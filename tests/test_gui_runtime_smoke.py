@@ -1779,3 +1779,102 @@ raise SystemExit(0 if succeeded else 1)
     )
     assert result.returncode == 0, result.stderr
     assert "cache_clear=ok" in result.stdout
+
+
+def test_real_tk_info_button_opens_system_window(tmp_path: Path) -> None:
+    """Invoke the real Info button and verify the mapped system-information window."""
+    settings_path = tmp_path / "info-window-settings.json"
+    script = r'''
+import os
+import sys
+import time
+from pathlib import Path
+
+settings_path = Path(sys.argv[1])
+os.environ["NEWS_APP_SETTINGS"] = str(settings_path)
+os.environ["REDIS_URL"] = ""
+
+from newsnow_neon.app import services
+from newsnow_neon.models import Headline
+
+headline = Headline("Offline info window", "https://example.test/info", "Technology")
+services.configure_app_services(
+    fetch_headlines=lambda **_kwargs: ([headline], False, None),
+    build_ticker_text=lambda entries: " | ".join(item.title for item in entries),
+    resolve_article_summary=lambda _headline: None,
+    persist_headlines_with_ticker=lambda *_args, **_kwargs: None,
+    collect_redis_statistics=lambda: None,
+    clear_cached_headlines=lambda: (True, "offline info: cache unavailable"),
+    load_historical_snapshots=lambda *_args, **_kwargs: [],
+)
+
+from newsnow_neon.application import AINewsApp
+from newsnow_neon.ui.windows.app_info_window import AppInfoWindow
+
+app = AINewsApp()
+succeeded = False
+deadline = time.monotonic() + 5
+
+
+def fail(error):
+    print(f"info_window_error={error!r}", file=sys.stderr)
+    app.destroy()
+    raise SystemExit(1)
+
+
+def verify_window():
+    global succeeded
+    try:
+        app.update_idletasks()
+        window = app._info_window
+        is_info_window = isinstance(window, AppInfoWindow)
+        is_mapped = bool(window and window.winfo_ismapped())
+        if window is None or not is_info_window or not is_mapped:
+            if time.monotonic() < deadline:
+                app.after(25, verify_window)
+                return
+            raise AssertionError("Info window was not mapped")
+        assert window.title() == "About NewsNow Neon"
+        assert window.winfo_exists()
+        succeeded = True
+        print("info_window=ok")
+        window.destroy()
+        app.destroy()
+    except BaseException as error:
+        fail(error)
+
+
+def invoke_info():
+    try:
+        app.update_idletasks()
+        if not app.info_btn.winfo_ismapped():
+            if time.monotonic() < deadline:
+                app.after(25, invoke_info)
+                return
+            raise AssertionError("Info button did not initialize")
+        assert app.info_btn.cget("text") == "Info"
+        app.info_btn.invoke()
+        app.after(0, verify_window)
+    except BaseException as error:
+        fail(error)
+
+
+app.after(0, invoke_info)
+app.mainloop()
+raise SystemExit(0 if succeeded else 1)
+'''
+    environment = os.environ.copy()
+    environment["NEWS_APP_SETTINGS"] = str(settings_path)
+    environment["REDIS_URL"] = ""
+
+    result = subprocess.run(
+        [sys.executable, "-c", script, str(settings_path)],
+        capture_output=True,
+        cwd=Path(__file__).resolve().parents[1],
+        env=environment,
+        text=True,
+        timeout=15,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    assert "info_window=ok" in result.stdout

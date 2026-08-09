@@ -84,11 +84,9 @@ remains. Never hide debt through blanket ignores or broad `type: ignore`.
 
 ## Current immediate boundary
 
-Stage 7 is complete: a controlled real-Tk process used the actual `Clear
-Headline Cache` button with a local cache-clear double. Its worker callback
-reported the controlled status and restored the Redis meter to `Redis: OFF` with
-an empty `REDIS_URL`. No production code, user settings, live services, providers,
-or Redis were used. Any next GUI work must be separately selected as one bounded,
-behavior-owned workflow; do not reopen native chooser acceptance or touch user
-settings, live services, providers, compatibility surfaces, or framework design
-without a new scope decision.
+Stage 8 is complete: a controlled real-Tk process used the actual `Info` button
+to open a mapped `AppInfoWindow` with canonical metadata. No production code,
+user settings, live services, providers, or Redis were used. Any next GUI work
+must be separately selected as one bounded, behavior-owned workflow; do not reopen
+native chooser acceptance or touch user settings, live services, providers,
+compatibility surfaces, or framework design without a new scope decision.

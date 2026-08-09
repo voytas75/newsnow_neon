@@ -176,6 +176,9 @@ and diagnostics.
   button reaches its worker callback, emits a controlled completion status, and
   refreshes the disabled Redis meter without a Redis connection. No production
   code, user settings, NewsNow, Redis, or provider path was used.
+- **Stage 8 — info-window real-Tk acceptance:** the actual `Info` button opens a
+  mapped `AppInfoWindow` with canonical metadata; no production code, user
+  settings, NewsNow, Redis, or provider path was used.
 
 ## Next ordered work
 
