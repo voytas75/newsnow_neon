@@ -268,7 +268,8 @@ renaming either compatibility surface.
 
 ## Stage 3B — stable service-proxy binding
 
-**Status:** completed locally; remote CI verification pending.
+**Status:** completed locally; the retained code is covered by later successful
+main CI run [#31326233486](https://github.com/voytas75/newsnow_neon/actions/runs/31326233486).
 
 **Changed:** `app/services/__init__.py` now retains stable public proxies and
 updates private implementation slots during configuration. Direct imports taken

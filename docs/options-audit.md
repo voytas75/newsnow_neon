@@ -1,16 +1,27 @@
 # NewsNowNeon Options Audit
 
-Status: draft  
-Scope: application options and adjacent operator controls  
-Updated: 2026-05-15
+Status: historical audit — recommendation implemented and superseded
+Scope: application options and adjacent operator controls, assessed 2026-05-15
+Updated: 2026-08-09
 
-## Recommendation
+## Current status
+
+- This audit records the pre-implementation control-surface rationale; it is not
+  the active delivery order.
+- Its terminology/grouping recommendation was implemented through the bounded
+  operator-control and real-Tk acceptance work. Current labels include `Show
+  Controls` / `Hide Controls`, `Appearance & Readability`, and `Monitoring &
+  Runtime`.
+- For active product direction and the next GUI-workflow decision, use
+  [`product-ssot.md`](product-ssot.md) and [`../PLAN.md`](../PLAN.md).
+
+## Historical recommendation — implemented
 
 Recommended direction:
 
 **Treat application options as an explicit operator-control surface, not as a miscellaneous settings bucket.**
 
-That means the next bounded product/UX slice should:
+At audit time, the recommended bounded product/UX slice was to:
 1. define the canonical option groups around operator workflows,
 2. separate persistent preferences from live filters and one-shot controls,
 3. tighten wording around refresh/watch behavior,
@@ -34,7 +45,7 @@ The main current weakness is not missing functionality. The main weakness is tha
 - status summary behavior,
 - persisted settings hidden behind runtime state.
 
-So the next high-value move is **clarifying the control model**, not adding more raw settings.
+So the recommended high-value move was **clarifying the control model**, not adding more raw settings.
 
 ## Confirmed current model
 
@@ -247,8 +258,8 @@ The app also exposes status feedback that is part of the effective options UX:
   - persists keyword-color rules,
   - changes attention routing in the list/ticker.
 
-### Options panel visibility
-- UI: `Show Options` / `Hide Options`
+### Controls visibility
+- UI: `Show Controls` / `Hide Controls`
 - Setting key: `options_visible`
 - Handler: `app/ui/ui_helpers.py::set_options_visibility()`
 - Effect:
@@ -263,13 +274,13 @@ The current design already suggests four real operator domains:
 3. **Triage** — search, section filter, exclusions, highlight keywords.
 4. **Appearance & ergonomics** — color profile, custom colors, ticker speed, timezone.
 
-This is stronger than the current UI wording:
+This was stronger than the UI wording at the time:
 - `Ticker Appearance`
 - `Behavior & Timing`
 
 Those two headings are technically correct, but they under-express the real product model.
 
-## Recommended next slice
+## Historical proposed slice — implemented
 
 ### Primary recommendation
 
@@ -312,7 +323,7 @@ Those two headings are technically correct, but they under-express the real prod
    - This is good operator UX already.
    - It should be treated as intentional product behavior, not a side effect of hiding the options panel.
 
-## Suggested backlog
+## Historical proposed backlog
 
 ### Slice A — terminology and grouping
 Small, safe, high-value.
@@ -351,7 +362,7 @@ That would outrun the actual problem.
 ## Potwierdzone
 
 - The app already has a meaningful operator-control surface.
-- The most valuable next move is control-surface clarification, not feature expansion.
+- The most valuable move was control-surface clarification, not feature expansion.
 - The strongest product features in options are monitoring cadence, background watch, observability, and persisted workflow preferences.
 - Search/filter/exclusions/highlights should be analyzed together with options, because they are part of one effective operator workflow.
 
@@ -361,7 +372,7 @@ That would outrun the actual problem.
 - whether Redis-related controls should be promoted as a first-class options group or remain diagnostics-adjacent,
 - whether section filter/search should stay non-persistent by design.
 
-## Proposed execution order
+## Historical proposed execution order
 
 1. approve the control-surface clarification direction,
 2. apply small UI wording/grouping changes,

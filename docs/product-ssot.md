@@ -113,7 +113,7 @@ These came out of the bounded repo review and should drive the next planning cyc
      - cache/history payload behavior,
      - summary/provider fallback.
    - Controlled real-Tk tests now prove the selected GUI/controller workflows
-     through Stage 9, but do not prove live NewsNow availability, live provider
+     through Stage 12, but do not prove live NewsNow availability, live provider
      behavior, Redis deployment compatibility, or physical desktop input.
 
 6. **Static quality debt is measured, not hidden**
@@ -211,7 +211,8 @@ clearly scoped and reproducible.
 ### Priority 5 — broader quality recovery after boundaries are real
 
 Goal:
-Only after runtime/readiness, legacy boundary, false package surfaces, and one typed seam are clarified, decide how to recover broader Ruff/Mypy signal.
+After the active next-GUI-workflow selection and any justified boundary work,
+decide how to recover broader Ruff/Pyright signal.
 
 This includes:
 - deciding quality boundaries intentionally,
@@ -286,9 +287,9 @@ Do not in this decision:
 
 ## What should not drive the roadmap now
 
-Do not prioritize these before the readiness-contract slice:
+Do not prioritize these ahead of the active next-GUI-workflow selection:
 - repo-wide Ruff cleanup,
-- repo-wide Mypy cleanup,
+- repo-wide Pyright cleanup,
 - broad UI redesign or framework replacement; bounded GUI runtime and visual
   acceptance work is in scope because the desktop workflow is primary,
 - deep legacy refactors without a bounded seam,

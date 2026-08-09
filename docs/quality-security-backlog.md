@@ -44,6 +44,6 @@ scope before changing it.
 - Treat each future static-debt slice as a single behavior-owned seam with
   its own test and scoped quality target, not as a whole-repository campaign.
 - Security remote verification is complete. Stage 3C, the P0 policy decision,
-  P1 service compatibility, Stage 4A–4K, and the controlled real-Tk Stage 4L–9
+  P1 service compatibility, Stage 4A–4K, and the controlled real-Tk Stage 4L–12
   workflows are complete locally. The next item is selection of one unverified,
   behavior-owned GUI workflow.
