@@ -87,7 +87,7 @@ python -m newsnow_neon
 ## Current focus
 - **Operational trust first** – startup/runtime failures should classify cleanly instead of failing with raw tracebacks.
 - **Supported compatibility surfaces** – `controller.py` and `services.py` remain supported externally; explicit `services.py` file-path loads now use the canonical package proxies.
-- **GUI-first acceptance** – controlled real-Tk coverage now spans Stage 4L–10, including rendering, refresh, filtering, exclusions, summaries, highlights, persisted controls, cache clear, Info, Mute Keyword, and Mute Source. The active next decision is to select one still-unverified operator workflow; no live NewsNow, Redis, or provider acceptance is implied.
+- **GUI-first acceptance** – controlled real-Tk coverage now spans Stage 4L–11, including rendering, refresh, filtering, exclusions, summaries, highlights, persisted controls, cache clear, Info, selected-row mute actions, and History 24h. The active next decision is to select one still-unverified operator workflow; no live NewsNow, Redis, or provider acceptance is implied.
 
 ## Configuration
 | Variable | Purpose |

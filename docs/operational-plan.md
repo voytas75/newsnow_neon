@@ -1,6 +1,6 @@
 # NewsNow Neon — Operational Plan
 
-**Status:** active — Stage 10 mute-source real-Tk acceptance verified locally with controlled offline evidence; Stage 1 and Stage 2 verified remotely; governance controls refreshed in this slice.
+**Status:** active — Stage 11 history real-Tk acceptance verified locally with controlled offline evidence; Stage 1 and Stage 2 verified remotely; governance controls refreshed in this slice.
 **Updated:** 2026-08-09
 **Canonical product direction:** [`product-ssot.md`](product-ssot.md)
 
@@ -1069,6 +1069,29 @@ No user settings, NewsNow, Redis, or provider path was used.
 wiring, local resolver-worker completion, temporary-store persistence, and
 rendered fan-out. It does not prove physical pointer/keyboard input, live
 redirect resolution, NewsNow, Redis, or provider behavior.
+
+**Next boundary:** select a new, behavior-owned GUI workflow before assigning
+another numbered slice.
+
+## Stage 11 — History 24h real-Tk acceptance
+
+**Status:** completed locally; no production code changed.
+
+**Acceptance:** a controlled real-Tk process used local Redis-presence and
+history-service doubles, opened Controls, and invoked the actual `Refresh
+History` button. It loaded one deterministic snapshot, activated the real
+history-list selection, confirmed the historical list state with live tickers
+continuing, then invoked `Return to Live` and verified the prior live list
+restored without another fetch.
+
+**Validation:** focused real-Tk acceptance, full frozen pytest, scoped Ruff and
+Pyright on the GUI test, `uv lock --check`, and `newsnow-neon --check` passed.
+No user settings, live Redis, NewsNow, or provider path was used.
+
+**Evidence boundary:** this proves generated history-list selection, real
+widget-command wiring, local history-worker completion, list/ticker state, and
+live-list restoration. It does not prove physical pointer/keyboard input, a
+deployed Redis service, live NewsNow, or provider behavior.
 
 **Next boundary:** select a new, behavior-owned GUI workflow before assigning
 another numbered slice.

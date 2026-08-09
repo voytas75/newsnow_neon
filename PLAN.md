@@ -186,14 +186,16 @@ and diagnostics.
   selected a headline, invoked the actual `Mute Source` button, resolved its
   final source through a local stub, then verified the temporary-store exclusion
   filters the list and both ticker bands without another fetch or live service.
+- **Stage 11 — History 24h real-Tk acceptance:** a controlled real-Tk process
+  invoked `Refresh History`, selected a local snapshot, and invoked `Return to
+  Live`; it verified snapshot-list state, live-ticker continuity, and restored
+  the prior live list without a second fetch or live service.
 
 ## Next ordered work
 
-1. **Stage 11 — History 24h real-Tk acceptance:** with a local Redis-presence
-   stub and deterministic historical snapshot, invoke `Refresh History`, select
-   the snapshot, then invoke `Return to Live`. Verify history/list state, the
-   intended live-ticker continuity, and restoration of the prior live list
-   without a live Redis, NewsNow, provider, or user-settings path.
+1. **Next GUI slice selection:** choose one unverified, behavior-owned operator
+   workflow from the desktop product surface before assigning a new numbered
+   stage. Do not reopen completed evidence or expand scope by assumption.
 2. **Compatibility maintenance:** preserve the controller and services
    compatibility tests when later seams touch package loading or startup.
 

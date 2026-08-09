@@ -256,49 +256,45 @@ next slice.
 ## Current recommended next slice
 
 ### Active next decision
-**Stage 11 — History 24h real-Tk acceptance**
+**Next GUI seam selection — no stage assigned yet**
 
 ### Why this is next
-- The product exposes history snapshots as an operator workflow, and existing
-  tests cover cache payloads but not the real `Refresh History → select → Return
-  to Live` widget-command path.
-- The workflow is a core monitoring function with a defined offline acceptance
-  seam: local Redis presence and snapshot-service doubles.
+- Stage 11 now establishes controlled real-Tk evidence for `Refresh History →
+  select → Return to Live`: local snapshot loading, history/list state,
+  live-ticker continuity, and live-list restoration without another fetch.
+- There is no confirmed residual defect in the completed appearance, refresh,
+  filtering, exclusion, summary, highlight, visibility, cache-clear, info,
+  selected-row mute, or history workflows.
 
 ## Implementation focus for the active next decision
 
 ### Goal
-Prove the existing History 24h workflow through its real Tk controls with one
-deterministic historical snapshot and a restored live view.
+Select one unverified, behavior-owned desktop workflow before opening the next
+numbered implementation or acceptance slice.
 
 ### Scope
-The acceptance slice must:
-- open controls and invoke the real `Refresh History` button with a local
-  Redis-presence stub and configured history-service double;
-- activate the real history-list selection, then assert history list state and
-  intended live-ticker continuity;
-- invoke `Return to Live` and assert the prior live list restores without a
-  second fetch.
+The selection review should:
+- start from the GUI operator flow, not broad static debt;
+- identify one observable outcome and a reproducible offline acceptance path;
+- distinguish existing evidence from unverified native, input, or live behavior;
+- set a file budget and explicit non-goals before implementation.
 
 ### Non-goals
 Do not in this decision:
 - reopen custom-color or native chooser work without contradictory evidence,
-- call live Redis, NewsNow, or a provider; touch user settings; or claim
-  physical pointer/keyboard acceptance,
-- redesign history persistence or treat full pytest/`--check` as a substitute
-  for the desktop workflow.
+- select a new feature, redesign, or framework replacement by default,
+- treat full pytest or `--check` as a substitute for a desktop workflow.
 
 ### Preferred execution order
-1. add a focused offline real-Tk acceptance contract
-2. if it exposes a defect, repair only the owning seam within the behavior/test
-   budget; otherwise retain the test without manufacturing production work
-3. run the full frozen suite and scoped quality checks
-4. record the outcome and remaining evidence boundary
+1. inspect the current operator-facing flow inventory and evidence gaps
+2. choose one bounded behavior with the user
+3. create a focused RED/acceptance contract where code change is warranted
+4. record the selected scope before executing
 
 ### Acceptance criteria
-- the real history controls have an observable, offline-reproducible result
-- snapshot selection and live-list restoration are asserted
-- remaining physical-input and live-service limitations are recorded
+- one next behavior-owned GUI seam has an observable outcome and bounded scope
+- existing evidence/limitations are recorded rather than rediscovered
+- no new stage is named merely to continue numbering
 
 ## What should not drive the roadmap now
 
@@ -423,6 +419,8 @@ Current sync status:
 - Stage 9 repaired the mute-keyword helper binding and added real-Tk acceptance.
 - Stage 10 added controlled real-Tk acceptance for Mute Source through its
   selected-row button, temporary-store exclusion, and list/ticker fan-out.
+- Stage 11 added controlled real-Tk acceptance for the History 24h refresh,
+  snapshot-selection, and Return-to-Live workflow.
 - the next task is explicit selection of one behavior-owned GUI seam
 
 ### Do weryfikacji
