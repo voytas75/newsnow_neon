@@ -44,6 +44,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), and this 
 - bootstrap tests now verify the explicit runtime-dependency classification instead of relying on brittle subprocess assumptions about import order
 
 ### Added
+- Added controlled offline real-Tk acceptance for selected-row `Mute Source`:
+  the real button resolves a locally stubbed final domain, persists the temporary
+  exclusion, and filters the list plus both ticker bands without a new fetch.
 - Added controlled offline real-Tk acceptance across Stage 4L–9 for startup
   rendering, controls visibility, refresh, search/filter, exclusions, summary
   fallback, highlights, auto refresh, background watch, logs, cache clear, Info,

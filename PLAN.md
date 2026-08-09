@@ -182,14 +182,16 @@ and diagnostics.
 - **Stage 9 — mute-keyword real-Tk acceptance:** repaired the missing keyword
   helper binding; real row selection and `Mute Keyword` now persist the derived
   exclusion and filter the list plus both tickers without live services.
+- **Stage 10 — mute-source real-Tk acceptance:** a controlled real-Tk process
+  selected a headline, invoked the actual `Mute Source` button, resolved its
+  final source through a local stub, then verified the temporary-store exclusion
+  filters the list and both ticker bands without another fetch or live service.
 
 ## Next ordered work
 
-1. **Stage 10 — Mute Source real-Tk acceptance:** use a controlled offline
-   headline whose final source resolves through a local stub, invoke the actual
-   selected-row `Mute Source` action, and verify the temporary-store exclusion
-   filters the list and both ticker bands. Do not call live NewsNow, Redis, a
-   provider, or the user settings path.
+1. **Next GUI slice selection:** choose one unverified, behavior-owned operator
+   workflow from the desktop product surface before assigning a new numbered
+   stage. Do not reopen completed evidence or expand scope by assumption.
 2. **Compatibility maintenance:** preserve the controller and services
    compatibility tests when later seams touch package loading or startup.
 

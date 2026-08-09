@@ -1,6 +1,6 @@
 # NewsNow Neon — Operational Plan
 
-**Status:** active — Stage 9 mute-keyword real-Tk acceptance verified locally with controlled offline evidence; Stage 1 and Stage 2 verified remotely; governance controls refreshed in this slice.
+**Status:** active — Stage 10 mute-source real-Tk acceptance verified locally with controlled offline evidence; Stage 1 and Stage 2 verified remotely; governance controls refreshed in this slice.
 **Updated:** 2026-08-09
 **Canonical product direction:** [`product-ssot.md`](product-ssot.md)
 
@@ -1046,6 +1046,29 @@ store while the list and both tickers remove the muted headline.
 
 **Validation:** focused acceptance and full frozen pytest pass. No user settings,
 NewsNow, Redis, or provider path was used.
+
+**Next boundary:** select a new, behavior-owned GUI workflow before assigning
+another numbered slice.
+
+## Stage 10 — mute-source real-Tk acceptance
+
+**Status:** completed locally; no production code changed.
+
+**Acceptance:** a controlled real-Tk process rendered three offline headlines,
+selected the row whose source was `example.org`, and invoked the actual `Mute
+Source` button. A local final-URL resolver stub returned
+`https://www.example.org/article`; the action persisted `['example.org']` to a
+temporary store and removed only the selected item from the list, primary ticker,
+and full ticker. The initial offline fetch remained the only fetch.
+
+**Validation:** focused real-Tk acceptance, full frozen pytest, scoped Ruff and
+Pyright on the GUI test, `uv lock --check`, and `newsnow-neon --check` passed.
+No user settings, NewsNow, Redis, or provider path was used.
+
+**Evidence boundary:** this proves generated list selection, real widget-command
+wiring, local resolver-worker completion, temporary-store persistence, and
+rendered fan-out. It does not prove physical pointer/keyboard input, live
+redirect resolution, NewsNow, Redis, or provider behavior.
 
 **Next boundary:** select a new, behavior-owned GUI workflow before assigning
 another numbered slice.
