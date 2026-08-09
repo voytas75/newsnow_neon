@@ -193,9 +193,11 @@ and diagnostics.
 
 ## Next ordered work
 
-1. **Next GUI slice selection:** choose one unverified, behavior-owned operator
-   workflow from the desktop product surface before assigning a new numbered
-   stage. Do not reopen completed evidence or expand scope by assumption.
+1. **Stage 12 — Redis Stats real-Tk acceptance:** configure local Redis-presence
+   and statistics doubles, invoke the actual `Redis Stats` button, then verify a
+   mapped statistics window renders deterministic metrics and closes through its
+   real control. Do not connect to a deployed Redis, NewsNow, provider, or user
+   settings path.
 2. **Compatibility maintenance:** preserve the controller and services
    compatibility tests when later seams touch package loading or startup.
 

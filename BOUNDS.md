@@ -84,11 +84,9 @@ remains. Never hide debt through blanket ignores or broad `type: ignore`.
 
 ## Current immediate boundary
 
-Stage 11 is complete: a controlled real-Tk process invoked `Refresh History`,
-selected a deterministic snapshot, then invoked `Return to Live`. Local
-Redis-presence and history-service doubles proved history/list state, intended
-live-ticker continuity, and prior live-list restoration without a second fetch.
-Any next GUI work must again be separately selected as one bounded,
-behavior-owned workflow; do not reopen completed evidence or touch user settings,
-live services, providers, compatibility surfaces, or framework design without a
-new scope decision.
+Stage 12 is selected as one bounded, acceptance-first GUI workflow: a controlled
+real-Tk process will invoke `Redis Stats` with local Redis-presence and statistics
+doubles, verify the mapped metrics window, then close it through its real control.
+Do not touch production behavior, user settings, deployed Redis, NewsNow,
+providers, compatibility surfaces, or framework design unless the acceptance test
+exposes a defect requiring a new scope decision.

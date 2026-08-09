@@ -256,34 +256,32 @@ next slice.
 ## Current recommended next slice
 
 ### Active next decision
-**Next GUI seam selection — no stage assigned yet**
+**Stage 12 — Redis Stats real-Tk acceptance**
 
 ### Why this is next
-- Stage 11 now establishes controlled real-Tk evidence for `Refresh History →
-  select → Return to Live`: local snapshot loading, history/list state,
-  live-ticker continuity, and live-list restoration without another fetch.
-- There is no confirmed residual defect in the completed appearance, refresh,
-  filtering, exclusion, summary, highlight, visibility, cache-clear, info,
-  selected-row mute, or history workflows.
+- Redis Stats is a visible optional-integration control with no real-Tk
+  acceptance of its button, worker callback, mapped window, or close lifecycle.
+- A local Redis-presence and deterministic metrics double can prove that path
+  without claiming deployed Redis behavior.
 
 ## Implementation focus for the active next decision
 
 ### Goal
-Select one unverified, behavior-owned desktop workflow before opening the next
-numbered implementation or acceptance slice.
+Prove the existing Redis Stats operator flow through its real Tk control and
+deterministic local metrics.
 
 ### Scope
-The selection review should:
-- start from the GUI operator flow, not broad static debt;
-- identify one observable outcome and a reproducible offline acceptance path;
-- distinguish existing evidence from unverified native, input, or live behavior;
-- set a file budget and explicit non-goals before implementation.
+The acceptance slice must invoke the real enabled `Redis Stats` button with a
+local Redis-presence stub, then assert a mapped `RedisStatsWindow`, stable metric
+values, and real Close-control cleanup.
 
 ### Non-goals
 Do not in this decision:
 - reopen custom-color or native chooser work without contradictory evidence,
-- select a new feature, redesign, or framework replacement by default,
-- treat full pytest or `--check` as a substitute for a desktop workflow.
+- call a deployed Redis, NewsNow, or a provider; touch user settings; or claim
+  physical pointer/keyboard acceptance,
+- redesign Redis integration or treat full pytest/`--check` as a substitute for
+  the desktop workflow.
 
 ### Preferred execution order
 1. inspect the current operator-facing flow inventory and evidence gaps
