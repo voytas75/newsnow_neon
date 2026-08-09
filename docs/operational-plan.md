@@ -1,6 +1,6 @@
 # NewsNow Neon — Operational Plan
 
-**Status:** active — Stage 4U search/filter real-Tk acceptance verified locally with controlled offline evidence; Stage 1 and Stage 2 verified remotely; governance controls refreshed in this slice.
+**Status:** active — Stage 4V exclusion real-Tk acceptance verified locally with controlled offline evidence; Stage 1 and Stage 2 verified remotely; governance controls refreshed in this slice.
 **Updated:** 2026-08-09
 **Canonical product direction:** [`product-ssot.md`](product-ssot.md)
 
@@ -799,6 +799,28 @@ started after the initial offline load.
 **Evidence boundary:** this proves real widget commands, Tk variable traces, and
 controlled offline rendering. It does not prove physical pointer/keyboard input,
 live NewsNow, Redis, provider, or user-settings behavior.
+
+**Next boundary:** select a new, behavior-owned GUI workflow before assigning
+another numbered slice.
+
+## Stage 4V — exclusion real-Tk acceptance
+
+**Status:** completed locally; no production code changed.
+
+**Scope:** `tests/test_gui_runtime_smoke.py` runs the real Tk application in an
+isolated subprocess with a temporary settings store, empty `REDIS_URL`, and three
+deterministic local headlines. It uses the real exclusion entry and its adjacent
+`Apply` / `Clear` button commands.
+
+**Acceptance:** `AI, ai` normalizes to persisted `['ai']`, removes the matching
+headline from the main list and both tickers, and does not start another fetch.
+`Clear` persists `[]` and restores all three headline views. The test passed on
+its first run, so this slice adds missing GUI evidence rather than changing
+production behavior.
+
+**Evidence boundary:** this proves real widget commands, settings-store writes,
+and controlled offline rendering. It does not prove physical pointer/keyboard
+input, live NewsNow, Redis, provider, or user-settings behavior.
 
 **Next boundary:** select a new, behavior-owned GUI workflow before assigning
 another numbered slice.

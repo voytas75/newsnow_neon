@@ -249,11 +249,11 @@ Quality gates become meaningful instead of aspirational noise.
 **Next GUI seam selection — no stage assigned yet**
 
 ### Why this is next
-- Stage 4U established real-Tk, offline evidence that the actual section-menu,
-  search-entry, and Clear-button commands keep the rendered list and both ticker
-  bands aligned as triage filters narrow and restore the headline set.
+- Stage 4V established real-Tk, offline evidence that actual exclusion Apply/Clear
+  commands normalize and persist the terms while keeping the rendered list and
+  both ticker bands aligned as the headline set narrows and restores.
 - There is no confirmed residual defect in the appearance/color, manual-refresh,
-  or search/filter flows.
+  search/filter, or exclusion flows.
 - Assigning a new numbered slice without a user-facing gap would manufacture
   work; the next seam must be chosen from a real operator workflow.
 
@@ -390,6 +390,8 @@ Current sync status:
 - Stage 4U added a controlled real-Tk triage acceptance: section selection,
   search entry, and Clear restore the expected offline subsets in the list and
   both ticker bands.
+- Stage 4V added a controlled real-Tk exclusion acceptance: Apply/Clear persist
+  normalized terms to a temporary store and restore matching list/ticker views.
 - the next task is explicit selection of one behavior-owned GUI seam
 
 ### Do weryfikacji

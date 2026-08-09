@@ -460,6 +460,182 @@ raise SystemExit(0 if succeeded else 1)
     assert "search_filter=ok" in result.stdout
 
 
+def test_real_tk_exclusion_apply_and_clear_persist_and_restore_views(
+    tmp_path: Path,
+) -> None:
+    """Exercise persisted exclusion controls against deterministic offline headlines."""
+    settings_path = tmp_path / "exclusion-settings.json"
+    script = r'''
+import json
+import os
+import sys
+import time
+from pathlib import Path
+
+settings_path = Path(sys.argv[1])
+os.environ["NEWS_APP_SETTINGS"] = str(settings_path)
+os.environ["REDIS_URL"] = ""
+
+from newsnow_neon.app import services
+from newsnow_neon.models import Headline
+
+ai_headline = Headline(
+    title="AI platform launch",
+    url="https://example.test/ai-platform",
+    section="Technology",
+)
+market_headline = Headline(
+    title="Market update",
+    url="https://example.test/market-update",
+    section="Business",
+)
+security_headline = Headline(
+    title="Security bulletin",
+    url="https://example.test/security-bulletin",
+    section="Technology",
+)
+headlines = [ai_headline, market_headline, security_headline]
+fetch_calls = []
+
+
+def fetch_headlines(*, force_refresh=False):
+    fetch_calls.append(force_refresh)
+    return headlines, False, None
+
+
+services.configure_app_services(
+    fetch_headlines=fetch_headlines,
+    build_ticker_text=lambda entries: " | ".join(item.title for item in entries),
+    resolve_article_summary=lambda _headline: None,
+    persist_headlines_with_ticker=lambda *_args, **_kwargs: None,
+    collect_redis_statistics=lambda: None,
+    clear_cached_headlines=lambda: (True, "offline exclusions: cache unavailable"),
+    load_historical_snapshots=lambda *_args, **_kwargs: [],
+)
+
+from newsnow_neon.application import AINewsApp
+
+app = AINewsApp()
+succeeded = False
+deadline = time.monotonic() + 3
+all_titles = [item.title for item in headlines]
+remaining_titles = [market_headline.title, security_headline.title]
+
+
+def ticker_titles(ticker):
+    return [
+        ticker._headline_groups[group_tag]["full_title"]
+        for group_tag in ticker.headline_order
+    ]
+
+
+def view_matches(expected_titles):
+    list_text = app.listbox.get("1.0", "end-1c")
+    unexpected_titles = [title for title in all_titles if title not in expected_titles]
+    if not all(title in list_text for title in expected_titles):
+        return False
+    if any(title in list_text for title in unexpected_titles):
+        return False
+    for ticker in (app.ticker, app.full_ticker):
+        titles = ticker_titles(ticker)
+        if not all(
+            any(expected in title for title in titles)
+            for expected in expected_titles
+        ):
+            return False
+        if any(
+            any(unexpected in title for title in titles)
+            for unexpected in unexpected_titles
+        ):
+            return False
+    return True
+
+
+def stored_exclusions():
+    with settings_path.open(encoding="utf-8") as handle:
+        return json.load(handle)["headline_exclusions"]
+
+
+def exclusion_button(label):
+    after_entry = False
+    for widget in app.exclude_entry.master.winfo_children():
+        if widget is app.exclude_entry:
+            after_entry = True
+            continue
+        if (
+            after_entry
+            and widget.winfo_class() == "Button"
+            and widget.cget("text") == label
+        ):
+            return widget
+    raise AssertionError(f"exclude button not found: {label}")
+
+
+def finish_error(error):
+    print(f"exclusion_flow_error={error!r}", file=sys.stderr)
+    app.destroy()
+    raise SystemExit(1)
+
+
+def wait_for_view(expected_titles, next_step):
+    try:
+        app.update_idletasks()
+        if not view_matches(expected_titles):
+            if time.monotonic() < deadline:
+                app.after(25, lambda: wait_for_view(expected_titles, next_step))
+                return
+            list_text = app.listbox.get("1.0", "end-1c")
+            raise AssertionError(f"expected {expected_titles!r}, got {list_text!r}")
+        next_step()
+    except BaseException as error:
+        finish_error(error)
+
+
+def finish():
+    global succeeded
+    assert app.exclude_terms_var.get() == ""
+    assert stored_exclusions() == []
+    assert fetch_calls == [False]
+    succeeded = True
+    print("exclusion_flow=ok")
+    app.destroy()
+
+
+def clear_exclusions():
+    assert app.exclude_terms_var.get() == "ai"
+    assert stored_exclusions() == ["ai"]
+    exclusion_button("Clear").invoke()
+    app.after(0, lambda: wait_for_view(all_titles, finish))
+
+
+def apply_exclusions():
+    app.exclude_entry.insert(0, "AI, ai")
+    exclusion_button("Apply").invoke()
+    app.after(0, lambda: wait_for_view(remaining_titles, clear_exclusions))
+
+
+app.after(0, lambda: wait_for_view(all_titles, apply_exclusions))
+app.mainloop()
+raise SystemExit(0 if succeeded else 1)
+'''
+    environment = os.environ.copy()
+    environment["NEWS_APP_SETTINGS"] = str(settings_path)
+    environment["REDIS_URL"] = ""
+
+    result = subprocess.run(
+        [sys.executable, "-c", script, str(settings_path)],
+        capture_output=True,
+        cwd=Path(__file__).resolve().parents[1],
+        env=environment,
+        text=True,
+        timeout=10,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "exclusion_flow=ok" in result.stdout
+
+
 def test_real_tk_restores_custom_appearance_across_restart(tmp_path: Path) -> None:
     """Persist custom appearance in one real-Tk process and restore it in another."""
     settings_path = tmp_path / "appearance-round-trip-settings.json"

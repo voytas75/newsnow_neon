@@ -141,6 +141,10 @@ and diagnostics.
   fixture uses the actual section-menu, search-entry, and Clear-button commands
   to prove the list and both ticker bands narrow and restore together. No
   production code, user settings, NewsNow, Redis, or provider path was used.
+- **Stage 4V — exclusion real-Tk acceptance:** a three-headline offline fixture
+  uses actual exclusion Apply/Clear commands and a temporary settings store to
+  prove persisted exclusions and restored list/ticker rendering. No production
+  code, user settings, NewsNow, Redis, or provider path was used.
 
 ## Next ordered work
 
