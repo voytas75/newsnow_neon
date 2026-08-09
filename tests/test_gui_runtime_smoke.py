@@ -2056,3 +2056,191 @@ raise SystemExit(0 if succeeded else 1)
     )
     assert result.returncode == 0, result.stderr
     assert "mute_keyword=ok" in result.stdout
+
+
+def test_real_tk_selection_mute_source_persists_and_filters_views(
+    tmp_path: Path,
+) -> None:
+    """Select a real row, invoke Mute Source, and verify all rendered views."""
+    settings_path = tmp_path / "mute-source-settings.json"
+    script = r'''
+import json
+import os
+import sys
+import time
+from pathlib import Path
+
+settings_path = Path(sys.argv[1])
+os.environ["NEWS_APP_SETTINGS"] = str(settings_path)
+os.environ["REDIS_URL"] = ""
+
+from newsnow_neon import http_client
+from newsnow_neon.app import services
+from newsnow_neon.models import Headline
+
+muted = Headline(
+    title="Example source exclusive",
+    url="https://newsnow.co.uk/example-source-redirect",
+    source="example.org",
+    section="Technology",
+)
+kept_market = Headline(
+    title="Market update",
+    url="https://market.test/update",
+    source="market.test",
+    section="Business",
+)
+kept_security = Headline(
+    title="Security bulletin",
+    url="https://security.test/bulletin",
+    source="security.test",
+    section="Technology",
+)
+headlines = [muted, kept_market, kept_security]
+fetch_calls = []
+resolved_urls = []
+
+
+def fetch_headlines(*, force_refresh=False):
+    fetch_calls.append(force_refresh)
+    return headlines, False, None
+
+
+def resolve_final_url(url, timeout):
+    resolved_urls.append((url, timeout))
+    return "https://www.example.org/article"
+
+
+http_client.resolve_final_url = resolve_final_url
+services.configure_app_services(
+    fetch_headlines=fetch_headlines,
+    build_ticker_text=lambda entries: " | ".join(item.title for item in entries),
+    resolve_article_summary=lambda _headline: None,
+    persist_headlines_with_ticker=lambda *_args, **_kwargs: None,
+    collect_redis_statistics=lambda: None,
+    clear_cached_headlines=lambda: (True, "offline mute source: cache unavailable"),
+    load_historical_snapshots=lambda *_args, **_kwargs: [],
+)
+
+from newsnow_neon.application import AINewsApp
+
+app = AINewsApp()
+succeeded = False
+deadline = time.monotonic() + 5
+remaining = [kept_market.title, kept_security.title]
+
+
+def stored_exclusions():
+    with settings_path.open(encoding="utf-8") as handle:
+        return json.load(handle)["headline_exclusions"]
+
+
+def ticker_titles(ticker):
+    return [
+        ticker._headline_groups[group_tag]["full_title"]
+        for group_tag in ticker.headline_order
+    ]
+
+
+def view_matches(expected_titles):
+    list_text = app.listbox.get("1.0", "end-1c")
+    if any(title not in list_text for title in expected_titles):
+        return False
+    if muted.title in list_text:
+        return False
+    for ticker in (app.ticker, app.full_ticker):
+        titles = ticker_titles(ticker)
+        if any(
+            not any(expected in rendered for rendered in titles)
+            for expected in expected_titles
+        ):
+            return False
+        if any(muted.title in rendered for rendered in titles):
+            return False
+    return True
+
+
+def fail(error):
+    print(f"mute_source_error={error!r}", file=sys.stderr)
+    app.destroy()
+    raise SystemExit(1)
+
+
+def wait_for_filtered_views():
+    global succeeded
+    try:
+        app.update_idletasks()
+        if stored_exclusions() != ["example.org"] or not view_matches(remaining):
+            if time.monotonic() < deadline:
+                app.after(25, wait_for_filtered_views)
+                return
+            detail = (
+                f"stored={stored_exclusions()!r}, "
+                f"list={app.listbox.get('1.0', 'end-1c')!r}"
+            )
+            raise AssertionError(f"mute source did not filter views: {detail}")
+        assert app.exclude_terms_var.get() == "example.org"
+        assert fetch_calls == [False]
+        assert resolved_urls == [(muted.url, 8)]
+        succeeded = True
+        print("mute_source=ok")
+        app.destroy()
+    except BaseException as error:
+        fail(error)
+
+
+def select_and_mute():
+    try:
+        app.update_idletasks()
+        if muted.title not in app.listbox.get("1.0", "end-1c"):
+            if time.monotonic() < deadline:
+                app.after(25, select_and_mute)
+                return
+            raise AssertionError("muted headline was not rendered")
+        line = next(
+            line
+            for line, index in app._listbox_line_to_headline.items()
+            if headlines[index] is muted
+        )
+        bbox = app.listbox.bbox(f"{line}.0")
+        if not bbox:
+            if time.monotonic() < deadline:
+                app.after(25, select_and_mute)
+                return
+            raise AssertionError("muted headline row has no geometry")
+        x_coord, y_coord, _width, height = bbox
+        app.listbox.event_generate(
+            "<Button-1>", x=x_coord + 1, y=y_coord + max(1, height // 2)
+        )
+        assert app._selected_line == line
+        assert app.mute_source_btn.cget("text") == "Mute Source"
+        assert app.mute_source_btn.cget("state") == "normal"
+        app.mute_source_btn.invoke()
+        app.after(0, wait_for_filtered_views)
+    except BaseException as error:
+        fail(error)
+
+
+app.after(0, select_and_mute)
+app.mainloop()
+raise SystemExit(0 if succeeded else 1)
+'''
+    environment = {
+        key: value
+        for key, value in os.environ.items()
+        if not key.startswith(("AZURE_", "OPENAI_", "LITELLM_"))
+    }
+    environment["NEWS_APP_SETTINGS"] = str(settings_path)
+    environment["REDIS_URL"] = ""
+
+    result = subprocess.run(
+        [sys.executable, "-c", script, str(settings_path)],
+        capture_output=True,
+        cwd=Path(__file__).resolve().parents[1],
+        env=environment,
+        text=True,
+        timeout=15,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    assert "mute_source=ok" in result.stdout
