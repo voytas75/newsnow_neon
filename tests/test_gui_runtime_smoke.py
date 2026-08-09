@@ -1667,3 +1667,115 @@ raise SystemExit(0 if succeeded else 1)
         )
         assert result.returncode == 0, result.stderr
         assert f"log_visibility_{mode}=ok" in result.stdout
+
+
+def test_real_tk_clear_cache_reports_controlled_worker_result(tmp_path: Path) -> None:
+    """Invoke the real cache-clear button and observe its worker callback."""
+    settings_path = tmp_path / "cache-clear-settings.json"
+    script = r'''
+import os
+import sys
+import time
+from pathlib import Path
+
+settings_path = Path(sys.argv[1])
+os.environ["NEWS_APP_SETTINGS"] = str(settings_path)
+os.environ["REDIS_URL"] = ""
+
+from newsnow_neon.app import services
+from newsnow_neon.models import Headline
+
+headline = Headline(
+    "Offline cache clear",
+    "https://example.test/cache-clear",
+    "Technology",
+)
+clear_calls = []
+message = "Offline cache cleared."
+
+
+def clear_cached_headlines():
+    clear_calls.append("called")
+    return True, message
+
+
+services.configure_app_services(
+    fetch_headlines=lambda **_kwargs: ([headline], False, None),
+    build_ticker_text=lambda entries: " | ".join(item.title for item in entries),
+    resolve_article_summary=lambda _headline: None,
+    persist_headlines_with_ticker=lambda *_args, **_kwargs: None,
+    collect_redis_statistics=lambda: None,
+    clear_cached_headlines=clear_cached_headlines,
+    load_historical_snapshots=lambda *_args, **_kwargs: [],
+)
+
+from newsnow_neon.application import AINewsApp
+
+app = AINewsApp()
+succeeded = False
+deadline = time.monotonic() + 5
+
+
+def fail(error):
+    print(f"cache_clear_error={error!r}", file=sys.stderr)
+    app.destroy()
+    raise SystemExit(1)
+
+
+def verify_result():
+    global succeeded
+    try:
+        app.update_idletasks()
+        if clear_calls != ["called"] or app._latest_status != message:
+            if time.monotonic() < deadline:
+                app.after(25, verify_result)
+                return
+            detail = f"calls={clear_calls!r}, status={app._latest_status!r}"
+            raise AssertionError(f"cache callback state: {detail}")
+        assert app.redis_meter_var.get() == "Redis: OFF"
+        assert app.clear_cache_btn.winfo_ismapped()
+    except BaseException as error:
+        fail(error)
+    else:
+        succeeded = True
+        print("cache_clear=ok")
+        app.destroy()
+
+
+def invoke_clear():
+    try:
+        app.update_idletasks()
+        if not app.options_container.winfo_ismapped():
+            app.options_toggle_btn.invoke()
+            app.update_idletasks()
+        if not app.clear_cache_btn.winfo_ismapped():
+            if time.monotonic() < deadline:
+                app.after(25, invoke_clear)
+                return
+            raise AssertionError("cache-clear button did not initialize")
+        assert app.clear_cache_btn.cget("text") == "Clear Headline Cache"
+        app.clear_cache_btn.invoke()
+        app.after(0, verify_result)
+    except BaseException as error:
+        fail(error)
+
+
+app.after(0, invoke_clear)
+app.mainloop()
+raise SystemExit(0 if succeeded else 1)
+'''
+    environment = os.environ.copy()
+    environment["NEWS_APP_SETTINGS"] = str(settings_path)
+    environment["REDIS_URL"] = ""
+
+    result = subprocess.run(
+        [sys.executable, "-c", script, str(settings_path)],
+        capture_output=True,
+        cwd=Path(__file__).resolve().parents[1],
+        env=environment,
+        text=True,
+        timeout=15,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    assert "cache_clear=ok" in result.stdout

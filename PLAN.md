@@ -172,6 +172,10 @@ and diagnostics.
   now hides Controls before displaying logs, and fresh-process restore respects
   persisted `log_visible`. No user settings, NewsNow, Redis, or provider path was
   used.
+- **Stage 7 — cache-clear real-Tk acceptance:** the actual `Clear Headline Cache`
+  button reaches its worker callback, emits a controlled completion status, and
+  refreshes the disabled Redis meter without a Redis connection. No production
+  code, user settings, NewsNow, Redis, or provider path was used.
 
 ## Next ordered work
 

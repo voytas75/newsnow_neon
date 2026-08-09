@@ -1,6 +1,6 @@
 # NewsNow Neon — Operational Plan
 
-**Status:** active — Stage 6 logs-visibility real-Tk round-trip verified locally with controlled offline evidence; Stage 1 and Stage 2 verified remotely; governance controls refreshed in this slice.
+**Status:** active — Stage 7 cache-clear real-Tk acceptance verified locally with controlled offline evidence; Stage 1 and Stage 2 verified remotely; governance controls refreshed in this slice.
 **Updated:** 2026-08-09
 **Canonical product direction:** [`product-ssot.md`](product-ssot.md)
 
@@ -992,6 +992,29 @@ NewsNow, Redis, or provider path was used.
 **Evidence boundary:** this proves widget commands, default-geometry panel
 visibility, and temporary-store persistence. It does not prove physical pointer
 or keyboard input, live services, provider logging, or user-settings behavior.
+
+**Next boundary:** select a new, behavior-owned GUI workflow before assigning
+another numbered slice.
+
+## Stage 7 — cache-clear real-Tk acceptance
+
+**Status:** completed locally; no production code changed.
+
+**Scope:** `tests/test_gui_runtime_smoke.py` runs the real Tk application with a
+temporary settings store, empty `REDIS_URL`, deterministic offline headline data,
+and a local `clear_cached_headlines` double.
+
+**Acceptance:** after opening Controls, the test invokes the actual `Clear
+Headline Cache` button. It waits through Tk callbacks for exactly one double call,
+the controlled completion status, and a `Redis: OFF` meter. This covers the real
+button, daemon worker, callback, and operator status path without Redis.
+
+**Validation:** the new real-Tk acceptance passes. No user settings, NewsNow,
+Redis, or provider path was used.
+
+**Evidence boundary:** this proves controlled worker/callback wiring and status
+rendering. It does not prove a deployed Redis deletion, physical pointer input,
+or user-settings behavior.
 
 **Next boundary:** select a new, behavior-owned GUI workflow before assigning
 another numbered slice.

@@ -84,13 +84,11 @@ remains. Never hide debt through blanket ignores or broad `type: ignore`.
 
 ## Current immediate boundary
 
-Stage 6 is complete: two fresh controlled real-Tk processes used a temporary
-settings store to exercise `Show Logs` and `Hide Logs`. A default-geometry defect
-was repaired: `Show Logs` now hides Controls before packing the log panel, and
-startup restores the panel from persisted `log_visible`. The writer verified the
-mapped panel and hidden Controls; the verifier restored that state and hid logs
-through the real control. No user settings, live services, providers, or Redis
-were used. Any next GUI work must be separately selected as one bounded,
+Stage 7 is complete: a controlled real-Tk process used the actual `Clear
+Headline Cache` button with a local cache-clear double. Its worker callback
+reported the controlled status and restored the Redis meter to `Redis: OFF` with
+an empty `REDIS_URL`. No production code, user settings, live services, providers,
+or Redis were used. Any next GUI work must be separately selected as one bounded,
 behavior-owned workflow; do not reopen native chooser acceptance or touch user
 settings, live services, providers, compatibility surfaces, or framework design
 without a new scope decision.

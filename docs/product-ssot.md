@@ -249,12 +249,12 @@ Quality gates become meaningful instead of aspirational noise.
 **Next GUI seam selection — no stage assigned yet**
 
 ### Why this is next
-- Stage 6 established real-Tk, offline evidence that `Show Logs` visibly maps
-  the panel at default geometry by hiding Controls, and that fresh startup
-  restores persisted log visibility without a false `Hide Logs` state.
+- Stage 7 established real-Tk, offline evidence that the actual cache-clear
+  button reaches its worker callback, returns a controlled operator status, and
+  refreshes the disabled Redis meter without a Redis connection.
 - There is no confirmed residual defect in the appearance/color, manual-refresh,
   auto-refresh, background-watch, search/filter, exclusion, summary-fallback,
-  highlight, controls-visibility, or logs-visibility flows.
+  highlight, controls-visibility, logs-visibility, or cache-clear flows.
 - Assigning a new numbered slice without a user-facing gap would manufacture
   work; the next seam must be chosen from a real operator workflow.
 
@@ -406,6 +406,7 @@ Current sync status:
   including persisted threshold, unseen-headline refresh, and watcher scheduling.
 - Stage 6 repaired the log-panel default-geometry visibility defect and added a
   controlled two-process real-Tk `Show Logs` / `Hide Logs` persistence round-trip.
+- Stage 7 added a controlled real-Tk cache-clear worker/callback acceptance.
 - the next task is explicit selection of one behavior-owned GUI seam
 
 ### Do weryfikacji
