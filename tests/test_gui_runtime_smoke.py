@@ -137,6 +137,148 @@ raise SystemExit(0 if succeeded else 1)
     assert "gui_smoke=ok" in result.stdout
 
 
+def test_real_tk_manual_refresh_replaces_offline_content(tmp_path: Path) -> None:
+    """Invoke the real refresh button and observe its completed offline update."""
+    settings_path = tmp_path / "manual-refresh-settings.json"
+    script = r'''
+import os
+import sys
+import time
+from pathlib import Path
+
+settings_path = Path(sys.argv[1])
+os.environ["NEWS_APP_SETTINGS"] = str(settings_path)
+os.environ["REDIS_URL"] = ""
+
+from newsnow_neon.app import services
+from newsnow_neon.models import Headline
+
+initial = Headline(
+    title="Before manual refresh",
+    url="https://example.test/before-manual-refresh",
+    section="Technology",
+)
+refreshed = Headline(
+    title="After manual refresh",
+    url="https://example.test/after-manual-refresh",
+    section="Technology",
+)
+fetch_calls = []
+
+
+def fetch_headlines(*, force_refresh=False):
+    fetch_calls.append(force_refresh)
+    if len(fetch_calls) == 1:
+        return [initial], False, None
+    if len(fetch_calls) == 2:
+        return [refreshed], False, None
+    raise AssertionError(f"unexpected fetch call: {fetch_calls!r}")
+
+
+services.configure_app_services(
+    fetch_headlines=fetch_headlines,
+    build_ticker_text=lambda headlines: " | ".join(item.title for item in headlines),
+    resolve_article_summary=lambda _headline: None,
+    persist_headlines_with_ticker=lambda *_args, **_kwargs: None,
+    collect_redis_statistics=lambda: None,
+    clear_cached_headlines=lambda: (True, "offline refresh: cache unavailable"),
+    load_historical_snapshots=lambda *_args, **_kwargs: [],
+)
+
+from newsnow_neon.application import AINewsApp
+
+app = AINewsApp()
+succeeded = False
+deadline = time.monotonic() + 3
+
+
+def find_button(label):
+    pending = list(app.winfo_children())
+    while pending:
+        widget = pending.pop()
+        if widget.winfo_class() == "Button" and widget.cget("text") == label:
+            return widget
+        pending.extend(widget.winfo_children())
+    raise AssertionError(f"button not found: {label}")
+
+
+def ticker_titles(ticker):
+    return [
+        ticker._headline_groups[group_tag]["full_title"]
+        for group_tag in ticker.headline_order
+    ]
+
+
+def finish_error(error):
+    print(f"manual_refresh_error={error!r}", file=sys.stderr)
+    app.destroy()
+    raise SystemExit(1)
+
+
+def wait_for_refresh():
+    global succeeded
+    try:
+        app.update_idletasks()
+        list_text = app.listbox.get("1.0", "end-1c")
+        if refreshed.title not in list_text:
+            if time.monotonic() < deadline:
+                app.after(25, wait_for_refresh)
+                return
+            raise AssertionError(f"refresh result not rendered: {list_text!r}")
+
+        assert fetch_calls == [False, True]
+        assert initial.title not in list_text
+        for ticker in (app.ticker, app.full_ticker):
+            titles = ticker_titles(ticker)
+            assert any(refreshed.title in title for title in titles), titles
+            assert all(initial.title not in title for title in titles), titles
+    except BaseException as error:
+        finish_error(error)
+    else:
+        succeeded = True
+        print("manual_refresh=ok")
+        app.destroy()
+
+
+def wait_for_initial_render():
+    try:
+        app.update_idletasks()
+        list_text = app.listbox.get("1.0", "end-1c")
+        if initial.title not in list_text:
+            if time.monotonic() < deadline:
+                app.after(25, wait_for_initial_render)
+                return
+            raise AssertionError(f"initial content not rendered: {list_text!r}")
+
+        assert fetch_calls == [False]
+        find_button("Refresh Now").invoke()
+        app.after(0, wait_for_refresh)
+    except BaseException as error:
+        finish_error(error)
+
+
+app.after(0, wait_for_initial_render)
+app.mainloop()
+raise SystemExit(0 if succeeded else 1)
+'''
+    environment = os.environ.copy()
+    environment["NEWS_APP_SETTINGS"] = str(settings_path)
+    environment["REDIS_URL"] = ""
+
+    result = subprocess.run(
+        [sys.executable, "-c", script, str(settings_path)],
+        capture_output=True,
+        cwd=Path(__file__).resolve().parents[1],
+        env=environment,
+        text=True,
+        timeout=10,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "manual_refresh=ok" in result.stdout
+
+
 def test_real_tk_restores_custom_appearance_across_restart(tmp_path: Path) -> None:
     """Persist custom appearance in one real-Tk process and restore it in another."""
     settings_path = tmp_path / "appearance-round-trip-settings.json"

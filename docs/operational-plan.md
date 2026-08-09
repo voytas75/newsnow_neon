@@ -1,6 +1,6 @@
 # NewsNow Neon — Operational Plan
 
-**Status:** active — Stage 4S native-chooser acceptance verified locally with manual operator evidence; Stage 1 and Stage 2 verified remotely; governance controls refreshed in this slice.
+**Status:** active — Stage 4T manual-refresh real-Tk acceptance verified locally with controlled offline evidence; Stage 1 and Stage 2 verified remotely; governance controls refreshed in this slice.
 **Updated:** 2026-08-09
 **Canonical product direction:** [`product-ssot.md`](product-ssot.md)
 
@@ -755,6 +755,29 @@ capture, user settings path, live service, Redis, or provider was used.
 
 **Decision:** native chooser open/Cancel acceptance is complete. Do not reopen
 this seam without contradictory evidence.
+
+**Next boundary:** select a new, behavior-owned GUI workflow before assigning
+another numbered slice.
+
+## Stage 4T — manual refresh real-Tk acceptance
+
+**Status:** completed locally; no production code changed.
+
+**Scope:** `tests/test_gui_runtime_smoke.py` runs the real Tk application in an
+isolated subprocess with a temporary settings store, empty `REDIS_URL`, and
+fully configured local service doubles. The initial fetch returns one headline;
+the second returns a distinct headline only after the actual `Refresh Now`
+button command runs.
+
+**Acceptance:** after the first headline renders, the test finds and invokes the
+real button, waits through Tk's event loop for the worker callback, and confirms
+fetch calls `[False, True]`. The refreshed headline replaces the original in the
+main list, primary ticker, and full ticker. The test passed on its first run, so
+this slice adds missing GUI evidence rather than changing production behavior.
+
+**Evidence boundary:** this proves the real widget command, refresh controller,
+worker callback, and controlled offline rendering. It does not prove physical
+pointer input, live NewsNow, Redis, provider, or user-settings behavior.
 
 **Next boundary:** select a new, behavior-owned GUI workflow before assigning
 another numbered slice.

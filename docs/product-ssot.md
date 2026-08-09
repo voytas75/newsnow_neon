@@ -249,9 +249,11 @@ Quality gates become meaningful instead of aspirational noise.
 **Next GUI seam selection — no stage assigned yet**
 
 ### Why this is next
-- Stage 4S completed the remaining native chooser open/Cancel acceptance with
-  human-visible desktop evidence and controlled no-op verification.
-- There is no confirmed residual defect in the appearance/color flow.
+- Stage 4T established real-Tk, offline evidence that the actual `Refresh Now`
+  command replaces the rendered list and both ticker bands after its worker
+  completes.
+- There is no confirmed residual defect in the appearance/color or manual-refresh
+  flows.
 - Assigning a new numbered slice without a user-facing gap would manufacture
   work; the next seam must be chosen from a real operator workflow.
 
@@ -382,6 +384,9 @@ Current sync status:
   capture the WSLg chooser; only no-op state is confirmed there.
 - Stage 4S added human-visible confirmation that both choosers open and Cancel,
   while the controlled runner verified unchanged ticker/store values.
+- Stage 4T added a controlled real-Tk manual-refresh acceptance: the actual
+  `Refresh Now` command replaces the first offline payload in the list and both
+  ticker bands after its worker completes.
 - the next task is explicit selection of one behavior-owned GUI seam
 
 ### Do weryfikacji

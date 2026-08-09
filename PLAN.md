@@ -132,6 +132,11 @@ and diagnostics.
   visibly opened and cancelled both real choosers against the controlled temporary
   store. The runner then confirmed unchanged `Custom` values on both tickers and
   unchanged persisted settings. No color was selected; no code changed.
+- **Stage 4T — manual refresh real-Tk acceptance:** an isolated subprocess uses
+  two deterministic offline payloads, invokes the actual `Refresh Now` button,
+  and verifies the completed second result replaces the first in the list and
+  both ticker bands. No production code, user settings, NewsNow, Redis, or
+  provider path was used.
 
 ## Next ordered work
 
