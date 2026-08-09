@@ -2444,3 +2444,179 @@ raise SystemExit(0 if succeeded else 1)
     )
     assert result.returncode == 0, result.stderr
     assert "history_round_trip=ok" in result.stdout
+
+
+def test_real_tk_redis_stats_button_opens_and_closes_metrics_window(
+    tmp_path: Path,
+) -> None:
+    """Invoke Redis Stats with local doubles and verify the real metrics window."""
+    settings_path = tmp_path / "redis-stats-settings.json"
+    script = r'''
+import os
+import sys
+import time
+from pathlib import Path
+
+settings_path = Path(sys.argv[1])
+os.environ["NEWS_APP_SETTINGS"] = str(settings_path)
+os.environ["REDIS_URL"] = "redis://offline-stats.test/0"
+
+from newsnow_neon.app import services
+from newsnow_neon.models import Headline, RedisStatistics
+
+headline = Headline("Redis stats headline", "https://stats.test/headline")
+fetch_calls = []
+stats_calls = []
+
+
+class FakeRedis:
+    def ping(self):
+        return True
+
+
+stats = RedisStatistics(
+    cache_configured=True,
+    available=True,
+    cache_key="ainews:headlines:v1",
+    key_present=True,
+    headline_count=2,
+    summary_count=1,
+    ticker_present=True,
+    sections=["Technology"],
+    section_count=1,
+    sources=["stats.test"],
+    source_count=1,
+    ttl_seconds=900,
+    payload_bytes=512,
+    historical_snapshot_count=3,
+    latest_snapshot_key="news:2026-08-09:120000",
+    redis_version="7.4.0",
+    connected_clients=1,
+    dbsize=4,
+    used_memory_human="1.0M",
+)
+
+
+def fetch_headlines(*, force_refresh=False):
+    fetch_calls.append(force_refresh)
+    return [headline], False, None
+
+
+def collect_stats():
+    stats_calls.append(True)
+    return stats
+
+
+services.configure_app_services(
+    fetch_headlines=fetch_headlines,
+    build_ticker_text=lambda entries: " | ".join(item.title for item in entries),
+    resolve_article_summary=lambda _headline: None,
+    persist_headlines_with_ticker=lambda *_args, **_kwargs: None,
+    collect_redis_statistics=collect_stats,
+    clear_cached_headlines=lambda: (True, "offline stats: cache unavailable"),
+    load_historical_snapshots=lambda *_args, **_kwargs: [],
+)
+
+from newsnow_neon.application import AINewsApp
+from newsnow_neon.app.controller import redis_controller
+
+redis_controller.get_redis_client = lambda: FakeRedis()
+app = AINewsApp()
+succeeded = False
+deadline = time.monotonic() + 5
+
+
+def find_button(widget, text):
+    if widget.winfo_class() == "Button" and widget.cget("text") == text:
+        return widget
+    for child in widget.winfo_children():
+        found = find_button(child, text)
+        if found is not None:
+            return found
+    return None
+
+
+def fail(error):
+    print(f"redis_stats_error={error!r}", file=sys.stderr)
+    app.destroy()
+    raise SystemExit(1)
+
+
+def wait_for_close():
+    global succeeded
+    try:
+        app.update_idletasks()
+        if app._redis_stats_window is not None:
+            if time.monotonic() < deadline:
+                app.after(25, wait_for_close)
+                return
+            raise AssertionError("Redis stats window did not close")
+        assert app.redis_stats_btn.cget("state") == "normal"
+        assert fetch_calls == [False]
+        assert stats_calls == [True]
+        succeeded = True
+        print("redis_stats=ok")
+        app.destroy()
+    except BaseException as error:
+        fail(error)
+
+
+def wait_for_window():
+    try:
+        app.update_idletasks()
+        window = app._redis_stats_window
+        if window is None or not window.winfo_ismapped():
+            if time.monotonic() < deadline:
+                app.after(25, wait_for_window)
+                return
+            raise AssertionError("Redis stats window was not mapped")
+        assert window.title() == "Redis Cache Statistics"
+        assert window._field_vars["Headlines"].get() == "2"
+        assert "900s" in window._field_vars["TTL"].get()
+        close_button = find_button(window, "Close")
+        assert close_button is not None
+        close_button.invoke()
+        app.after(0, wait_for_close)
+    except BaseException as error:
+        fail(error)
+
+
+def start_stats():
+    try:
+        app.update_idletasks()
+        if headline.title not in app.listbox.get("1.0", "end-1c"):
+            if time.monotonic() < deadline:
+                app.after(25, start_stats)
+                return
+            raise AssertionError("offline headline was not rendered")
+        app.options_toggle_btn.invoke()
+        assert app.redis_meter_var.get() == "Redis: ON"
+        assert app.redis_stats_btn.cget("state") == "normal"
+        app.redis_stats_btn.invoke()
+        app.after(0, wait_for_window)
+    except BaseException as error:
+        fail(error)
+
+
+app.after(0, start_stats)
+app.mainloop()
+raise SystemExit(0 if succeeded else 1)
+'''
+    environment = {
+        key: value
+        for key, value in os.environ.items()
+        if not key.startswith(("AZURE_", "OPENAI_", "LITELLM_"))
+    }
+    environment["NEWS_APP_SETTINGS"] = str(settings_path)
+    environment["REDIS_URL"] = "redis://offline-stats.test/0"
+    result = subprocess.run(
+        [sys.executable, "-c", script, str(settings_path)],
+        capture_output=True,
+        cwd=Path(__file__).resolve().parents[1],
+        env=environment,
+        text=True,
+        timeout=15,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    assert "redis_stats=ok" in result.stdout
