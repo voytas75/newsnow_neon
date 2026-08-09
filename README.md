@@ -76,7 +76,7 @@ python -m newsnow_neon
 ## Current focus
 - **Operational trust first** – startup/runtime failures should classify cleanly instead of failing with raw tracebacks.
 - **Supported compatibility surfaces** – `controller.py` and `services.py` remain supported externally; explicit `services.py` file-path loads now use the canonical package proxies.
-- **GUI-first acceptance** – Stage 4M confirmed real offline list/ticker rendering and the Controls toggle, but found the options groups inaccessible at default `900×450`. Stage 4N is a narrow settings-panel accessibility repair; static-debt cleanup remains secondary.
+- **GUI-first acceptance** – Stage 4N makes both settings-group headings visible at default `900×450` and protects the full Controls toggle in real Tk. The remaining lower color-control overflow is a separate Stage 4O accessibility slice; static-debt cleanup remains secondary.
 
 ## Configuration
 | Variable | Purpose |

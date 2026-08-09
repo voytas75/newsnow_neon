@@ -412,9 +412,9 @@ class AINewsApp(tk.Tk):
 
         build_highlight_panel(self)
 
-        history_controls = build_history_panel(self)
-
         build_options_panel(self)
+
+        build_history_panel(self)
 
         self.log_frame, self.log_text = build_logs_panel(self)
         # Initialize logs visibility attribute before applying settings so UI helpers can read it

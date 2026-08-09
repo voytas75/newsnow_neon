@@ -84,10 +84,10 @@ remains. Never hide debt through blanket ignores or broad `type: ignore`.
 
 ## Current immediate boundary
 
-Stage 4M is complete as a partial offline visual acceptance: the primary list,
-ticker, action bar, and reversible controls toggle work on a real X11 window,
-but the options-panel group headings are outside the visible default `900×450`
-layout. Stage 4N may correct only that bounded settings-panel accessibility
-failure, starting with a focused real-Tk layout contract. Do not call NewsNow,
-Redis, or a provider; do not relax the acceptance checklist, redesign the GUI,
-or alter compatibility surfaces incidentally.
+Stage 4N is complete for the bounded heading-accessibility defect: the real Tk
+layout now places `Appearance & Readability` and `Monitoring & Runtime` inside
+the visible default `900×450` Controls panel, while the list/ticker and complete
+toggle cycle remain protected. Stage 4O may address only the remaining lower
+color-controls overflow. Do not call NewsNow, Redis, or a provider; do not
+relax the checklist, redesign the GUI, or alter compatibility surfaces
+incidentally.

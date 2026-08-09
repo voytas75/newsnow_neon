@@ -76,7 +76,16 @@ for a manual visual session.
   controls area.
 - note: search/filter fields remain visible when Controls is hidden; they are
   not part of the toggled options panel.
-- follow-up: Stage 4N settings-panel default-geometry accessibility.
+- resolution: Stage 4N restored both heading labels; the remaining lower-control
+  overflow is carried into Stage 4O.
+
+- **Stage 4N narrow result: pass.** At `900×450`, both `Appearance &
+  Readability` and `Monitoring & Runtime` are now visible after opening
+  Controls; the real-Tk smoke and controlled X11 capture also confirm the full
+  Controls-toggle cycle and restored headline rows after closing.
+- **Broader checklist status: partial.** The lower `Background…` / `Text…`
+  controls remain partly below the window edge when Controls is open. This is
+  carried into Stage 4O rather than treated as an unobserved pass.
 
 ## Result Template
 Use this short format when recording the outcome:

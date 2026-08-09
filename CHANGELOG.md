@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), and this 
 ## [Unreleased]
 
 ### Fixed
+- Reordered the existing settings and history panels so both settings-group
+  headings are visible at the default `900×450` geometry; real-Tk regression
+  coverage now protects the heading layout and full Controls-toggle cycle.
 - Reduced the `newsnow_neon/app/controller/auto_refresh_controller.py` Ruff
   baseline to zero diagnostics without changing auto-refresh scheduling behavior.
 - Reduced the `newsnow_neon/app/controller/refresh_controller.py` Ruff baseline

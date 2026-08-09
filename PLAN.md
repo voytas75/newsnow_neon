@@ -104,14 +104,19 @@ and diagnostics.
   geometry, the options-panel group headings are not visible after opening
   Controls. The defect is carried into Stage 4N rather than hidden by relaxing
   the checklist.
+- **Stage 4N — settings-panel heading accessibility:** moved the existing
+  options panel before history so `Appearance & Readability` and `Monitoring &
+  Runtime` are visible at `900×450`. The real-Tk smoke now verifies both heading
+  geometry and the complete controls-toggle cycle. The remaining lower-controls
+  overflow is deferred to Stage 4O.
 
 ## Next ordered work
 
-1. **Stage 4N — settings-panel default-geometry accessibility:** make both
-   options-panel group headings visible and usable at the default `900×450`
-   geometry, preserving the confirmed list/ticker and toggle behavior. Start
-   with a focused layout contract and a real-Tk regression probe; do not widen
-   into a visual redesign.
+1. **Stage 4O — lower-controls default-geometry accessibility:** select one
+   bounded way to make the remaining color controls accessible at `900×450`,
+   preserving the newly visible group headings, headline list/ticker, and
+   Controls toggle. Begin with a focused real-Tk layout contract; do not broaden
+   into a framework or full visual redesign.
 2. **Compatibility maintenance:** preserve the controller and services
    compatibility tests when later seams touch package loading or startup.
 

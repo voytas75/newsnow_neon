@@ -246,48 +246,47 @@ Quality gates become meaningful instead of aspirational noise.
 ## Current recommended next slice
 
 ### Active next slice
-**Stage 4N — settings-panel default-geometry accessibility**
+**Stage 4O — lower-controls default-geometry accessibility**
 
 ### Why this is next
-- Stage 4M confirmed the primary offline list/ticker and the Controls toggle on
-  a real X11 window, so the next issue is no longer speculative.
-- At the documented default `900×450` geometry, the two options-panel group
-  headings exist in code but are outside the visible controls area.
-- Hiding that mismatch by weakening the checklist would reduce operator trust;
-  the bounded GUI defect must be addressed before more static-debt work.
+- Stage 4N resolved the observed heading defect with a real-Tk geometry contract
+  and controlled X11 capture at `900×450`.
+- The same visual evidence shows that the lower `Background…` / `Text…` color
+  controls remain partly below the visible Controls panel.
+- The GUI is the primary product surface; that residual accessibility failure
+  should be resolved before returning to static-debt work.
 
 ## Implementation focus for the active next slice
 
 ### Goal
-Make `Appearance & Readability` and `Monitoring & Runtime` visible and usable
-when Controls is open at the default `900×450` geometry, without regressing the
-confirmed headline list, ticker, or toggle behavior.
+Make the remaining lower color controls accessible at the default `900×450`
+geometry while preserving Stage 4N's visible group headings, offline headline
+list/ticker, and full Controls-toggle cycle.
 
 ### Scope
 The next slice should:
-- begin with a focused real-Tk layout regression contract for both headings;
-- change only the settings-panel layout/ordering needed to meet that contract;
-- preserve controlled offline rendering and the `Show Controls` / `Hide
-  Controls` cycle;
-- rerun the targeted visual capture after the code/test verification.
+- begin with a focused real-Tk layout contract for the two color controls;
+- select one smallest layout/viewport adjustment based on that contract;
+- preserve the settings headings and close-state headline-list visibility;
+- repeat controlled target-window visual evidence after test verification.
 
 ### Non-goals
 Do not in this slice:
 - call NewsNow, a provider, or Redis for acceptance evidence,
-- add a GUI framework, new dependency, or full scrollable-dashboard redesign,
-- relax the default-geometry checklist merely to make the result pass,
+- add a GUI framework, new dependency, or full visual redesign,
+- hide the overflow by weakening the default-geometry checklist,
 - alter public imports or unrelated controls.
 
 ### Preferred execution order
-1. write a failing real-Tk layout assertion for the two headings
-2. make the smallest settings-panel layout correction
-3. verify the offline GUI smoke, focused layout contract, and full pytest
-4. repeat the controlled X11 visual capture at `900×450`
+1. write a failing real-Tk visibility assertion for `Background…` and `Text…`
+2. make the smallest layout/viewport correction
+3. verify the real-Tk smoke, focused contract, and full pytest
+4. repeat target-only X11 capture with Controls open and closed
 
 ### Acceptance criteria
-- both named headings are mapped and visually readable at `900×450` with
+- both color controls are mapped and visually readable at `900×450` with
   Controls open
-- the main list/ticker and the reversible toggle cycle remain usable
+- Stage 4N headings and close-state headline rows remain visible
 - focused and full pytest stay green
 - the report distinguishes offline GUI evidence from unverified live behavior
 
@@ -375,7 +374,10 @@ Current sync status:
 - Stage 4M visually confirmed an offline `900×450` X11 window, the primary
   list/ticker, and the full Controls-toggle cycle. It is partial because the
   options-panel group headings were outside the visible controls area.
-- the next bounded task is Stage 4N settings-panel default-geometry accessibility
+- Stage 4N moved the existing options panel before history, making both group
+  headings visible in real Tk at `900×450`; the smoke also protects the full
+  toggle cycle and close-state headline rows.
+- the next bounded task is Stage 4O lower-controls default-geometry accessibility
 
 ### Do weryfikacji
 - whether Redis/LLM optional reporting belongs in a future extension of the readiness contract

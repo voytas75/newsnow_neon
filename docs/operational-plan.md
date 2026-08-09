@@ -1,6 +1,6 @@
 # NewsNow Neon — Operational Plan
 
-**Status:** active — Stage 4M visual GUI acceptance recorded as partial; Stage 1 and Stage 2 verified remotely; governance controls refreshed in this slice.
+**Status:** active — Stage 4N heading-accessibility seam verified locally; Stage 1 and Stage 2 verified remotely; governance controls refreshed in this slice.
 **Updated:** 2026-08-09
 **Canonical product direction:** [`product-ssot.md`](product-ssot.md)
 
@@ -589,6 +589,39 @@ despite a healthy WSLg/X11 doctor result.
 **Next:** Stage 4N settings-panel default-geometry accessibility. Do not relax
 the checklist to reclassify this partial result as a pass.
 
+## Stage 4N — settings-panel heading accessibility
+
+**Status:** completed locally.
+
+**Scope:** `newsnow_neon/application.py` construction order and the existing
+isolated real-Tk smoke. No service, provider, persistence, or public-import
+surface changed.
+
+**RED:** the real-Tk subprocess opened Controls at `900×450` and failed with
+`Monitoring & Runtime is not mapped`.
+
+**Changed:** built the existing options panel before the existing history panel.
+This removes an unused local binding and gives the two settings groups visible
+space before history at the fixed default geometry.
+
+**Validation:** the updated real-Tk smoke verifies both named heading labels
+are mapped inside the root geometry, then closes Controls and verifies the
+headline list remains mapped with its offline headline. Full frozen pytest,
+targeted test Ruff/Pyright, `newsnow-neon --check`, `uv lock --check`, and
+`git diff --check` passed.
+
+**Static baseline:** `application.py` Ruff changed from 169 to 168 diagnostics
+with no new diagnostics (the removed binding was historic `F841`); Pyright
+remains 34 errors and 0 warnings before and after. These monolith baselines are
+not widened into this GUI slice.
+
+**Visual evidence:** a controlled offline X11 capture at `900×450` showed both
+headings readable without overlap. A reversible XTEST close restored visible
+headline rows and `Show Controls`.
+
+**Remaining boundary:** lower `Background…` / `Text…` controls are still partly
+below the open-panel edge. Stage 4O owns that separate accessibility defect.
+
 ## Security lock refresh
 
 **Status:** completed and verified remotely by CI run [#31278999184](https://github.com/voytas75/newsnow_neon/actions/runs/31278999184).
@@ -615,7 +648,7 @@ and Dependabot reports zero open alerts; all 16 prior alerts are fixed.
 
 ## Current recommended next execution slice
 
-**Begin Stage 4N as a settings-panel default-geometry accessibility slice.**
-Write a focused real-Tk layout contract for the two missing group headings, then
-make only the layout correction necessary to show them at `900×450` while
-preserving the confirmed offline list/ticker and Controls-toggle behavior.
+**Begin Stage 4O as a lower-controls default-geometry accessibility slice.**
+Write a focused real-Tk visibility contract for `Background…` and `Text…`, then
+make only the layout or viewport correction necessary to expose them at `900×450`
+while preserving Stage 4N's headings and close-state headline rows.

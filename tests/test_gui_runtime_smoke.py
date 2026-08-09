@@ -60,6 +60,32 @@ def verify() -> None:
         assert app.listbox.winfo_ismapped()
         assert app.ticker.winfo_ismapped()
         assert "Offline GUI smoke headline" in app.listbox.get("1.0", "end-1c")
+
+        app._toggle_options_panel()
+        app.update_idletasks()
+        visible_bottom = app.winfo_rooty() + app.winfo_height()
+        pending = list(app.winfo_children())
+        headings = {}
+        while pending:
+            widget = pending.pop()
+            if widget.winfo_class() == "Label":
+                label = widget.cget("text")
+                if label in {"Appearance & Readability", "Monitoring & Runtime"}:
+                    headings[label] = widget
+            pending.extend(widget.winfo_children())
+
+        assert set(headings) == {"Appearance & Readability", "Monitoring & Runtime"}
+        for label, widget in headings.items():
+            assert widget.winfo_ismapped(), f"{label} is not mapped"
+            assert widget.winfo_rooty() + widget.winfo_height() <= visible_bottom, (
+                f"{label} is outside the visible default geometry"
+            )
+
+        app._toggle_options_panel()
+        app.update_idletasks()
+        assert app.options_toggle_btn.cget("text") == "Show Controls"
+        assert app.listbox.winfo_ismapped()
+        assert "Offline GUI smoke headline" in app.listbox.get("1.0", "end-1c")
     except BaseException as error:
         print(f"gui_smoke_error={error!r}", file=sys.stderr)
     else:
