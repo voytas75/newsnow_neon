@@ -157,6 +157,11 @@ and diagnostics.
   processes use the actual Show/Hide Controls command, persist `options_visible`,
   and verify the compact hidden status summary on restore. No production code,
   user settings, NewsNow, Redis, or provider path was used.
+- **Stage 4Z — auto-refresh real-Tk round-trip:** two fresh offline Tk processes
+  use the actual `Auto Refresh Timer` checkbutton and `Every (min)` spinbox,
+  persist timer state and cadence in a temporary store, and verify scheduled or
+  cleared Tk job IDs plus the corresponding `Next refresh` status. No production
+  code, user settings, NewsNow, Redis, or provider path was used.
 
 ## Next ordered work
 

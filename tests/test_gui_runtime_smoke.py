@@ -1178,3 +1178,168 @@ raise SystemExit(0 if succeeded else 1)
         )
         assert result.returncode == 0, result.stderr
         assert f"appearance_round_trip_{mode}=ok" in result.stdout
+
+
+def test_real_tk_auto_refresh_persists_cadence_and_scheduler_state(
+    tmp_path: Path,
+) -> None:
+    """Exercise the real timer controls across a temporary-store restart."""
+    settings_path = tmp_path / "auto-refresh-settings.json"
+    script = r'''
+import json
+import os
+import sys
+import time
+from pathlib import Path
+
+mode = sys.argv[1]
+settings_path = Path(sys.argv[2])
+os.environ["NEWS_APP_SETTINGS"] = str(settings_path)
+os.environ["REDIS_URL"] = ""
+
+from newsnow_neon.app import services
+from newsnow_neon.models import Headline
+
+headline = Headline(
+    title="Offline automatic refresh",
+    url="https://example.test/automatic-refresh",
+    section="Technology",
+)
+services.configure_app_services(
+    fetch_headlines=lambda **_kwargs: ([headline], False, None),
+    build_ticker_text=lambda entries: " | ".join(item.title for item in entries),
+    resolve_article_summary=lambda _headline: None,
+    persist_headlines_with_ticker=lambda *_args, **_kwargs: None,
+    collect_redis_statistics=lambda: None,
+    clear_cached_headlines=lambda: (True, "offline timer: cache unavailable"),
+    load_historical_snapshots=lambda *_args, **_kwargs: [],
+)
+
+from newsnow_neon.application import AINewsApp
+
+app = AINewsApp()
+succeeded = False
+deadline = time.monotonic() + 5
+
+
+def stored():
+    with settings_path.open(encoding="utf-8") as handle:
+        return json.load(handle)
+
+
+def jobs_scheduled():
+    return app._refresh_job is not None and app._countdown_job is not None
+
+
+def fail(error):
+    print(f"auto_refresh_error={mode}:{error!r}", file=sys.stderr)
+    app.destroy()
+    raise SystemExit(1)
+
+
+def finish():
+    global succeeded
+    succeeded = True
+    print(f"auto_refresh_{mode}=ok")
+    app.destroy()
+
+
+def wait_for_enabled_timer():
+    try:
+        app.update_idletasks()
+        if not jobs_scheduled() or app.next_refresh_var.get() == "Next refresh: paused":
+            if time.monotonic() < deadline:
+                app.after(25, wait_for_enabled_timer)
+                return
+            raise AssertionError("enabled timer did not publish scheduler status")
+        assert app.auto_refresh_var.get() is True
+        assert stored()["auto_refresh_enabled"] is True
+        assert stored()["auto_refresh_minutes"] == 6
+        app.geometry("900x450")
+        app._remember_window_geometry()
+        app._save_settings()
+    except BaseException as error:
+        fail(error)
+    else:
+        finish()
+
+
+def verify():
+    try:
+        app.update_idletasks()
+        if not app.options_container.winfo_ismapped():
+            app.options_toggle_btn.invoke()
+            app.update_idletasks()
+        if (
+            not app.auto_refresh_check.winfo_ismapped()
+            or not jobs_scheduled()
+            or app.next_refresh_var.get() == "Next refresh: paused"
+        ):
+            if time.monotonic() < deadline:
+                app.after(25, verify)
+                return
+            raise AssertionError("auto-refresh controls or jobs did not initialize")
+
+        assert app.auto_refresh_check.cget("text") == "Auto Refresh Timer"
+        assert app.auto_refresh_var.get() is True
+        if mode == "write":
+            assert app.auto_refresh_minutes_var.get() == 5
+            app.auto_refresh_check.invoke()
+            app.update_idletasks()
+            assert app.auto_refresh_var.get() is False
+            assert stored()["auto_refresh_enabled"] is False
+            assert app._refresh_job is None
+            assert app._countdown_job is None
+            assert app.next_refresh_var.get() == "Next refresh: paused"
+
+            app.auto_refresh_spin.invoke("buttonup")
+            assert app.auto_refresh_minutes_var.get() == 6
+            assert stored()["auto_refresh_minutes"] == 6
+
+            app.auto_refresh_check.invoke()
+            app.update_idletasks()
+            assert app.auto_refresh_var.get() is True
+            assert stored()["auto_refresh_enabled"] is True
+            app.after(0, wait_for_enabled_timer)
+            return
+        elif mode == "verify":
+            assert app.auto_refresh_minutes_var.get() == 6
+            assert stored()["auto_refresh_enabled"] is True
+            assert stored()["auto_refresh_minutes"] == 6
+            assert app.next_refresh_var.get() != "Next refresh: paused"
+
+            app.auto_refresh_check.invoke()
+            app.update_idletasks()
+            assert app.auto_refresh_var.get() is False
+            assert stored()["auto_refresh_enabled"] is False
+            assert app._refresh_job is None
+            assert app._countdown_job is None
+            assert app.next_refresh_var.get() == "Next refresh: paused"
+        else:
+            raise AssertionError(f"unsupported mode: {mode}")
+    except BaseException as error:
+        fail(error)
+    else:
+        finish()
+
+
+app.after(0, verify)
+app.mainloop()
+raise SystemExit(0 if succeeded else 1)
+'''
+    environment = os.environ.copy()
+    environment["NEWS_APP_SETTINGS"] = str(settings_path)
+    environment["REDIS_URL"] = ""
+
+    for mode in ("write", "verify"):
+        result = subprocess.run(
+            [sys.executable, "-c", script, mode, str(settings_path)],
+            capture_output=True,
+            cwd=Path(__file__).resolve().parents[1],
+            env=environment,
+            text=True,
+            timeout=15,
+            check=False,
+        )
+        assert result.returncode == 0, result.stderr
+        assert f"auto_refresh_{mode}=ok" in result.stdout

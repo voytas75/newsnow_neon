@@ -249,12 +249,12 @@ Quality gates become meaningful instead of aspirational noise.
 **Next GUI seam selection — no stage assigned yet**
 
 ### Why this is next
-- Stage 4Y established real-Tk, offline evidence that Show/Hide Controls
-  persists `options_visible` and restores a hidden surface with a non-empty
-  compact status summary in a fresh process.
+- Stage 4Z established real-Tk, offline evidence that the actual Auto Refresh
+  Timer and cadence spinbox persist, restore in a fresh process, and keep Tk job
+  IDs and `Next refresh` status aligned when enabled or disabled.
 - There is no confirmed residual defect in the appearance/color, manual-refresh,
-  search/filter, exclusion, summary-fallback, highlight, or controls-visibility
-  flows.
+  auto-refresh, search/filter, exclusion, summary-fallback, highlight, or
+  controls-visibility flows.
 - Assigning a new numbered slice without a user-facing gap would manufacture
   work; the next seam must be chosen from a real operator workflow.
 
@@ -399,6 +399,9 @@ Current sync status:
   Apply/persistence/list/ticker/heatmap acceptance.
 - Stage 4Y added a controlled two-process real-Tk Controls visibility round-trip,
   including persisted `options_visible` and restored compact status summary.
+- Stage 4Z added a controlled two-process real-Tk Auto Refresh round-trip,
+  including persisted cadence, scheduled/cancelled timer jobs, and matching
+  `Next refresh` status.
 - the next task is explicit selection of one behavior-owned GUI seam
 
 ### Do weryfikacji

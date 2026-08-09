@@ -1,6 +1,6 @@
 # NewsNow Neon — Operational Plan
 
-**Status:** active — Stage 4Y controls-visibility real-Tk round-trip verified locally with controlled offline evidence; Stage 1 and Stage 2 verified remotely; governance controls refreshed in this slice.
+**Status:** active — Stage 4Z auto-refresh real-Tk round-trip verified locally with controlled offline evidence; Stage 1 and Stage 2 verified remotely; governance controls refreshed in this slice.
 **Updated:** 2026-08-09
 **Canonical product direction:** [`product-ssot.md`](product-ssot.md)
 
@@ -906,6 +906,34 @@ options container, a mapped status-summary label, and a non-empty summary value.
 **Evidence boundary:** this proves real widget commands, persistence across fresh
 processes, and compact summary restoration. It does not prove physical pointer or
 keyboard input, live NewsNow, Redis, provider, or user-settings behavior.
+
+**Next boundary:** select a new, behavior-owned GUI workflow before assigning
+another numbered slice.
+
+## Stage 4Z — auto-refresh real-Tk round-trip
+
+**Status:** completed locally; no production code changed.
+
+**Scope:** `tests/test_gui_runtime_smoke.py` runs two fresh real-Tk subprocesses
+against one temporary settings store, deterministic offline headline data, empty
+`REDIS_URL`, and local service doubles.
+
+**Acceptance:** the writer opens Controls, invokes the actual `Auto Refresh
+Timer` checkbutton to disable the timer, invokes the real cadence spinbox from
+five to six minutes, then re-enables the timer. It verifies persisted values,
+cleared or recreated `_refresh_job` and `_countdown_job`, and the corresponding
+`Next refresh` status. The verifier restores the enabled six-minute timer in a
+fresh process, then invokes the real checkbutton to disable it and verifies the
+same persisted and scheduler-state transition.
+
+**Validation:** the new real-Tk acceptance passes. The temporary writer records
+`900×450` geometry before closing so the fresh verifier cannot inherit a
+transient unmapped `1×1` window. No production code was needed.
+
+**Evidence boundary:** this proves real widget commands, temporary-store
+persistence, and Tk scheduler/status transitions. It does not prove physical
+pointer or keyboard input, an elapsed minute firing a refresh, live NewsNow,
+Redis, provider, or user-settings behavior.
 
 **Next boundary:** select a new, behavior-owned GUI workflow before assigning
 another numbered slice.
