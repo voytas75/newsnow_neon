@@ -18,6 +18,7 @@ import logging
 import os
 import sys
 from dataclasses import dataclass
+from importlib.metadata import version as distribution_version
 from pathlib import Path
 from typing import Any, Literal, Protocol, TypedDict, cast
 
@@ -45,7 +46,7 @@ class LegacyRuntimeServices(Protocol):
 
 logger = logging.getLogger(__name__)
 
-APP_VERSION = "0.53"
+APP_VERSION = distribution_version("newsnow-neon")
 TKINTER_IMPORT_ERROR_MESSAGE = (
     "Tkinter is not available in this Python runtime. Install a desktop Python build "
     "with Tk support (for example `python3-tk` on some Linux distributions)."

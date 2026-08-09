@@ -124,9 +124,6 @@ These came out of the bounded repo review and should drive the next planning cyc
      `[tool.pyright]` in `pyproject.toml`.
    - These are not blocking CI until reduced through bounded slices.
 
-7. **Version truth is not yet unified**
-   - `pyproject.toml`, runtime metadata, and per-file update annotations are not yet obviously one coherent release truth.
-
 ### Do weryfikacji
 
 - whether `--check` should fail hard on missing required launch prerequisites in v1,
@@ -251,10 +248,6 @@ next slice.
    - Add a GUI/controller or live integration case only through an explicit,
      separately approved acceptance scope.
 
-5. **Version-truth cleanup slice**
-   - Choose one clear source of release/version truth.
-   - Align runtime metadata, package version, changelog, and per-file update annotations.
-
 ## Current recommended next slice
 
 ### Active next decision
@@ -335,6 +328,10 @@ Current sync status:
 - the repo has a working hardened startup contract for the main front doors
 - `--check` exists on supported front doors, avoids GUI launch, and now returns a readiness verdict with non-zero exit for failed required prerequisites
 - full local `pytest -q` is green
+- `pyproject.toml [project].version` is the release-version source; runtime
+  `APP_VERSION` and displayed app metadata read the installed `newsnow-neon`
+  distribution version. Per-file `Updates:` annotations are file history, not
+  release versions.
 - missing Tk and missing display now surface as bounded CLI-facing outcomes instead of raw startup tracebacks
 - fixture/mock coverage now protects parsing, settings, cache/history, and summary-provider fallback seams
 - Stage 4A reduced the `app/actions.py` Ruff seam from 3 diagnostics to 0 and

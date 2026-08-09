@@ -54,6 +54,9 @@ and diagnostics.
 - **P1 — service compatibility contract:** made explicit `services.py`
   file-path loads re-export the canonical stable package proxies; focused
   regression coverage proves dispatch after package configuration.
+- **Operational maintenance — version truth:** `pyproject.toml` remains the
+  release-version source; runtime `APP_VERSION` and displayed app metadata now
+  derive from the installed `newsnow-neon` distribution under regression tests.
 - **Stage 4A — mute-action seam:** reduced the `app/actions.py` Ruff baseline
   from 3 diagnostics to 0 and added focused helper regression coverage.
 - **Stage 4B — filtering seam:** reduced the `app/filtering.py` Ruff baseline

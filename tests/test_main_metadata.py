@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import importlib.util
 import sys
+from importlib.metadata import version as distribution_version
 
 import pytest
 
@@ -37,11 +38,13 @@ def test_app_metadata_basic_fields() -> None:
     assert "Tkinter desktop dashboard" in APP_METADATA.description
 
 
-def test_app_version_constant() -> None:
-    """APP_VERSION should be a simple semantic string without the 'v' prefix."""
-    from newsnow_neon.main import APP_VERSION
+def test_app_version_matches_installed_distribution() -> None:
+    """Runtime and displayed metadata use the installed package version."""
+    from newsnow_neon.main import APP_METADATA, APP_VERSION
 
-    assert APP_VERSION == "0.53"
+    expected_version = distribution_version("newsnow-neon")
+    assert APP_VERSION == expected_version
+    assert APP_METADATA.version == f"v{expected_version}"
 
 
 def test_main_callable_without_invocation() -> None:
