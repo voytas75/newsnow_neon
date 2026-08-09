@@ -971,7 +971,7 @@ class AINewsApp(tk.Tk):
         if headline is None:
             return
         title_val = headline.title if isinstance(headline.title, str) else ""
-        keyword = self._extract_keyword_for_mute(title_val)
+        keyword = _extract_keyword_for_mute_fn(title_val)
         if not keyword:
             messagebox.showinfo(
                 "Mute Keyword", "Unable to derive a keyword to mute from the title."
