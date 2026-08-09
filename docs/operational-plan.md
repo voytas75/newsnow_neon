@@ -1149,7 +1149,8 @@ another numbered slice.
 
 ## Stage 14 — cross-font Controls and worker-log Tk safety
 
-**Status:** completed locally; remote CI verification pending explicit push.
+**Status:** completed and verified remotely by GitHub CI run
+[#31335731396](https://github.com/voytas75/newsnow_neon/actions/runs/31335731396).
 
 **RED:** the Xvfb runner exposed default `900×450` Controls clipping under
 fallback fonts; a live probe measured a root requirement of 706 px. The same
@@ -1171,12 +1172,15 @@ Pyright on those two files passed. `ui_helpers.py` and `application.py` retain
 their recorded global static-debt baseline; no broad static cleanup was added.
 `uv lock --check` and both `--check` front doors passed.
 
+**Remote result:** the frozen Xvfb pytest job passed for commit
+`5a5b6a3dfd721bd1c9e6e0d22176787d5b2a6881` in 1m22s.
+
 **Evidence boundary:** this proves controlled real-Tk layout, worker/log queue
 delivery, and offline Background Watch behavior. It does not prove physical
 desktop input, live NewsNow, Redis, or provider behavior.
 
-**Next boundary:** push only with explicit approval, then require the Xvfb CI
-run for the delivered SHA to pass before selecting another GUI slice.
+**Next boundary:** select another GUI slice only through a new explicit scope
+decision.
 
 ## Security lock refresh
 

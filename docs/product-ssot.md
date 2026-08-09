@@ -421,8 +421,9 @@ Current sync status:
   live window only to Tk's required height, and moved worker log delivery to a
   main-thread drain queue. The immediate Background Watch regression now proves
   the action does not deadlock against initial refresh logging.
-- remote Xvfb CI verification is required before selecting the next
-  behavior-owned GUI seam
+- Stage 14 remote Xvfb CI is verified by run
+  [#31335731396](https://github.com/voytas75/newsnow_neon/actions/runs/31335731396);
+  the next task is explicit selection of one behavior-owned GUI seam
 
 ### Do weryfikacji
 - whether Redis/LLM optional reporting belongs in a future extension of the readiness contract

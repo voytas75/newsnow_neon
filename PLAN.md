@@ -208,12 +208,12 @@ and diagnostics.
 
 ## Next ordered work
 
-1. **Remote Stage 14 verification:** after an explicit push, require the Xvfb
-   pytest job for the delivered SHA to pass before selecting more work.
-2. **Next GUI slice selection:** after remote verification, choose one
-   unverified, behavior-owned operator workflow from the desktop product surface.
-   Do not reopen completed evidence or expand scope by assumption.
-3. **Compatibility maintenance:** preserve the controller and services
+1. **Next GUI slice selection:** Stage 14 is verified by GitHub CI run
+   [#31335731396](https://github.com/voytas75/newsnow_neon/actions/runs/31335731396).
+   Choose one unverified, behavior-owned operator workflow from the desktop
+   product surface. Do not reopen completed evidence or expand scope by
+   assumption.
+2. **Compatibility maintenance:** preserve the controller and services
    compatibility tests when later seams touch package loading or startup.
 
 ## Explicitly deferred
