@@ -1,6 +1,6 @@
 # NewsNow Neon — Operational Plan
 
-**Status:** active — Stage 4O lower-controls seam verified locally; Stage 1 and Stage 2 verified remotely; governance controls refreshed in this slice.
+**Status:** active — Stage 4P ticker classification verified locally; Stage 1 and Stage 2 verified remotely; governance controls refreshed in this slice.
 **Updated:** 2026-08-09
 **Canonical product direction:** [`product-ssot.md`](product-ssot.md)
 
@@ -655,6 +655,26 @@ headline rows and action bar.
 that can be normal marquee motion. Stage 4P owns classification before any
 Ticker change.
 
+## Stage 4P — ticker-boundary classification
+
+**Status:** completed locally; no production code changed.
+
+**Scope:** controlled real-Tk observation plus paired target-only X11 captures.
+No user settings, native dialogs, services, providers, Redis, or ticker code
+were touched.
+
+**Evidence:** with one offline headline, the primary ticker moved from `852` to
+`842` to `832` pixels and the full ticker from `865` to `860` to `855` across
+successive 250 ms samples. That is exactly the expected 5 animation cycles at
+50 ms with configured speeds 2 and 1. Two X11 captures one second apart also
+showed matching leftward shifts of the visible text.
+
+**Decision:** the edge clipping seen in a still is a normal marquee frame, not
+persistent truncation. No ticker change or new regression test is warranted.
+
+**Next boundary:** Stage 4Q may verify appearance-settings persistence through a
+temporary settings store and real-Tk restart only.
+
 ## Security lock refresh
 
 **Status:** completed and verified remotely by CI run [#31278999184](https://github.com/voytas75/newsnow_neon/actions/runs/31278999184).
@@ -681,7 +701,7 @@ and Dependabot reports zero open alerts; all 16 prior alerts are fixed.
 
 ## Current recommended next execution slice
 
-**Begin Stage 4P as ticker-boundary behavior classification.** Observe multiple
-controlled real-Tk ticker states at `900×450` and decide whether edge clipping
-is normal marquee motion or persistent truncation. Do not change ticker behavior
-without that evidence; preserve the completed Controls-panel layout.
+**Begin Stage 4Q as an appearance-settings offline round-trip.** Use only a
+temporary settings store and local service doubles to verify theme, ticker speed,
+and color restoration after real-Tk restart. Do not invoke native dialogs or
+touch the user's settings path.

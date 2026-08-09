@@ -84,10 +84,10 @@ remains. Never hide debt through blanket ignores or broad `type: ignore`.
 
 ## Current immediate boundary
 
-Stage 4O is complete for the lower-controls defect: compacted existing vertical
-spacing lets `Background…` and `Text…` keep their requested height inside the
-visible default `900×450` Controls panel. The Stage 4N headings, action rows,
-and close-state headline list remain protected. Stage 4P may only classify the
-observed ticker edge clipping before any ticker change. Do not call NewsNow,
-Redis, or a provider; do not relax the checklist, redesign the GUI, or alter
-compatibility surfaces incidentally.
+Stage 4P is complete as an evidence-only classification: controlled real-Tk
+samples and paired X11 captures confirm that observed ticker-edge clipping is
+normal leftward marquee motion, not a persistent layout defect. Stage 4Q may
+only verify appearance-settings persistence through a temporary settings store
+and real-Tk restart. Do not invoke the native color chooser, call NewsNow,
+Redis, or a provider, alter the user's settings file, redesign the GUI, or
+change compatibility surfaces incidentally.

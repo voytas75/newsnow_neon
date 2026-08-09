@@ -77,7 +77,8 @@ for a manual visual session.
 - note: search/filter fields remain visible when Controls is hidden; they are
   not part of the toggled options panel.
 - resolution: Stage 4N restored both heading labels and Stage 4O restored the
-  lower color controls; ticker-boundary behavior remains Stage 4P evidence work.
+  lower color controls; Stage 4P confirmed ticker-edge clipping as normal marquee
+  motion.
 
 - **Stage 4N narrow result: pass.** At `900×450`, both `Appearance &
   Readability` and `Monitoring & Runtime` are now visible after opening
@@ -86,8 +87,10 @@ for a manual visual session.
 - **Stage 4O narrow result: pass.** `Background…` and `Text…` now render at
   their full requested height within the root geometry, and controlled X11
   capture confirms both are readable without overlap.
-- **Ticker note: to verify.** Edge clipping observed in a still capture may be
-  intended marquee motion; Stage 4P must classify it before any ticker change.
+- **Stage 4P result: no defect.** Primary ticker state moved `852 → 842 → 832`
+  and full ticker state `865 → 860 → 855` across controlled 250 ms samples;
+  paired X11 captures showed the same leftward marquee motion. No ticker change
+  is warranted.
 
 ## Result Template
 Use this short format when recording the outcome:

@@ -246,50 +246,51 @@ Quality gates become meaningful instead of aspirational noise.
 ## Current recommended next slice
 
 ### Active next slice
-**Stage 4P — ticker-boundary behavior classification**
+**Stage 4Q — appearance-settings offline round-trip**
 
 ### Why this is next
-- Stage 4O resolved the confirmed lower-control clipping with a focused real-Tk
-  geometry contract and controlled X11 capture at `900×450`.
-- The same captures show ticker text clipped at the viewport edges, but a still
-  image cannot distinguish intentional marquee motion from persistent truncation.
-- Altering ticker layout without that classification would be speculative and
-  could regress the primary headline workflow.
+- Stage 4P established that the observed ticker-edge clipping is intended marquee
+  motion, so no ticker correction is justified.
+- Appearance controls are now fully visible at the default geometry, but their
+  persistence through a restart has not been verified in the real-Tk lane.
+- A temporary-store round-trip is the smallest next operator-facing check and
+  avoids touching the user's settings or native chooser dialogs.
 
 ## Implementation focus for the active next slice
 
 ### Goal
-Classify ticker-edge clipping under controlled offline data as intended marquee
-motion or a persistent layout defect, then decide whether a separate fix is
-needed without changing ticker behavior preemptively.
+Verify that controlled theme, ticker-speed, and color values survive a real-Tk
+restart using only a temporary settings store and offline service doubles.
 
 ### Scope
 The next slice should:
-- capture two or more controlled real-Tk ticker states separated by a known
-  event-loop interval;
-- inspect ticker position/content boundaries and document the observation;
-- add a narrow deterministic assertion only if the current ticker model exposes
-  a stable behavior contract;
-- leave the completed Controls-panel layout unchanged.
+- set deterministic appearance values through supported application behavior or
+  a controlled temporary settings fixture;
+- start a second real Tk application against the same temporary store;
+- assert the restored settings and rendered ticker values;
+- clean up the temporary store and preserve the default-geometry layout contract.
 
 ### Non-goals
 Do not in this slice:
-- change ticker speed, content, or layout before classification,
+- invoke or automate native color chooser dialogs,
+- touch the user's settings file,
 - call NewsNow, a provider, or Redis for acceptance evidence,
-- mistake a single clipped marquee frame for a confirmed bug,
+- alter appearance behavior before a failing round-trip contract identifies a
+  defect,
 - alter public imports, GUI framework, or unrelated controls.
 
 ### Preferred execution order
-1. run controlled offline real-Tk ticker observation over multiple event-loop ticks
-2. compare boundary position/content across captures or widget state
-3. record intended-motion versus persistent-defect evidence
-4. propose a separate bounded correction only if persistent truncation is proven
+1. inspect the current settings persistence seam and existing behavior tests
+2. write a controlled real-Tk restart contract using a temporary store
+3. classify the result before changing settings code
+4. repeat only the offline real-Tk evidence required by the result
 
 ### Acceptance criteria
-- the evidence distinguishes motion from persistent clipping at `900×450`
-- no ticker behavior changes without a confirmed defect
-- Stage 4O controls and close-state headline rows remain protected
-- the report distinguishes offline GUI evidence from unverified live behavior
+- restored theme, speed, and color values match the controlled fixture
+- no real user settings path or live service is accessed
+- the completed ticker and Controls-panel contracts remain protected
+- the report distinguishes offline persistence evidence from native-dialog and
+  live-service behavior
 
 ## What should not drive the roadmap now
 
@@ -380,7 +381,9 @@ Current sync status:
   toggle cycle and close-state headline rows.
 - Stage 4O compacted only existing appearance-panel vertical spacing, restoring
   both color buttons to their full requested height at `900×450` without overlap.
-- the next bounded task is Stage 4P ticker-boundary behavior classification
+- Stage 4P classified observed ticker edge clipping as normal marquee motion by
+  controlled real-Tk coordinates and paired X11 captures; no ticker change made.
+- the next bounded task is Stage 4Q appearance-settings offline round-trip
 
 ### Do weryfikacji
 - whether Redis/LLM optional reporting belongs in a future extension of the readiness contract

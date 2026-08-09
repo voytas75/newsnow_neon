@@ -112,15 +112,20 @@ and diagnostics.
 - **Stage 4O — lower-controls accessibility:** compacted only vertical padding
   within the existing appearance rows. `Background…` and `Text…` now retain
   their full requested height at `900×450`; the real-Tk smoke protects this,
-  the Stage 4N headings, and the close-state list. Ticker edge clipping remains
-  explicitly unclassified pending Stage 4P.
+  the Stage 4N headings, and the close-state list. Ticker edge clipping was left
+  for the completed Stage 4P evidence classification.
+- **Stage 4P — ticker-boundary classification:** controlled real-Tk state moved
+  primary ticker text `852 → 842 → 832` and full ticker text `865 → 860 → 855`
+  across 250 ms samples; paired X11 captures one second apart showed matching
+  leftward motion. Edge clipping is normal marquee behavior, not a defect; no
+  ticker code changed.
 
 ## Next ordered work
 
-1. **Stage 4P — ticker-boundary behavior classification:** determine with
-   controlled real-Tk evidence whether edge clipping is intended marquee motion
-   or a persistent layout defect. Add no ticker change until the behavior is
-   classified; preserve the completed `900×450` Controls-panel contract.
+1. **Stage 4Q — appearance-settings offline round-trip:** verify theme, ticker
+   speed, and color values persist through a controlled temporary settings store
+   and a real-Tk restart, without invoking the native color chooser, live
+   services, or the user's settings file.
 2. **Compatibility maintenance:** preserve the controller and services
    compatibility tests when later seams touch package loading or startup.
 
