@@ -256,47 +256,49 @@ next slice.
 ## Current recommended next slice
 
 ### Active next decision
-**Next GUI seam selection — no stage assigned yet**
+**Stage 10 — Mute Source real-Tk acceptance**
 
 ### Why this is next
 - Stage 9 established real-Tk, offline evidence that the actual Mute Keyword
   action persists its derived exclusion and filters every rendered headline view.
-- There is no confirmed residual defect in the appearance/color, manual-refresh,
-  auto-refresh, background-watch, search/filter, exclusion, summary-fallback,
-  highlight, controls-visibility, logs-visibility, cache-clear, info, or
-  mute-keyword flows.
-- Assigning a new numbered slice without a user-facing gap would manufacture
-  work; the next seam must be chosen from a real operator workflow.
+- `Mute Source` is its sibling selected-row action and is present in the real
+  action bar, but has no controlled real-Tk acceptance proving its worker,
+  persistence, and list/ticker fan-out.
+- This is a real operator-facing evidence gap, not a newly invented feature.
 
 ## Implementation focus for the active next decision
 
 ### Goal
-Select one unverified, behavior-owned desktop workflow before opening the next
-numbered implementation or acceptance slice.
+Prove the existing selected-row `Mute Source` command through its real Tk button
+with deterministic offline source resolution.
 
 ### Scope
-The selection review should:
-- start from the GUI operator flow, not broad static debt;
-- identify one observable outcome and a reproducible offline acceptance path;
-- distinguish existing evidence from unverified native, input, or live behavior;
-- set a file budget and explicit non-goals before implementation.
+The acceptance slice must:
+- start from a selected rendered headline and invoke the actual `Mute Source`
+  button, not a controller method directly;
+- stub final-URL resolution locally, then verify the canonical temporary-store
+  exclusion and filtered list plus both ticker bands;
+- prove no extra headline fetch occurs after the initial offline load.
 
 ### Non-goals
 Do not in this decision:
 - reopen custom-color or native chooser work without contradictory evidence,
-- select a new feature, redesign, or framework replacement by default,
-- treat full pytest or `--check` as a substitute for a desktop workflow.
+- call live NewsNow, Redis, or a provider; touch user settings; or claim
+  physical pointer/keyboard acceptance,
+- redesign the exclusion architecture or treat full pytest/`--check` as a
+  substitute for the desktop workflow.
 
 ### Preferred execution order
-1. inspect the current operator-facing flow inventory and evidence gaps
-2. choose one bounded behavior with the user
-3. create a focused RED/acceptance contract where code change is warranted
-4. record the selected scope before executing
+1. add a focused offline real-Tk acceptance contract
+2. if it exposes a defect, repair only the owning seam within the behavior/test
+   budget; otherwise retain the test without manufacturing production work
+3. run the full frozen suite and scoped quality checks
+4. record the outcome and remaining evidence boundary
 
 ### Acceptance criteria
-- one next behavior-owned GUI seam has an observable outcome and bounded scope
-- existing evidence/limitations are recorded rather than rediscovered
-- no new stage is named merely to continue numbering
+- the real `Mute Source` command has an observable, offline-reproducible result
+- temporary-store persistence and list/ticker fan-out are asserted
+- remaining physical-input and live-service limitations are recorded
 
 ## What should not drive the roadmap now
 

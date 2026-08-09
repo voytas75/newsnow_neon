@@ -185,9 +185,11 @@ and diagnostics.
 
 ## Next ordered work
 
-1. **Next GUI slice selection:** choose one unverified, behavior-owned operator
-   workflow from the desktop product surface before assigning a new numbered
-   stage. Do not reopen native chooser work or expand scope by assumption.
+1. **Stage 10 — Mute Source real-Tk acceptance:** use a controlled offline
+   headline whose final source resolves through a local stub, invoke the actual
+   selected-row `Mute Source` action, and verify the temporary-store exclusion
+   filters the list and both ticker bands. Do not call live NewsNow, Redis, a
+   provider, or the user settings path.
 2. **Compatibility maintenance:** preserve the controller and services
    compatibility tests when later seams touch package loading or startup.
 
