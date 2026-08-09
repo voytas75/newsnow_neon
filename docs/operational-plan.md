@@ -1,6 +1,6 @@
 # NewsNow Neon — Operational Plan
 
-**Status:** active — Stage 4J background-watch controller seam verified locally; Stage 1 and Stage 2 verified remotely; governance controls refreshed in this slice.
+**Status:** active — Stage 4K highlight-controller seam verified locally; Stage 1 and Stage 2 verified remotely; governance controls refreshed in this slice.
 **Updated:** 2026-08-09
 **Canonical product direction:** [`product-ssot.md`](product-ssot.md)
 
@@ -508,7 +508,33 @@ and 0 warnings; `newsnow-neon --check`, `uv lock --check`, and `git diff
 Pyright remains at `536` errors and `15` warnings; both repository-wide checks
 remain intentionally non-blocking.
 
-**Next:** select one new behavior-owned seam for Stage 4K.
+**Next:** select one new behavior-owned seam for Stage 4L.
+
+## Stage 4K — highlight-controller static seam
+
+**Status:** completed locally.
+
+**Scope:** `newsnow_neon/app/controller/highlight_controller.py`.
+Existing focused coverage in `tests/test_settings_behavior.py` remained the
+behavior regression guard for highlight normalization, persistence, and view
+refresh.
+
+**Baseline:** scoped Ruff reported 10 diagnostics; scoped Pyright reported 0
+errors and 0 warnings.
+
+**Changed:** ordered imports, added concise public-method docstrings, wrapped
+long expressions, and kept the existing highlight behavior unchanged.
+
+**Validation:** focused highlight/settings tests passed; the full frozen pytest
+suite passed; scoped Ruff is clean; scoped Pyright remains at 0 errors and 0
+warnings; `newsnow-neon --check`, `uv lock --check`, and `git diff --check`
+passed.
+
+**Measured result:** repository-wide Ruff fell from `952` to `942` diagnostics.
+Pyright remains at `536` errors and `15` warnings; both repository-wide checks
+remain intentionally non-blocking.
+
+**Next:** select one new behavior-owned seam for Stage 4L.
 
 ## Security lock refresh
 
@@ -536,6 +562,6 @@ and Dependabot reports zero open alerts; all 16 prior alerts are fixed.
 
 ## Current recommended next execution slice
 
-**Begin Stage 4K as a bounded static-debt reduction slice.** Select one new
+**Begin Stage 4L as a bounded static-debt reduction slice.** Select one new
 behavior-owned seam, establish its quality baseline, and reduce only directly
 owned Ruff/Pyright debt with focused regression coverage.

@@ -84,11 +84,10 @@ remains. Never hide debt through blanket ignores or broad `type: ignore`.
 
 ## Current immediate boundary
 
-Stage 4J is complete for the behavior-owned seam in
-`newsnow_neon/app/controller/background_watch_controller.py`; its direct Ruff
-baseline is 0, scoped Pyright is 0 errors and 0 warnings, and existing focused
-background-watch/settings tests remain green. The next Stage 4 slice must
-choose one new proven, behavior-owned seam and reduce only its directly owned
-Ruff/Pyright debt with focused regression coverage. Do not start repo-wide
-cleanup or alter the supported controller/services compatibility surfaces
-incidentally.
+Stage 4K is complete for the behavior-owned seam in
+`newsnow_neon/app/controller/highlight_controller.py`; its direct Ruff baseline
+is 0, scoped Pyright is 0 errors and 0 warnings, and existing focused
+highlight/settings tests remain green. The next Stage 4 slice must choose one
+new proven, behavior-owned seam and reduce only its directly owned Ruff/Pyright
+debt with focused regression coverage. Do not start repo-wide cleanup or alter
+the supported controller/services compatibility surfaces incidentally.

@@ -87,10 +87,16 @@ and diagnostics.
   background-watch/settings coverage remained green; scoped Pyright stayed at
   0 errors and 0 warnings. The repository-wide Ruff baseline is now `952`
   diagnostics; Pyright remains `536` errors and `15` warnings.
+- **Stage 4K — highlight-controller seam:** reduced the
+  `app/controller/highlight_controller.py` Ruff baseline from 10 diagnostics
+  to 0 with no runtime behavior change. Existing focused highlight/settings
+  coverage remained green; scoped Pyright stayed at 0 errors and 0 warnings.
+  The repository-wide Ruff baseline is now `942` diagnostics; Pyright remains
+  `536` errors and `15` warnings.
 
 ## Next ordered work
 
-1. **Stage 4K — next bounded static-debt seam:** select one proven seam and
+1. **Stage 4L — next bounded static-debt seam:** select one proven seam and
    reduce only its directly owned Ruff/Pyright debt; never start with repo-wide
    cleanup.
 2. **Compatibility maintenance:** preserve the controller and services
