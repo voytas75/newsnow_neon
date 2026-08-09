@@ -87,7 +87,7 @@ python -m newsnow_neon
 ## Current focus
 - **Operational trust first** – startup/runtime failures should classify cleanly instead of failing with raw tracebacks.
 - **Supported compatibility surfaces** – `controller.py` and `services.py` remain supported externally; explicit `services.py` file-path loads now use the canonical package proxies.
-- **GUI-first acceptance** – Stage 4S manually confirmed that both real native color choosers visibly open and Cancel without changing either ticker or the controlled temporary store. No color was selected and no chooser code changed.
+- **GUI-first acceptance** – controlled real-Tk coverage now spans Stage 4L–9, including rendering, refresh, filtering, exclusions, summaries, highlights, persisted controls, cache clear, Info, and Mute Keyword. The active next decision is to select one still-unverified operator workflow; no live NewsNow, Redis, or provider acceptance is implied.
 
 ## Configuration
 | Variable | Purpose |
@@ -161,4 +161,4 @@ repo-wide diagnostic debt is reduced through bounded slices.
 ## License
 [MIT](LICENSE)
 
-Updates: v0.53.0 - 2025-11-24 - README reorganized, configuration table refreshed, and troubleshooting details aligned with repo guidelines.
+Updates: v0.53.0 - 2026-08-09 - Current delivery state and GUI-acceptance boundaries synchronized with the product SSOT.

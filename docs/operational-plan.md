@@ -1070,9 +1070,10 @@ and Dependabot reports zero open alerts; all 16 prior alerts are fixed.
 
 - Whether Python 3.11 is the right single CI runtime versus adding a later
   compatibility matrix.
-- How the 16 open Dependabot alerts should be prioritized after CI runtime
-  maintenance (3 high, 9 moderate, 4 low).
 - Whether external users depend on the compatibility module/package aliases.
+- Whether live NewsNow, Redis, provider behavior, or physical desktop input
+  needs a separately approved acceptance contract; current GUI evidence is
+  controlled and offline-first.
 
 ## Current recommended next execution slice
 

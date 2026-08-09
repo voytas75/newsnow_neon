@@ -105,18 +105,21 @@ These came out of the bounded repo review and should drive the next planning cyc
      re-export canonical package proxies and added a file-path dispatch
      regression test after configuration.
 
-5. **Core product behavior has bounded offline coverage; end-to-end coverage remains incomplete**
+5. **Core product behavior has bounded offline and real-Tk coverage; deployed-service acceptance remains incomplete**
    - Current tests cover startup/bootstrap/diagnostics plus fixture or mock-based:
      - NewsNow parsing,
      - settings persistence normalization,
      - cache/history payload behavior,
      - summary/provider fallback.
-   - Current tests do not yet prove live NewsNow availability, live provider
-     behavior, Redis deployment compatibility, or main GUI/controller workflows.
+   - Controlled real-Tk tests now prove the selected GUI/controller workflows
+     through Stage 9, but do not prove live NewsNow availability, live provider
+     behavior, Redis deployment compatibility, or physical desktop input.
 
 6. **Static quality debt is measured, not hidden**
-   - Ruff baseline: 942 diagnostics on the current repository-wide scope.
-   - Pyright baseline: 536 errors and 15 warnings on the current repository-wide scope.
+   - Ruff baseline: 940 diagnostics on the current repository-wide scope.
+   - Pyright baseline: 532 errors and 15 warnings on canonical
+     `newsnow_neon` + `tests`; an unscoped root invocation includes ignored
+     `build/` copies and is not the canonical debt measurement.
    - These are not blocking CI until reduced through bounded slices.
 
 7. **Version truth is not yet unified**
@@ -142,7 +145,11 @@ That means:
 - package structure does not pretend to be more modular than it really is,
 - core operator workflows are covered enough to refactor safely.
 
-## Updated roadmap order
+## Retained architecture priorities
+
+The priorities below remain relevant architectural context, but they do not
+override the active next decision: select one unverified, behavior-owned GUI
+workflow before assigning another numbered stage.
 
 ### Priority 1 — make the legacy boundary explicit
 
@@ -215,7 +222,10 @@ This includes:
 Success condition:
 Quality gates become meaningful instead of aspirational noise.
 
-## Ordered implementation backlog
+## Retained implementation backlog
+
+This is not the current delivery order; the active decision below governs the
+next slice.
 
 1. **Legacy service-boundary slice**
    - Make service wiring explicit instead of relying on `legacy_app` import side effects.
@@ -414,4 +424,4 @@ Current sync status:
 ### Do weryfikacji
 - whether Redis/LLM optional reporting belongs in a future extension of the readiness contract
 - exact compatibility impact of package-surface cleanup
-- GUI-specific smoke beyond current command-line/runtime checks
+- live-service behavior and physical desktop input beyond the controlled real-Tk acceptance suite

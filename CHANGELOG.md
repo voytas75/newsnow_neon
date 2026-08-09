@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), and this 
 ## [Unreleased]
 
 ### Fixed
+- Repaired the default-geometry logs-visibility restore path, the configured
+  summary-service proxy binding, ticker highlight fan-out, and the Mute Keyword
+  helper binding; focused real-Tk acceptance protects each repaired path.
 - Restored custom background/text colors to both ticker bands when applying
   them and when loading a custom profile from settings; cross-process real-Tk
   coverage protects the temporary-store round-trip.
@@ -41,6 +44,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), and this 
 - bootstrap tests now verify the explicit runtime-dependency classification instead of relying on brittle subprocess assumptions about import order
 
 ### Added
+- Added controlled offline real-Tk acceptance across Stage 4L–9 for startup
+  rendering, controls visibility, refresh, search/filter, exclusions, summary
+  fallback, highlights, auto refresh, background watch, logs, cache clear, Info,
+  and Mute Keyword. These tests do not claim physical input or live NewsNow,
+  Redis, or provider acceptance.
 - Added focused regression coverage for auto-refresh pending-job cancellation
   and stale-job error handling in `tests/test_auto_refresh_controller.py`.
 - Added focused regression coverage for manual refresh history/status/worker
