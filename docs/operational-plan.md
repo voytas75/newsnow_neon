@@ -1,6 +1,6 @@
 # NewsNow Neon — Operational Plan
 
-**Status:** active — Stage 8 info-window real-Tk acceptance verified locally with controlled offline evidence; Stage 1 and Stage 2 verified remotely; governance controls refreshed in this slice.
+**Status:** active — Stage 9 mute-keyword real-Tk acceptance verified locally with controlled offline evidence; Stage 1 and Stage 2 verified remotely; governance controls refreshed in this slice.
 **Updated:** 2026-08-09
 **Canonical product direction:** [`product-ssot.md`](product-ssot.md)
 
@@ -1029,6 +1029,23 @@ window existence. No user settings, NewsNow, Redis, or provider path was used.
 
 **Evidence boundary:** this proves button-to-Toplevel wiring and metadata window
 construction, not physical pointer input or external-service behavior.
+
+**Next boundary:** select a new, behavior-owned GUI workflow before assigning
+another numbered slice.
+
+## Stage 9 — mute-keyword real-Tk acceptance
+
+**Status:** completed locally; repaired one production binding defect.
+
+**RED:** the real Mute Keyword button called a missing instance helper instead of
+`_extract_keyword_for_mute_fn`, raising `AttributeError` before persistence.
+
+**Acceptance:** a controlled real-Tk process selects a headline, invokes Mute
+Keyword, and verifies the derived `regulation` exclusion persists in a temporary
+store while the list and both tickers remove the muted headline.
+
+**Validation:** focused acceptance and full frozen pytest pass. No user settings,
+NewsNow, Redis, or provider path was used.
 
 **Next boundary:** select a new, behavior-owned GUI workflow before assigning
 another numbered slice.

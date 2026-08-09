@@ -179,6 +179,9 @@ and diagnostics.
 - **Stage 8 — info-window real-Tk acceptance:** the actual `Info` button opens a
   mapped `AppInfoWindow` with canonical metadata; no production code, user
   settings, NewsNow, Redis, or provider path was used.
+- **Stage 9 — mute-keyword real-Tk acceptance:** repaired the missing keyword
+  helper binding; real row selection and `Mute Keyword` now persist the derived
+  exclusion and filter the list plus both tickers without live services.
 
 ## Next ordered work
 

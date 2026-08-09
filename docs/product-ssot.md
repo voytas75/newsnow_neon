@@ -249,11 +249,12 @@ Quality gates become meaningful instead of aspirational noise.
 **Next GUI seam selection — no stage assigned yet**
 
 ### Why this is next
-- Stage 8 established real-Tk, offline evidence that the actual Info button
-  opens a mapped AppInfoWindow with canonical metadata.
+- Stage 9 established real-Tk, offline evidence that the actual Mute Keyword
+  action persists its derived exclusion and filters every rendered headline view.
 - There is no confirmed residual defect in the appearance/color, manual-refresh,
   auto-refresh, background-watch, search/filter, exclusion, summary-fallback,
-  highlight, controls-visibility, logs-visibility, cache-clear, or info flows.
+  highlight, controls-visibility, logs-visibility, cache-clear, info, or
+  mute-keyword flows.
 - Assigning a new numbered slice without a user-facing gap would manufacture
   work; the next seam must be chosen from a real operator workflow.
 
@@ -407,6 +408,7 @@ Current sync status:
   controlled two-process real-Tk `Show Logs` / `Hide Logs` persistence round-trip.
 - Stage 7 added a controlled real-Tk cache-clear worker/callback acceptance.
 - Stage 8 added a controlled real-Tk Info-window acceptance.
+- Stage 9 repaired the mute-keyword helper binding and added real-Tk acceptance.
 - the next task is explicit selection of one behavior-owned GUI seam
 
 ### Do weryfikacji
