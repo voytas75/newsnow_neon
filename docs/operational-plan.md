@@ -1,6 +1,6 @@
 # NewsNow Neon — Operational Plan
 
-**Status:** active — Stage 4X highlight real-Tk fan-out acceptance and stale-ticker repair verified locally with controlled offline evidence; Stage 1 and Stage 2 verified remotely; governance controls refreshed in this slice.
+**Status:** active — Stage 4Y controls-visibility real-Tk round-trip verified locally with controlled offline evidence; Stage 1 and Stage 2 verified remotely; governance controls refreshed in this slice.
 **Updated:** 2026-08-09
 **Canonical product direction:** [`product-ssot.md`](product-ssot.md)
 
@@ -881,6 +881,31 @@ full frozen pytest, `uv lock --check`, and `newsnow-neon --check` pass.
 fan-out, and heatmap rendering with deterministic offline data. It does not prove
 physical pointer/keyboard input, live NewsNow, Redis, provider, or user-settings
 behavior.
+
+**Next boundary:** select a new, behavior-owned GUI workflow before assigning
+another numbered slice.
+
+## Stage 4Y — controls visibility real-Tk round-trip
+
+**Status:** completed locally; no production code changed.
+
+**Scope:** `tests/test_gui_runtime_smoke.py` runs two fresh real-Tk subprocesses
+against one temporary settings store, with deterministic offline headline data,
+empty `REDIS_URL`, and local service doubles.
+
+**Acceptance:** the first process invokes the real `Show Controls` and `Hide
+Controls` commands, verifies `options_visible=True` then `False`, and checks the
+compact summary text `Last refresh: offline`. It normalizes the temporary window
+geometry before the restart verifier so geometry persistence cannot mask the
+visibility contract. The second process restores `Show Controls`, an unmapped
+options container, a mapped status-summary label, and a non-empty summary value.
+
+**Validation:** expanded real-Tk smoke, full frozen pytest, GUI-test Ruff/Pyright,
+`uv lock --check`, and `newsnow-neon --check` pass.
+
+**Evidence boundary:** this proves real widget commands, persistence across fresh
+processes, and compact summary restoration. It does not prove physical pointer or
+keyboard input, live NewsNow, Redis, provider, or user-settings behavior.
 
 **Next boundary:** select a new, behavior-owned GUI workflow before assigning
 another numbered slice.

@@ -249,11 +249,12 @@ Quality gates become meaningful instead of aspirational noise.
 **Next GUI seam selection — no stage assigned yet**
 
 ### Why this is next
-- Stage 4X established real-Tk, offline evidence that actual highlight Apply
-  persists the custom rule, refreshes the list and both tickers, and opens a
-  matching keyword heatmap after repairing stale ticker fan-out.
+- Stage 4Y established real-Tk, offline evidence that Show/Hide Controls
+  persists `options_visible` and restores a hidden surface with a non-empty
+  compact status summary in a fresh process.
 - There is no confirmed residual defect in the appearance/color, manual-refresh,
-  search/filter, exclusion, summary-fallback, or highlight flows.
+  search/filter, exclusion, summary-fallback, highlight, or controls-visibility
+  flows.
 - Assigning a new numbered slice without a user-facing gap would manufacture
   work; the next seam must be chosen from a real operator workflow.
 
@@ -396,6 +397,8 @@ Current sync status:
   controlled real-Tk selected-row fallback-summary acceptance.
 - Stage 4X repaired stale ticker highlight fan-out and added a controlled real-Tk
   Apply/persistence/list/ticker/heatmap acceptance.
+- Stage 4Y added a controlled two-process real-Tk Controls visibility round-trip,
+  including persisted `options_visible` and restored compact status summary.
 - the next task is explicit selection of one behavior-owned GUI seam
 
 ### Do weryfikacji

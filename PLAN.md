@@ -153,6 +153,10 @@ and diagnostics.
   highlight, refreshes matching list/ticker segments, and opens a matching keyword
   heatmap; a stale-ticker fan-out defect was repaired. No user settings, NewsNow,
   Redis, or provider path was used.
+- **Stage 4Y — controls visibility real-Tk round-trip:** two fresh offline Tk
+  processes use the actual Show/Hide Controls command, persist `options_visible`,
+  and verify the compact hidden status summary on restore. No production code,
+  user settings, NewsNow, Redis, or provider path was used.
 
 ## Next ordered work
 

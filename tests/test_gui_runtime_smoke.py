@@ -949,6 +949,145 @@ raise SystemExit(0 if succeeded else 1)
     assert "highlight_flow=ok" in result.stdout
 
 
+def test_real_tk_controls_visibility_persists_and_shows_compact_summary(
+    tmp_path: Path,
+) -> None:
+    """Toggle the real controls surface and restore its compact hidden state."""
+    settings_path = tmp_path / "controls-visibility-settings.json"
+    script = r'''
+import json
+import os
+import sys
+import time
+from pathlib import Path
+
+mode = sys.argv[1]
+settings_path = Path(sys.argv[2])
+os.environ["NEWS_APP_SETTINGS"] = str(settings_path)
+os.environ["REDIS_URL"] = ""
+
+from newsnow_neon.app import services
+from newsnow_neon.models import Headline
+
+headline = Headline(
+    title="Offline controls visibility",
+    url="https://example.test/controls-visibility",
+    section="Technology",
+)
+services.configure_app_services(
+    fetch_headlines=lambda **_kwargs: ([headline], False, None),
+    build_ticker_text=lambda entries: " | ".join(item.title for item in entries),
+    resolve_article_summary=lambda _headline: None,
+    persist_headlines_with_ticker=lambda *_args, **_kwargs: None,
+    collect_redis_statistics=lambda: None,
+    clear_cached_headlines=lambda: (True, "offline controls: cache unavailable"),
+    load_historical_snapshots=lambda *_args, **_kwargs: [],
+)
+
+from newsnow_neon.application import AINewsApp
+
+app = AINewsApp()
+succeeded = False
+deadline = time.monotonic() + 5
+
+
+def stored_visibility():
+    with settings_path.open(encoding="utf-8") as handle:
+        return json.load(handle)["options_visible"]
+
+
+def verify():
+    global succeeded
+    try:
+        app.update_idletasks()
+        if mode == "write":
+            if not app.listbox.winfo_ismapped():
+                raise AssertionError("listbox not mapped")
+            if app.options_toggle_btn.cget("text") != "Show Controls":
+                raise AssertionError(
+                    f"initial toggle={app.options_toggle_btn.cget('text')!r}"
+                )
+            app.options_toggle_btn.invoke()
+            app.update_idletasks()
+            if not app.options_container.winfo_ismapped():
+                raise AssertionError("container not mapped after show")
+            if app.options_toggle_btn.cget("text") != "Hide Controls":
+                raise AssertionError(
+                    f"after show toggle={app.options_toggle_btn.cget('text')!r}"
+                )
+            if stored_visibility() is not True:
+                raise AssertionError(f"stored after show={stored_visibility()!r}")
+
+            app.auto_refresh_var.set(False)
+            app.background_watch_var.set(False)
+            app.last_refresh_var.set("Last refresh: offline")
+            app.options_toggle_btn.invoke()
+            app.update_idletasks()
+            if app.options_container.winfo_ismapped():
+                raise AssertionError("container still mapped after hide")
+            if app.options_toggle_btn.cget("text") != "Show Controls":
+                raise AssertionError(
+                    f"after hide toggle={app.options_toggle_btn.cget('text')!r}"
+                )
+            if stored_visibility() is not False:
+                raise AssertionError(f"stored after hide={stored_visibility()!r}")
+            if not app.status_summary_label.winfo_ismapped():
+                raise AssertionError("summary not mapped after hide")
+            if app.status_summary_var.get() != "Last refresh: offline":
+                raise AssertionError(
+                    f"summary={app.status_summary_var.get()!r}"
+                )
+        elif mode == "verify":
+            if app.options_toggle_btn.cget("text") != "Show Controls":
+                raise AssertionError(
+                    f"restored toggle={app.options_toggle_btn.cget('text')!r}"
+                )
+            if app.options_container.winfo_ismapped():
+                raise AssertionError("restored container mapped")
+            if not app.status_summary_label.winfo_ismapped():
+                raise AssertionError("restored summary not mapped")
+            if not app.status_summary_var.get():
+                raise AssertionError("restored summary empty")
+        else:
+            raise AssertionError(f"unsupported mode: {mode}")
+        succeeded = True
+        print(f"controls_visibility_{mode}=ok")
+        if mode == "write":
+            app.geometry("900x450")
+            app._remember_window_geometry()
+            app._save_settings()
+        app.destroy()
+    except BaseException as error:
+        if time.monotonic() < deadline:
+            app.after(25, verify)
+            return
+        print(f"controls_visibility_error={mode}:{error!r}", file=sys.stderr)
+        app.destroy()
+        raise SystemExit(1)
+
+
+app.after(0, verify)
+app.mainloop()
+raise SystemExit(0 if succeeded else 1)
+'''
+    environment = os.environ.copy()
+    environment["NEWS_APP_SETTINGS"] = str(settings_path)
+    environment["REDIS_URL"] = ""
+
+    for mode in ("write", "verify"):
+        result = subprocess.run(
+            [sys.executable, "-c", script, mode, str(settings_path)],
+            capture_output=True,
+            cwd=Path(__file__).resolve().parents[1],
+            env=environment,
+            text=True,
+            timeout=15,
+            check=False,
+        )
+        assert result.returncode == 0, result.stderr
+        assert f"controls_visibility_{mode}=ok" in result.stdout
+
+
 def test_real_tk_restores_custom_appearance_across_restart(tmp_path: Path) -> None:
     """Persist custom appearance in one real-Tk process and restore it in another."""
     settings_path = tmp_path / "appearance-round-trip-settings.json"
