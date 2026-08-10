@@ -151,9 +151,6 @@ repo-wide diagnostic debt is reduced through bounded slices.
 ## Developer
 
 - Deep dive: [README-DEV.md](README-DEV.md)
-- Active delivery plan: [PLAN.md](PLAN.md)
-- Execution bounds: [BOUNDS.md](BOUNDS.md)
-- Agent contract: [AGENTS.md](AGENTS.md)
 - Operational execution history: [docs/operational-plan.md](docs/operational-plan.md)
 - Product direction SSOT: [docs/product-ssot.md](docs/product-ssot.md)
 - Release history: [CHANGELOG.md](CHANGELOG.md)

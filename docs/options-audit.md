@@ -13,7 +13,7 @@ Updated: 2026-08-09
   Controls` / `Hide Controls`, `Appearance & Readability`, and `Monitoring &
   Runtime`.
 - For active product direction and the next GUI-workflow decision, use
-  [`product-ssot.md`](product-ssot.md) and [`../PLAN.md`](../PLAN.md).
+  [`product-ssot.md`](product-ssot.md).
 
 ## Historical recommendation — implemented
 

@@ -309,18 +309,13 @@ Do not prioritize these ahead of the active next-GUI-workflow selection:
 
 ## Documentation sync rules
 
-The following files must stay aligned with this SSOT:
-- `PLAN.md`
-- `BOUNDS.md`
-- `AGENTS.md`
+The following repository-managed public files must stay aligned with this SSOT:
 - `README.md`
 - `README-DEV.md`
 - `CHANGELOG.md`
 
 Current sync status:
-- root `PLAN.md`, `BOUNDS.md`, and `AGENTS.md` define the current delivery,
-  execution, and agent contracts
-- README links the root contracts and this canonical SSOT
+- README links this canonical SSOT and public developer documentation
 - CHANGELOG records the operational contract refresh
 
 ## Status summary
