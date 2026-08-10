@@ -1,7 +1,7 @@
 # Quality and Security Backlog
 
 **Status:** security refresh verified remotely; static baseline measured locally
-**Updated:** 2026-08-09
+**Updated:** 2026-08-10
 
 ## Security — current bounded slice
 
@@ -25,7 +25,7 @@ Current measured baseline after the Python 3.11 policy update:
 
 | Tool | Result | Scope |
 |---|---:|---|
-| Ruff | 957 diagnostics | repository-wide |
+| Ruff | 958 diagnostics | repository-wide |
 | Pyright | 532 errors, 15 warnings | configured `newsnow_neon` + `tests` scope |
 
 `[tool.pyright]` in `pyproject.toml` excludes generated `build/` copies, so the
@@ -44,6 +44,6 @@ scope before changing it.
 - Treat each future static-debt slice as a single behavior-owned seam with
   its own test and scoped quality target, not as a whole-repository campaign.
 - Security remote verification is complete. Stage 3C, the P0 policy decision,
-  P1 service compatibility, Stage 4A–4K, and the controlled real-Tk Stage 4L–12
-  workflows are complete locally. The next item is selection of one unverified,
-  behavior-owned GUI workflow.
+  P1 service compatibility, Stage 4A–4K, and controlled real-Tk workflows through
+  Stage 14 are complete; Stage 14 is also remotely verified by GitHub CI. The next
+  item is selection of one unverified, behavior-owned GUI workflow.

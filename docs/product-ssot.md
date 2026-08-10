@@ -2,7 +2,7 @@
 
 Status: active  
 Canonical file: `docs/product-ssot.md`  
-Updated: 2026-08-09
+Updated: 2026-08-10
 
 ## Purpose
 
@@ -113,11 +113,11 @@ These came out of the bounded repo review and should drive the next planning cyc
      - cache/history payload behavior,
      - summary/provider fallback.
    - Controlled real-Tk tests now prove the selected GUI/controller workflows
-     through Stage 13, but do not prove live NewsNow availability, live provider
+     through Stage 14, but do not prove live NewsNow availability, live provider
      behavior, Redis deployment compatibility, or physical desktop input.
 
 6. **Static quality debt is measured, not hidden**
-   - Ruff baseline: 957 diagnostics on the current repository-wide scope after
+   - Ruff baseline: 958 diagnostics on the current repository-wide scope after
      raising the Ruff target to Python 3.11.
    - Pyright baseline: 532 errors and 15 warnings on the configured
      `newsnow_neon` + `tests` scope; generated `build/` copies are excluded by
@@ -255,8 +255,10 @@ next slice.
 **Next GUI seam selection — no stage assigned yet**
 
 ### Why this is next
-- Stage 12 establishes controlled real-Tk evidence for Redis Stats: button,
-  local metrics worker, mapped window, and Close-control lifecycle.
+- Stage 14 establishes controlled real-Tk evidence that Controls expand only an
+  undersized window to their required Tk height and that worker log records are
+  delivered through the Tk main thread; the immediate Background Watch regression
+  protects the resulting startup path.
 
 ## Implementation focus for the active next decision
 
